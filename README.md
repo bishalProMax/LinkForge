@@ -157,6 +157,5 @@ npm start
 * URL expiration
 * Authentication (user-based URLs)
 * Rate limiting
-* UI frontend
 
 
