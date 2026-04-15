@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomePage</title>
+</head>
+<body>
+    <h1>Welcome to URL Shortener</h1>
+    <div>
+        <form method = "POST" action = "/url/generate">
+            <label >Enter your original URL</label>
+            <input type="text" name="url" placeholder="https://example.com">
+            <button type="submit">Generate</button>
+        </form>
+    </div>
+    <ul>
+        <% urls.forEach(url => { %>
+            <li><%= url.shortId %> - <%= url.redirectURL %> - <%= url.visitHistory.length %> clicks</li>
+        <% }); %>
+    </ul>
+</body>
+</html>

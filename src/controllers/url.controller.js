@@ -42,8 +42,17 @@ const handleGetAnalytics = async(req,res) => {
     })
 }
 
+const handleGetAllURL = async(req,res) => {
+    const allUrls = await URL.find({})
+    return res.render("home", { urls: allUrls })
+}
+
+
+
+
 module.exports = {
     handleGenerateNewShortURL,
     redirectToURL,
-    handleGetAnalytics
+    handleGetAnalytics,
+    handleGetAllURL
 }

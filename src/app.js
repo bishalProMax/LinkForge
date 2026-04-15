@@ -1,8 +1,22 @@
 const express = require("express")
 const urlRoute = require("./routes/url.route.js")
+const staticRouter = require("./routes/staticRouter.js")
+const path = require("path")
+
 const app = express()
 
+// middlewares
 app.use(express.json())
+app.use(express.urlencoded({extended: false}))
+
+// view engine setup
+app.set("view engine","ejs")
+app.set("views", path.join(__dirname, "views"))
+
+// routes
 app.use("/url",urlRoute)
+app.use("/", staticRouter)
+
+
 
 module.exports = app
