@@ -18,5 +18,17 @@ app.use("/url",urlRoute)
 app.use("/", staticRouter)
 
 
+// 404 HANDLER
+app.use((req, res) => {
+    res.status(404).send("Page not found")
+})
+
+
+// GLOBAL ERROR HANDLER
+app.use((err, req, res, next) => {
+    console.error("ERROR:", err)
+    res.status(500).send("Internal Server Error")
+})
+
 
 module.exports = app

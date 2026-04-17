@@ -4,7 +4,7 @@ const {handleGetAllURL} = require("../controllers/url.controller.js")
 const router = express.Router()
 
 //SSR
-router.route("/test").get(handleGetAllURL)
+router.route("/").get(handleGetAllURL)
 
 
 

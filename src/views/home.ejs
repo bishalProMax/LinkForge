@@ -12,17 +12,56 @@
 </head>
 <body>
     <h1>Welcome to URL Shortener</h1>
+
+
+        <!-- Form -->
     <div>
         <form method = "POST" action = "/url/generate">
             <label >Enter your original URL</label>
-            <input type="text" name="url" placeholder="https://example.com">
+            <input type="text" name="url" placeholder="https://example.com" required>
             <button type="submit">Generate</button>
         </form>
     </div>
-    <ul>
-        <% urls.forEach(url => { %>
-            <li><%= url.shortId %> - <%= url.redirectURL %> - <%= url.visitHistory.length %> clicks</li>
-        <% }); %>
-    </ul>
+
+
+        <!-- Generated URL -->
+    <% if (Id) { %>
+        <p>URL Generated: 
+            <a href="/url/<%= Id %>" target="_blank"><%= Id %>
+            </a>
+        </p>  
+        <% } %>
+
+
+
+        <!-- URL List -->
+    <div>
+
+    <% if (urls && urls.length > 0) { %>
+        <h3>All URLs</h3>
+
+    <table cellpadding="20" cellspacing="0">
+        <thead> 
+            <th> S. No.</th>  
+            <th> ShortID</th>  
+            <th> Redirect</th>  
+            <th> Clicks</th>  
+        </thead>
+        <tbody>
+            <% urls.forEach((url,index) => { %>
+                <tr>
+                <td><%= index + 1  %></td>
+                <td><%= url.shortId  %></td>
+                <td><%= url.redirectURL  %></td>
+                <td><%= url.visitHistory.length  %></td>
+                </tr>
+                <% }) %>
+        </tbody>
+    </table>
+
+
+    <% } %>
+    </div>
+
 </body>
 </html>
