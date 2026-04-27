@@ -18,12 +18,8 @@ const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
     visitHistory: [],
   });
 
-//   const allUrls = await URL.find({})
 
-//   return res.render("home", { 
-//     Id: shortID,
-//     urls: allUrls
-// });
+//PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
 return res.redirect(`/?id=${shortID}`)
 });
 
