@@ -1,5 +1,5 @@
 {
-  "name": "url_shortner",
+  "name": "linkforge",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,11 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.1",
     "ejs": "^5.0.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1",
-    "nanoid": "^5.1.7",
     "shortid": "^2.2.17"
   },
   "devDependencies": {

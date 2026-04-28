@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        .url-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .url-form input {
+            flex: 1;
         }
     </style>
     <meta charset="UTF-8">
@@ -11,25 +18,29 @@
     <title>HomePage</title>
 </head>
 <body>
+
+    <div class="container">
+
     <h1>Welcome to URL Shortener</h1>
 
 
         <!-- Form -->
-    <div>
-        <form method = "POST" action = "/url/generate">
+    
+        <form class="url-form" method="POST" action="/url/generate">
             <label >Enter your original URL</label>
             <input type="text" name="url" placeholder="https://example.com" required>
             <button type="submit">Generate</button>
         </form>
-    </div>
+    
 
 
         <!-- Generated URL -->
     <% if (Id) { %>
-        <p>URL Generated: 
+        <div class="generated">
+        URL Generated: 
             <a href="/url/<%= Id %>" target="_blank"><%= Id %>
             </a>
-        </p>  
+        </div>
         <% } %>
 
 
@@ -58,10 +69,10 @@
                 <% }) %>
         </tbody>
     </table>
-
-
     <% } %>
     </div>
+
+</div>
 
 </body>
 </html>
