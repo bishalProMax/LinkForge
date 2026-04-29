@@ -6,13 +6,17 @@ function createToken(user){
         email: user.email,
     }
     return jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "1d"
+        expiresIn: process.env.JWT_EXPIRES || "1d"
     })
 }
 
 function verifyToken(token){
     try {
-        return jwt.verify(token, process.env.JWT_SECRET)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        return {
+            id: decoded.id,
+            email: decoded.email
+        }
     } catch (error) {
         return null
     }

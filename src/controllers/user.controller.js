@@ -34,10 +34,18 @@ const handleUserLogin = asyncHandler(async (req,res) => {
     res.cookie("token", token,{
     httpOnly: true
 })
-    return res.redirect("/")
+    return res.redirect("/linkforge")
 })
+
+const handleUserLogout = (req, res) => {
+    res.clearCookie("token",{
+    httpOnly: true
+    });
+    return res.redirect("/login");
+};
 
 module.exports = {
     handleUserSignup,
-    handleUserLogin
+    handleUserLogin,
+    handleUserLogout
 }

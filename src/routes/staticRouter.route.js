@@ -7,7 +7,7 @@ const router = express.Router()
 
 
 //SSR
-router.route("/").get(handleGetAllURL)
+router.route("/linkforge").get(handleGetAllURL)
 
 router.route("/signup").get(handleShowSignupPage)
 

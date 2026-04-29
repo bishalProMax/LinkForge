@@ -7,6 +7,7 @@
             display: flex;
             gap: 10px;
             margin-top: 10px;
+            align-items: center;
         }
 
         .url-form input {
@@ -21,8 +22,14 @@
 
     <div class="container">
 
-    <h1>Welcome to URL Shortener</h1>
+    <div class="header">
+        
+    <h1>Welcome to LinkForge</h1>
 
+    <form action="/user/logout" method="POST" class="logout-form">
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
+    </div>
 
         <!-- Form -->
     
@@ -46,7 +53,7 @@
 
 
         <!-- URL List -->
-    <div>
+    <div class="table-section">
 
     <% if (urls && urls.length > 0) { %>
         <h3>All URLs</h3>

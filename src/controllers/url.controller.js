@@ -21,7 +21,7 @@ const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
 
 
 //PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
-return res.redirect(`/?id=${shortID}`)
+return res.redirect(`/linkforge/?id=${shortID}`)
 });
 
 // redirect to original URL
@@ -61,6 +61,8 @@ const handleGetAllURL = asyncHandler(async (req, res) => {
   const Id = req.query.id || null
   return res.render("home", { Id, urls: allUrls });
 });
+
+
 
 module.exports = {
   handleGenerateNewShortURL,
