@@ -38,7 +38,10 @@
             <input type="text" name="url" placeholder="https://example.com" required>
             <button type="submit">Generate</button>
         </form>
-    
+        
+        <% if (error) { %>
+            <p class="error"><%= error %></p>
+        <% } %>
 
 
         <!-- Generated URL -->

@@ -1,27 +1,48 @@
 const shortid = require("shortid");
 const URL = require("../models/url.models.js");
 const asyncHandler = require("../utils/asyncHandler.js");
+const validator = require("validator");
 
 // Generate short URL
 const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
   const body = req.body;
 
-  if (!body.url) {
-    return res.status(400).json({ error: " url is required" });
+  if (
+    !body.url ||
+    !validator.isURL(body.url, {
+      require_protocol: true,
+      protocols: ["http", "https"],
+      require_tld: true,
+    })
+  ) {
+    return res.redirect(
+      `/linkforge?error=${encodeURIComponent("Enter a valid URL (http/https)")}`
+    );
   }
 
-  const shortID = shortid.generate();
+  let shortID;
+  let exists;
 
-  await URL.create({
-    shortId: shortID,
-    redirectURL: body.url,
-    visitHistory: [],
-    createdBy: req.user.id
-  });
+  do {
+    shortID = shortid.generate();
+    exists = await URL.findOne({ shortId: shortID });
+  } while (exists);
 
+  try {
+    await URL.create({
+      shortId: shortID,
+      redirectURL: body.url,
+      visitHistory: [],
+      createdBy: req.user.id,
+    });
 
-//PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
-return res.redirect(`/linkforge/?id=${shortID}`)
+    //PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
+    return res.redirect(`/linkforge/?id=${shortID}`);
+  } catch (error) {
+    return res.redirect(
+      `/linkforge?error=${encodeURIComponent("Something went wrong, please try again")}`
+    );
+  }
 });
 
 // redirect to original URL
@@ -40,7 +61,11 @@ const handleRedirectToURL = asyncHandler(async (req, res) => {
     }
   );
 
-  if (!entry) return res.status(404).send("URL not found");
+  if (!entry) {
+    return res.redirect(
+      `/linkforge?error=${encodeURIComponent("URL not found")}`
+    );
+  }
 
   res.redirect(entry.redirectURL);
 });
@@ -53,16 +78,16 @@ const handleGetAnalytics = asyncHandler(async (req, res) => {
     totalClicks: result.visitHistory.length,
     analytics: result.visitHistory,
   });
-})
-
-const handleGetAllURL = asyncHandler(async (req, res) => {
-  if(!req.user) return res.redirect("/login")
-  const allUrls = await URL.find({ createdBy: req.user.id });
-  const Id = req.query.id || null
-  return res.render("home", { Id, urls: allUrls });
 });
 
-
+//get all URLs created by a user
+const handleGetAllURL = asyncHandler(async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+  const allUrls = await URL.find({ createdBy: req.user.id });
+  const error = req.query.error || null;
+  const Id = req.query.id || null;
+  return res.render("home", { Id, urls: allUrls, error });
+});
 
 module.exports = {
   handleGenerateNewShortURL,
