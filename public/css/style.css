@@ -103,6 +103,8 @@ th {
 td {
     padding: 12px;
     border-bottom: 1px solid #eee;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 tr:hover {
@@ -111,14 +113,21 @@ tr:hover {
 
 /* Links */
 a {
-    color: #667eea;
+    color: #4f46e5;
     text-decoration: none;
 }
 
 a:hover {
     text-decoration: underline;
 }
-
+.redirect-link {
+    color: #000;
+    max-width: 250px;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .password-wrapper {
     display: flex;
     align-items: center;
@@ -173,7 +182,7 @@ a:hover {
 }
 
 .logo {
-     width: 250px;
+    width: 250px;
     height: 150px;
     object-fit: cover;
 }
@@ -195,4 +204,36 @@ a:hover {
 .signup-btn:hover {
     background: #667eea;
     color: white;
+}
+
+.shortid-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.copy-btn {
+    background: transparent;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    color: #6b7280;          
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.copy-btn:hover {       
+    background: transparent; 
+    transform: scale(1.1);
+}
+
+.copy-btn:active {
+    transform: scale(0.95);  
+}
+
+.copy-btn.copied {
+    color: green;
 }

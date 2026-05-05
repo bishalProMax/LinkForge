@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
     <style>
         .url-form {
             display: flex;
@@ -35,7 +36,7 @@
     
         <form class="url-form" method="POST" action="/url/generate">
             <label >Enter your original URL</label>
-            <input type="text" name="url" placeholder="https://example.com" required>
+            <input type="text" name="url" placeholder="https://example.com/my-long-url" required>
             <button type="submit">Generate</button>
         </form>
         
@@ -63,18 +64,31 @@
 
     <table cellpadding="20" cellspacing="0">
         <thead> 
+            <tr>
             <th> S. No.</th>  
             <th> ShortID</th>  
             <th> Redirect</th>  
             <th> Clicks</th>  
+        </tr>
         </thead>
         <tbody>
             <% urls.forEach((url,index) => { %>
                 <tr>
                 <td><%= index + 1  %></td>
-                <td><a href="/url/<%= url.shortId %>" target="_blank"><%= url.shortId %> </a></td>
-                <td><%= url.redirectURL  %></td>
-                <td><%= url.visitHistory.length  %></td>
+                <td class="shortid-cell">
+                    <a href="/url/<%= url.shortId %>" target="_blank"> <%= url.shortId %> 
+                    </a>
+                    <button type="button" class="copy-btn" data-id="<%= url.shortId %>" onclick="copyToClipboard(this)" title="Copy short URL">
+                        <i class="ri-file-copy-line"></i>
+                    </button>
+                </td>
+                <td> 
+                    <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"> <%= url.redirectURL %> 
+                    </a> 
+                </td>
+                <td>
+                    <%= url.visitHistory.length  %>
+                </td>
                 </tr>
                 <% }) %>
         </tbody>
@@ -83,6 +97,6 @@
     </div>
 
 </div>
-
+    <script src="/js/main.js"></script>
 </body>
 </html>
