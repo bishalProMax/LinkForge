@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
         .url-form {
             display: flex;
@@ -23,80 +24,115 @@
 
     <div class="container">
 
-    <div class="header">
+        <div class="header">
         
-    <h1>Welcome to LinkForge</h1>
+            <h1>Welcome to LinkForge</h1>
 
-    <form action="/user/logout" method="POST" class="logout-form">
-        <button type="submit" class="logout-btn">Logout</button>
-    </form>
-    </div>
+            <form action="/user/logout" method="POST" class="logout-form">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
 
         <!-- Form -->
     
         <form class="url-form" method="POST" action="/url/generate">
             <label >Enter your original URL</label>
             <input type="text" name="url" placeholder="https://example.com/my-long-url" required>
-            <button type="submit">Generate</button>
+            <button type="submit"> Generate </button>
         </form>
         
+        <!-- Error Message -->
         <% if (error) { %>
             <p class="error"><%= error %></p>
         <% } %>
 
 
         <!-- Generated URL -->
-    <% if (Id) { %>
+        <% if (Id) { %>
         <div class="generated">
         URL Generated: 
-            <a href="/url/<%= Id %>" target="_blank"><%= Id %>
-            </a>
+            <a href="/url/<%= Id %>" target="_blank"><%= Id %> </a>
         </div>
         <% } %>
 
 
 
         <!-- URL List -->
-    <div class="table-section">
+        <div class="table-section">
 
-    <% if (urls && urls.length > 0) { %>
+        <% if (urls && urls.length > 0) { %>
+
         <h3>All URLs</h3>
 
-    <table cellpadding="20" cellspacing="0">
-        <thead> 
-            <tr>
-            <th> S. No.</th>  
-            <th> ShortID</th>  
-            <th> Redirect</th>  
-            <th> Clicks</th>  
-        </tr>
-        </thead>
-        <tbody>
-            <% urls.forEach((url,index) => { %>
+        <table cellpadding="20" cellspacing="0">
+            <thead> 
                 <tr>
-                <td><%= index + 1  %></td>
-                <td class="shortid-cell">
-                    <a href="/url/<%= url.shortId %>" target="_blank"> <%= url.shortId %> 
-                    </a>
-                    <button type="button" class="copy-btn" data-id="<%= url.shortId %>" onclick="copyToClipboard(this)" title="Copy short URL">
-                        <i class="ri-file-copy-line"></i>
-                    </button>
-                </td>
-                <td> 
-                    <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"> <%= url.redirectURL %> 
-                    </a> 
-                </td>
-                <td>
-                    <%= url.visitHistory.length  %>
-                </td>
+                    <th> S. No.</th>  
+                    <th> ShortID</th>  
+                    <th> Website</th>  
+                    <th> Clicks</th>
+                    <th>QR</th>  
+                </tr>
+            </thead>
+            <tbody>
+                <% urls.forEach((url,index) => { %>
+                <tr>
+                    <td><%= index + 1  %></td>
+                    <td class="shortid-cell">
+                        <a href="/url/<%= url.shortId %>" target="_blank"> <%= url.shortId %> </a>
+                        <button type="button" class="copy-btn" data-id="<%= url.shortId %>" onclick="copyToClipboard(this)" title="Copy short URL">
+                            <i class="ri-file-copy-line"></i>
+                        </button>
+                    </td>
+                    <td> 
+                        <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"> <%= url.redirectURL %> </a> 
+                    </td>
+                    <td>
+                        <%= url.visitHistory.length  %>
+                    </td>
+                    <td>
+                        <button class="qr-btn" title="Show QR" onclick="showQR(this)" data-id="<%= url.shortId %>"> 
+                            <i class="ri-qr-code-line"></i> 
+                        </button>
+                    </td>
                 </tr>
                 <% }) %>
-        </tbody>
-    </table>
-    <% } %>
+            </tbody>
+        </table>
+
+        <% } else { %>
+            <p>No URLs generated yet</p>
+        <% } %>
+
+        </div>
+
+    
+
     </div>
 
-</div>
+<!-- QR MODAL -->
+        <div id="qrModal" class="qr-modal">
+            <div class="qr-content">
+                <span class="close" onclick="closeQR()"> &times; </span>
+                <h3>Scan QR Code</h3>
+
+                <div id="qrLoader" class="dots-loader">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                </div>
+
+                <canvas id="qrCanvas"></canvas>
+
+            <div class="qr-actions">
+                <button id="downloadQR">Download</button>
+                <button id="shareQR">Share</button>
+            </div>
+
+            </div>
+        </div>
+    
+
     <script src="/js/main.js"></script>
 </body>
 </html>

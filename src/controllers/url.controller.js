@@ -2,6 +2,7 @@ const shortid = require("shortid");
 const URL = require("../models/url.models.js");
 const asyncHandler = require("../utils/asyncHandler.js");
 const validator = require("validator");
+const QRCode = require("qrcode");
 
 // Generate short URL
 const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
@@ -86,7 +87,21 @@ const handleGetAllURL = asyncHandler(async (req, res) => {
   const allUrls = await URL.find({ createdBy: req.user.id });
   const error = req.query.error || null;
   const Id = req.query.id || null;
-  return res.render("home", { Id, urls: allUrls, error });
+
+  const urlsWithQR = await Promise.all(
+    allUrls.map(async (url) => {
+      const fullUrl = `${process.env.BASE_URL}/url/${url.shortId}`;
+
+      const qr = await QRCode.toDataURL(fullUrl);
+
+      return {
+        ...url.toObject(),
+        qrCode: qr,
+      };
+    })
+  );
+
+  return res.render("home", { Id, urls: urlsWithQR, error });
 });
 
 module.exports = {

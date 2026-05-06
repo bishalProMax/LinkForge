@@ -9,44 +9,48 @@
 </head>
 <body>
 
+    <!-- Logo Section -->   
     <div class="logo-container">
         <img src="/images/LinkForge.png" alt="LinkForge Logo" class="logo">
     </div>
 
     <div class="container">
 
-    <h1>Login</h1>
+        <h1>Login</h1>
 
-    <% if (error) { %>
-    <p class="error"><%= error %></p>
-<% } %>
-
-    <form action="/user/login" method="POST">
-
-        <div class="form-group">
-        <label>Email</label>
-        <input type="text" name="email" required value="<%= old?.email || '' %>">
-        </div>
-
-        <div class="form-group">
-        <label>Password</label>
-        <div class="password-wrapper">
-        <input type="password" id="password" name="password" required >
-        <button type="button" onclick="togglePassword('password', this)">Show</button>
-        </div>
-        </div>
+        <!-- Error Message -->
+        <% if (error) { %>
+        <p class="error"><%= error %></p>
+        <% } %>
         
-        <button type="submit">Login</button>
+        <!-- Login Form -->
+        <form action="/user/login" method="POST">
 
-    </form>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text" name="email" required value="<%= old?.email || '' %>">
+            </div>
 
-    <div class="auth-footer">
-    <button type="button" onclick="window.location.href='/signup'" class="signup-btn">
-        Create Account
-    </button>
-</div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" required >
+                    <button type="button" onclick="togglePassword('password', this)">Show</button>
+                </div>
+            </div>
+        
+            <button type="submit">Login</button>
 
-</div>
+        </form>
+
+        <!-- Signup Link -->
+        <div class="auth-footer">
+            <button type="button" onclick="window.location.href='/signup'" class="signup-btn">
+                Create Account
+            </button>
+        </div>
+    </div>
+
 
 </body>
 </html>
