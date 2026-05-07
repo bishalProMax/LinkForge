@@ -1,6 +1,7 @@
 const asyncHandler = require("../utils/asyncHandler.js");
 const User = require("../models/user.models.js");
 const { createToken } = require("../service/auth.service.js");
+const { verifyTurnstile } = require("../service/turnstile.service.js");
 
 //SIGNUP
 const handleUserSignup = asyncHandler(async (req, res) => {
@@ -9,6 +10,23 @@ const handleUserSignup = asyncHandler(async (req, res) => {
   const old = { ...req.body };
   delete old.password;
 
+  // CAPTCHA TOKEN
+  const captchaToken =
+    req.body["cf-turnstile-response"];
+  // VERIFY CAPTCHA
+  const isHuman = await verifyTurnstile(
+    captchaToken,
+    req.ip
+  );
+
+  if (!isHuman) {
+    return res.render("signup", {
+      error: "Captcha verification failed",
+      old,
+    });
+  }
+
+  //// CHECK EXISTING USER
   const existedUser = await User.findOne({ email });
   if (existedUser) {
     return res.render("signup", {
@@ -51,6 +69,8 @@ const handleUserLogin = asyncHandler(async (req, res) => {
   const token = createToken(user);
   res.cookie("token", token, {
     httpOnly: true,
+    secure:process.env.NODE_ENV === "production",
+    sameSite:"strict"
   });
   return res.redirect("/linkforge");
 });
@@ -58,6 +78,8 @@ const handleUserLogin = asyncHandler(async (req, res) => {
 const handleUserLogout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
+    secure:process.env.NODE_ENV === "production",
+    sameSite:"strict"
   });
   return res.redirect("/login");
 };

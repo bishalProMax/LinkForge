@@ -17,7 +17,11 @@
         <% if (error) { %>
             <p class="error"><%= error %></p>
         <% } %>
-            
+        <script
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer>
+</script>    
         <!-- Signup Form -->
         <form action="/user/signup" method="POST">
 
@@ -41,8 +45,12 @@
                 <small> Password must include uppercase, lowercase, number and one special character (@$!%*?&) </small>
 
             </div>
-        
-            <button type="submit">Signup</button>
+            <div class="captcha-container">
+                <div class="cf-turnstile" data-sitekey="<%= process.env.TURNSTILE_SITE_KEY %>">
+                </div>
+            </div>
+
+            <button type="submit" class="signup-btn">Signup</button>
         
         </form>
 
