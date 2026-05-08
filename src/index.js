@@ -1,7 +1,8 @@
 require("dotenv").config()
 const app = require("./app.js")
+const redis = require("./config/redis.js");
 
-const { connectToMongoDB} = require("./db/connectdb.js")
+const { connectToMongoDB} = require("./config/db.js")
 
 connectToMongoDB()
 .then(() => {

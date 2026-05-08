@@ -1,6 +1,16 @@
 const rateLimit = require("express-rate-limit");
+const { RedisStore } = require("rate-limit-redis");
+const redis = require("../config/redis");
+const { ipKeyGenerator } = require("express-rate-limit");
 
 const signupLimiter = rateLimit({
+  store: new RedisStore({
+    sendCommand: (...args) =>
+      redis.call(...args),
+  }),
+   keyGenerator: (req) =>
+    `signup:${ipKeyGenerator(req)}`,
+
   windowMs: 15 * 60 * 1000, // 15 min
 
   max: 5, 
@@ -15,7 +25,14 @@ const signupLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-export const loginLimiter = rateLimit({
+const loginLimiter = rateLimit({
+  store: new RedisStore({
+    sendCommand: (...args) =>
+      redis.call(...args),
+  }),
+   keyGenerator: (req) =>
+    `login:${ipKeyGenerator(req)}`,
+
   windowMs: 15 * 60 * 1000, // 15 min
 
   max: 10,
