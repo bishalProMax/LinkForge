@@ -6,9 +6,12 @@ const { errorHandler, notFound } = require("./middleware/error.middleware.js")
 const cookieParser = require("cookie-parser")
 const { restrictToLoggedInUserOnly, checkAuth }  = require("./middleware/auth.middleware.js")
 const path = require("path")
-
+const helmet = require("helmet")
 
 const app = express()
+
+// security headers
+app.use(helmet())
 
 // parsing
 app.use(express.urlencoded({extended: false}))
