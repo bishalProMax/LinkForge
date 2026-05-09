@@ -3,6 +3,7 @@ const { handleUserSignup, handleUserLogin, handleUserLogout } = require('../cont
 const { validateSignup, validateLogin } = require("../middleware/validation.middleware");
 const { restrictToLoggedInUserOnly } = require("../middleware/auth.middleware.js");
 const { signupLimiter, loginLimiter } = require("../middleware/rateLimit.middleware.js");
+const { emailThrottle } = require("../middleware/emailThrottle.middleware.js");
 
 
 const router = express.Router()
@@ -10,7 +11,7 @@ const router = express.Router()
 //Creates a profile of user
 router.route('/signup').post(signupLimiter, validateSignup, handleUserSignup)
 
-router.route('/login').post(loginLimiter, validateLogin, handleUserLogin)
+router.route('/login').post(emailThrottle,loginLimiter, validateLogin, handleUserLogin)
 
 router.route('/logout').post(restrictToLoggedInUserOnly, handleUserLogout)
 

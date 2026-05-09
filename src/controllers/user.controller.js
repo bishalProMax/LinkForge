@@ -2,6 +2,7 @@ const asyncHandler = require("../utils/asyncHandler.js");
 const User = require("../models/user.models.js");
 const { createToken } = require("../service/auth.service.js");
 const { verifyTurnstile } = require("../service/turnstile.service.js");
+const redis = require("../config/redis");
 
 //SIGNUP
 const handleUserSignup = asyncHandler(async (req, res) => {
@@ -11,13 +12,9 @@ const handleUserSignup = asyncHandler(async (req, res) => {
   delete old.password;
 
   // CAPTCHA TOKEN
-  const captchaToken =
-    req.body["cf-turnstile-response"];
+  const captchaToken = req.body["cf-turnstile-response"];
   // VERIFY CAPTCHA
-  const isHuman = await verifyTurnstile(
-    captchaToken,
-    req.ip
-  );
+  const isHuman = await verifyTurnstile(captchaToken, req.ip);
 
   if (!isHuman) {
     return res.render("signup", {
@@ -26,7 +23,7 @@ const handleUserSignup = asyncHandler(async (req, res) => {
     });
   }
 
-  //// CHECK EXISTING USER
+  // CHECK EXISTING USER
   const existedUser = await User.findOne({ email });
   if (existedUser) {
     return res.render("signup", {
@@ -63,23 +60,29 @@ const handleUserLogin = asyncHandler(async (req, res) => {
   const isMatch = await user.comparePassword(password);
 
   if (!isMatch) {
+    await redis.incr(`login:${email}`);
+
+    await redis.expire(`login:${email}`, 300);   //email login attempts expire after 5 minutes
     return res.render("login", { error: "Invalid password", old });
   }
 
+  await redis.del(`login:${email}`); // reset login attempts on successful login
+  
   const token = createToken(user);
   res.cookie("token", token, {
     httpOnly: true,
-    secure:process.env.NODE_ENV === "production",
-    sameSite:"strict"
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
   });
   return res.redirect("/linkforge");
 });
 
+//LOGOUT
 const handleUserLogout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure:process.env.NODE_ENV === "production",
-    sameSite:"strict"
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
   });
   return res.redirect("/login");
 };
