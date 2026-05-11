@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <link rel="stylesheet" href="/css/style.css">
-    <script src="/js/main.js"></script>
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+    <script src="/js/main.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
@@ -23,6 +24,13 @@
         <p class="error"><%= error %></p>
         <% } %>
         
+        <!-- Verification Message -->
+        <% if (verificationMessage) { %>
+        <p class="verification-info">
+        <%= verificationMessage %>
+        </p>
+        <% } %>
+
         <!-- Login Form -->
         <form action="/user/login" method="POST">
 
@@ -34,8 +42,8 @@
             <div class="form-group">
                 <label>Password</label>
                 <div class="password-wrapper">
-                    <input type="password" id="password" name="password" required >
-                    <button type="button" onclick="togglePassword('password', this)">Show</button>
+                    <input type="password" id="loginPassword" name="password" required >
+                    <button type="button" id="toggleLoginPassword">Show</button>
                 </div>
             </div>
         
@@ -45,7 +53,7 @@
 
         <!-- Signup Link -->
         <div class="auth-footer">
-            <button type="button" onclick="window.location.href='/signup'" class="create-account-btn">
+            <button type="button" id="createAccountBtn" class="create-account-btn">
                 Create Account
             </button>
         </div>

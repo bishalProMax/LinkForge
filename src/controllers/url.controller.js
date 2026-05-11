@@ -2,7 +2,6 @@ const shortid = require("shortid");
 const URL = require("../models/url.models.js");
 const asyncHandler = require("../utils/asyncHandler.js");
 const validator = require("validator");
-const QRCode = require("qrcode");
 
 // Generate short URL
 const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
@@ -40,9 +39,8 @@ const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
     //PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
     return res.redirect(`/linkforge/?id=${shortID}`);
   } catch (error) {
-    return res.redirect(
-      `/linkforge?error=${encodeURIComponent("Something went wrong, please try again")}`
-    );
+    console.log(error)
+    return res.redirect(`/linkforge?error=${encodeURIComponent("Something went wrong, please try again")}`);
   }
 });
 
@@ -83,25 +81,11 @@ const handleGetAnalytics = asyncHandler(async (req, res) => {
 
 //get all URLs created by a user
 const handleGetAllURL = asyncHandler(async (req, res) => {
-  if (!req.user) return res.redirect("/login");
   const allUrls = await URL.find({ createdBy: req.user.id });
   const error = req.query.error || null;
   const Id = req.query.id || null;
 
-  const urlsWithQR = await Promise.all(
-    allUrls.map(async (url) => {
-      const fullUrl = `${process.env.BASE_URL}/url/${url.shortId}`;
-
-      const qr = await QRCode.toDataURL(fullUrl);
-
-      return {
-        ...url.toObject(),
-        qrCode: qr,
-      };
-    })
-  );
-
-  return res.render("home", { Id, urls: urlsWithQR, error });
+  return res.render("home", { Id, urls: allUrls, error });
 });
 
 module.exports = {

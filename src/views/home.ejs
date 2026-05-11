@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
@@ -80,7 +81,7 @@
                     <td><%= index + 1  %></td>
                     <td class="shortid-cell">
                         <a href="/url/<%= url.shortId %>" target="_blank"> <%= url.shortId %> </a>
-                        <button type="button" class="copy-btn" data-id="<%= url.shortId %>" onclick="copyToClipboard(this)" title="Copy short URL">
+                        <button type="button" class="copy-btn" data-id="<%= url.shortId %>" title="Copy short URL">
                             <i class="ri-file-copy-line"></i>
                         </button>
                     </td>
@@ -91,7 +92,7 @@
                         <%= url.visitHistory.length  %>
                     </td>
                     <td>
-                        <button class="qr-btn" title="Show QR" onclick="showQR(this)" data-id="<%= url.shortId %>"> 
+                        <button class="qr-btn" title="Show QR" data-id="<%= url.shortId %>"> 
                             <i class="ri-qr-code-line"></i> 
                         </button>
                     </td>
@@ -113,7 +114,7 @@
 <!-- QR MODAL -->
         <div id="qrModal" class="qr-modal">
             <div class="qr-content">
-                <span class="close" onclick="closeQR()"> &times; </span>
+                <span class="close" id="closeQRBtn"> &times; </span>
                 <h3>Scan QR Code</h3>
 
                 <div id="qrLoader" class="dots-loader">

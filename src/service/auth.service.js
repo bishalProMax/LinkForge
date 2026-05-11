@@ -18,6 +18,7 @@ function verifyToken(token){
             email: decoded.email
         }
     } catch (error) {
+        console.log(error)
         return null
     }
 }

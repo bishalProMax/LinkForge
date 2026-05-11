@@ -1,3 +1,4 @@
+/*eslint-disable no-useless-catch */
 const mongoose = require("mongoose")
 const db_name = require("../constants.js")
 

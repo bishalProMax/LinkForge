@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" type="image/png" href="/images/icon.png"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="generated verification-box">
+
+      <h2 class="<%= success ? 'success-text' : 'error-text' %>">
+        <%= message %>
+      </h2>
+
+      <% if (success) { %>
+      <p class="verification-message">
+          Your account is now active and ready to use.
+      </p>
+
+      <a href="/login">
+        <button class="signup-btn"> Go to Login </button>
+      </a>
+
+      <% } else { %>
+      <p class="verification-message">
+        The verification link is invalid or has expired.
+      </p>
+
+      <a href="/signup">
+        <button class="signup-btn"> Signup Again </button>
+      </a>
+      <% } %>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

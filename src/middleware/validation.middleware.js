@@ -13,7 +13,7 @@ const validator = require("validator");
     if (!name || name.length < 3) {
         return res.render("signup", {
             error: "Name must be at least 3 characters",
-            old
+            old,
         });
     }
 
@@ -51,7 +51,8 @@ const validateLogin = (req, res, next) => {
     if (!email || !validator.isEmail(email)) {
         return res.render("login", {
             error: "Please enter a valid email address",
-            old
+            old,
+            verificationMessage: null
         });
     }
 
@@ -59,7 +60,8 @@ const validateLogin = (req, res, next) => {
     if (!password || password.length < 1) {
         return res.render("login", {
             error: "Password is required",
-            old
+            old,
+            verificationMessage: null
         });
     }
 

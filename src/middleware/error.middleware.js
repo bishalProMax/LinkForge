@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // GLOBAL ERROR HANDLER
 const errorHandler = (err, req, res, next) => {
     console.error("ERROR:", err)

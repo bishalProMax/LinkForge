@@ -21,7 +21,8 @@ const emailThrottle = async (req, res, next) => {
 
     return res.status(429).render("login", {
       error: `Too many failed login attempts. Try again in ${ttl} seconds.`,
-      old
+      old,
+      verificationMessage: null
     });
   }
 
