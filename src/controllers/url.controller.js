@@ -1,4 +1,4 @@
-import shortid from "shortid";
+import { nanoid } from 'nanoid'
 import URL from "../models/url.models.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import validator from "validator";
@@ -24,7 +24,7 @@ const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
   let exists;
 
   do {
-    shortID = shortid.generate();
+    shortID = nanoid(7);
     exists = await URL.findOne({ shortId: shortID });
   } while (exists);
 
