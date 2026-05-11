@@ -1,8 +1,8 @@
-const { Queue } = require("bullmq");
-const redis = require("../config/redis.js");
+import { Queue } from "bullmq";
+import redis from "../config/redis.js";
 
 const cleanupQueue = new Queue("cleanupQueue", {
   connection: redis,
 });
 
-module.exports = cleanupQueue;
+export default cleanupQueue;

@@ -1,7 +1,7 @@
-const shortid = require("shortid");
-const URL = require("../models/url.models.js");
-const asyncHandler = require("../utils/asyncHandler.js");
-const validator = require("validator");
+import shortid from "shortid";
+import URL from "../models/url.models.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import validator from "validator";
 
 // Generate short URL
 const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
@@ -88,7 +88,7 @@ const handleGetAllURL = asyncHandler(async (req, res) => {
   return res.render("home", { Id, urls: allUrls, error });
 });
 
-module.exports = {
+export {
   handleGenerateNewShortURL,
   handleRedirectToURL,
   handleGetAnalytics,

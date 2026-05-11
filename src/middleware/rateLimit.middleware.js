@@ -1,7 +1,7 @@
-const rateLimit = require("express-rate-limit");
-const { RedisStore } = require("rate-limit-redis");
-const redis = require("../config/redis");
-const { ipKeyGenerator } = require("express-rate-limit");
+import rateLimit from "express-rate-limit";
+import { RedisStore } from "rate-limit-redis";
+import redis from "../config/redis.js";
+import { ipKeyGenerator } from "express-rate-limit";
 
 // SIGNUP RATE LIMITER
 const signupLimiter = rateLimit({
@@ -56,7 +56,7 @@ const loginLimiter = rateLimit({
   },
 });
 
-module.exports = {
+export {
   signupLimiter,
   loginLimiter,
 };

@@ -1,12 +1,16 @@
-const express = require("express")
-const urlRoute = require("./routes/url.route.js")
-const staticRouter = require("./routes/staticRouter.route.js")
-const userRoute = require('./routes/user.route.js')
-const { errorHandler, notFound } = require("./middleware/error.middleware.js")
-const cookieParser = require("cookie-parser")
-const { authenticateUser}  = require("./middleware/auth.middleware.js")
-const path = require("path")
-const helmet = require("helmet")
+import express from "express";
+import { errorHandler, notFound } from "./middleware/error.middleware.js";
+import cookieParser from "cookie-parser";
+import authenticateUser from "./middleware/auth.middleware.js";
+import path from "path";
+import helmet from "helmet";
+import urlRoute from "./routes/url.route.js";
+import staticRouter from "./routes/staticRouter.route.js";
+import userRoute from "./routes/user.route.js";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express()
 
@@ -80,4 +84,4 @@ app.use(notFound)
 
 app.use(errorHandler)
 
-module.exports = app
+export default app;

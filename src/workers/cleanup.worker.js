@@ -1,6 +1,6 @@
-const { Worker } = require("bullmq");
-const redis = require("../config/redis.js");
-const User = require("../models/user.models.js");
+import { Worker } from "bullmq";
+import redis from "../config/redis.js";
+import User from "../models/user.models.js";
 
 new Worker("cleanupQueue", async () => {
     await User.deleteMany({

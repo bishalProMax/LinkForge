@@ -1,10 +1,10 @@
-const asyncHandler = require("../utils/asyncHandler.js");
-const User = require("../models/user.models.js");
-const { createToken } = require("../service/auth.service.js");
-const { verifyTurnstile } = require("../service/turnstile.service.js");
-const redis = require("../config/redis.js");
-const crypto = require("crypto");
-const emailQueue = require("../queues/email.queue.js");
+import asyncHandler from "../utils/asyncHandler.js";
+import User from "../models/user.models.js";
+import { createToken } from "../service/auth.service.js";
+import verifyTurnstile from "../service/turnstile.service.js";
+import redis from "../config/redis.js";
+import crypto from "crypto";
+import emailQueue from "../queues/email.queue.js";
 
 //SIGNUP
 const handleUserSignup = asyncHandler(async (req, res) => {
@@ -175,7 +175,7 @@ const verifyEmail = async (req, res) => {
   });
 };
 
-module.exports = {
+export {
   handleUserSignup,
   handleUserLogin,
   handleUserLogout,

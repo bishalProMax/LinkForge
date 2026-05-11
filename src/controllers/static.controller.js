@@ -19,7 +19,7 @@ const handleShowLoginPage = (req, res) => {
   })
 };
 
-module.exports = {
+export {
   handleShowSignupPage,
   handleShowLoginPage,
 };

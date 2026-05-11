@@ -1,6 +1,6 @@
 /*eslint-disable no-useless-catch */
-const mongoose = require("mongoose")
-const db_name = require("../constants.js")
+import mongoose from "mongoose";
+import db_name from "../constants.js";
 
 async function connectToMongoDB(){
     try {
@@ -12,4 +12,4 @@ async function connectToMongoDB(){
     }
     }
 
-module.exports = { connectToMongoDB}
+export default connectToMongoDB;

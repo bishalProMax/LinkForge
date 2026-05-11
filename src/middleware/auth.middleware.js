@@ -1,5 +1,5 @@
-const asyncHandler = require("../utils/asyncHandler.js");
-const { verifyToken } = require("../service/auth.service.js");
+import asyncHandler from "../utils/asyncHandler.js";
+import { verifyToken } from "../service/auth.service.js";
 
 const authenticateUser = asyncHandler(async (req, res, next) => {
     const userToken = req.cookies?.token;
@@ -10,4 +10,4 @@ const authenticateUser = asyncHandler(async (req, res, next) => {
     next();
 });
 
-module.exports = { authenticateUser }
+export default authenticateUser;

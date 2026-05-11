@@ -4,4 +4,4 @@ const asyncHandler = (requestHandler) => {
         .catch(next) 
     }
 }
-module.exports = asyncHandler
+export default asyncHandler;

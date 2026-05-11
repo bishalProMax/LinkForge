@@ -1,3 +1,3 @@
 const db_name = "url_shortner"
 
-module.exports = db_name
+export default db_name;

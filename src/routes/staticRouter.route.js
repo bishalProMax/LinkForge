@@ -1,8 +1,10 @@
-const express = require("express")
-const {handleGetAllURL} = require("../controllers/url.controller.js")
-const { handleShowSignupPage, handleShowLoginPage } = require("../controllers/static.controller.js")
-const { authenticateUser }  = require("../middleware/auth.middleware.js")
-const router = express.Router()
+import { Router } from "express";
+import { handleGetAllURL } from "../controllers/url.controller.js";
+import { handleShowSignupPage, handleShowLoginPage} from "../controllers/static.controller.js";
+import authenticateUser from "../middleware/auth.middleware.js";
+
+
+const router = Router()
 
 
 
@@ -13,4 +15,4 @@ router.route("/signup").get(handleShowSignupPage)
 
 router.route("/login").get(handleShowLoginPage)
 
-module.exports = router
+export default router;

@@ -1,7 +1,11 @@
-const fs = require("fs");
-const path = require("path");
-const handlebars = require("handlebars");
-const transporter = require("../config/email.js");
+import fs from "fs";
+import path from "path";
+import handlebars from "handlebars";
+import transporter from "../config/email.js";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 //verification email after registration
 const sendVerificationEmail = async ({ email, name, verificationLink }) => {
@@ -39,7 +43,7 @@ const sendWelcomeEmail = async ({ email, name, loginLink }) => {
   });
 };
 
-module.exports = {
+export {
   sendVerificationEmail,
-  sendWelcomeEmail
-}
+  sendWelcomeEmail,
+};

@@ -1,4 +1,4 @@
-const validator = require("validator");
+import validator from "validator";
 
 //Signup validation
     const validateSignup = (req, res, next) => {
@@ -70,7 +70,7 @@ const validateLogin = (req, res, next) => {
     next();
 };
 
-module.exports = {
-    validateSignup,
-    validateLogin
+export {
+  validateSignup,
+  validateLogin,
 };

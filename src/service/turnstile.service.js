@@ -31,6 +31,4 @@ async function verifyTurnstile(token, ip) {
     return false;
   }
 }
-module.exports = {
-  verifyTurnstile,
-};
+export default verifyTurnstile;

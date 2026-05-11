@@ -1,9 +1,9 @@
-require("dotenv").config();
-const app = require("./app.js");
-require("./workers/email.worker.js");
-require("./workers/cleanup.worker.js");
-const cleanupQueue = require("./queues/cleanup.queue.js");
-const { connectToMongoDB } = require("./config/db.js");
+import "dotenv/config";
+import app from "./app.js";
+import "./workers/email.worker.js";
+import "./workers/cleanup.worker.js";
+import cleanupQueue from "./queues/cleanup.queue.js";
+import connectToMongoDB from "./config/db.js";
 
 // schedule cleanup job to run every hour
 (async () => {await cleanupQueue.add("cleanup-unverified-users", {}, { jobId: "cleanup-unverified-users", 

@@ -1,12 +1,12 @@
-const express = require("express")
-const { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail } = require('../controllers/User.controller.js')
-const { validateSignup, validateLogin } = require("../middleware/validation.middleware");
-const { authenticateUser } = require("../middleware/auth.middleware.js");
-const { signupLimiter, loginLimiter } = require("../middleware/rateLimit.middleware.js");
-const { emailThrottle } = require("../middleware/emailThrottle.middleware.js");
+import { Router } from "express";
+import { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail } from "../controllers/User.controller.js";
+import { validateSignup, validateLogin } from "../middleware/validation.middleware.js";
+import authenticateUser from "../middleware/auth.middleware.js";
+import { signupLimiter, loginLimiter } from "../middleware/rateLimit.middleware.js";
+import emailThrottle from "../middleware/emailThrottle.middleware.js";
 
 
-const router = express.Router()
+const router = Router()
 
 //Creates a profile of user
 router.route('/signup').post(signupLimiter, validateSignup, handleUserSignup)
@@ -20,4 +20,4 @@ router.route('/logout').post(authenticateUser, handleUserLogout)
 // Verifies the user's email using the token sent to their email
 router.get("/verify-email/:token",verifyEmail);
 
-module.exports = router
+export default router;

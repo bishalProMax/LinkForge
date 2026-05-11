@@ -1,4 +1,4 @@
-const redis = require("../config/redis");
+import redis from "../config/redis.js";
 
 const emailThrottle = async (req, res, next) => {
   let { email } = req.body;
@@ -29,4 +29,4 @@ const emailThrottle = async (req, res, next) => {
   next();
 };
 
-module.exports = { emailThrottle };
+export default emailThrottle;
