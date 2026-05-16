@@ -1,3 +1,4 @@
+/*eslint-disable no-unused-vars */
 async function verifyTurnstile(token, ip) {
   try {
 
@@ -26,8 +27,6 @@ async function verifyTurnstile(token, ip) {
     return data.success;
 
   } catch (error) {
-    console.error(error);
-
     return false;
   }
 }

@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import redis from "../config/redis.js";
+import redis from "../configs/redis.config.js";
 
 const cleanupQueue = new Queue("cleanupQueue", {
   connection: redis,

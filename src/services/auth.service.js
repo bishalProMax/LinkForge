@@ -1,3 +1,4 @@
+/*eslint-disable no-unused-vars */
 import jwt from "jsonwebtoken";
 
 function createToken(user){
@@ -18,7 +19,6 @@ function verifyToken(token){
             email: decoded.email
         }
     } catch (error) {
-        console.log(error)
         return null
     }
 }

@@ -1,21 +1,23 @@
 import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
-import transporter from "../config/email.js";
+import transporter from "../configs/email.config.js";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-//verification email after registration
-const sendVerificationEmail = async ({ email, name, verificationLink }) => {
-  const templatePath = path.join(__dirname, "../templates/verifyEmail.hbs");
-
-  const source = fs.readFileSync(templatePath, "utf-8");
-
+const renderTemplate = (templateName, data) => {
+  const templatePath = path.join(__dirname,`../templates/${templateName}.hbs`);
+  const source = fs.readFileSync(templatePath,"utf-8");
   const template = handlebars.compile(source);
 
-  const html = template({name, verificationLink});
+  return template(data);
+};
+
+//verification email after registration
+const sendVerificationEmail = async ({ email, name, verificationLink }) => {
+  const html = renderTemplate("verifyEmail",{ name, verificationLink });
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
@@ -27,13 +29,7 @@ const sendVerificationEmail = async ({ email, name, verificationLink }) => {
 
 //welcome email after successful verification
 const sendWelcomeEmail = async ({ email, name, loginLink }) => {
-  const templatePath = path.join(__dirname, "../templates/welcome.hbs");
-
-  const source = fs.readFileSync(templatePath, "utf-8");
-
-  const template = handlebars.compile(source);
-
-  const html = template({name, loginLink});
+  const html = renderTemplate("welcome", { name, loginLink });
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,

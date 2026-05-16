@@ -1,5 +1,5 @@
 import asyncHandler from "../utils/asyncHandler.js";
-import { verifyToken } from "../service/auth.service.js";
+import { verifyToken } from "../services/auth.service.js";
 
 const authenticateUser = asyncHandler(async (req, res, next) => {
     const userToken = req.cookies?.token;

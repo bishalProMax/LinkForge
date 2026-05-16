@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
-import redis from "../config/redis.js";
-import {sendVerificationEmail,sendWelcomeEmail } from "../service/email.service.js";
+import redis from "../configs/redis.config.js";
+import {sendVerificationEmail,sendWelcomeEmail } from "../services/email.service.js";
 
 new Worker("emailQueue", async (job) => {
       if (job.name ==="sendVerificationEmail") {

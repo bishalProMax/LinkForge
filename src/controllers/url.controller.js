@@ -1,69 +1,33 @@
-import { nanoid } from 'nanoid'
-import URL from "../models/url.models.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import validator from "validator";
+import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs } from "../services/url.service.js";
 
 // Generate short URL
-const handleGenerateNewShortURL = asyncHandler(async (req, res) => {
+const handleGenerateShortURL = asyncHandler(async (req, res) => {
   const body = req.body;
 
-  if (
-    !body.url ||
-    !validator.isURL(body.url, {
-      require_protocol: true,
-      protocols: ["http", "https"],
-      require_tld: true,
-    })
-  ) {
-    return res.redirect(
-      `/linkforge?error=${encodeURIComponent("Enter a valid URL (http/https)")}`
-    );
+  if ( !body.url || !validator.isURL(body.url, { require_protocol: true, protocols: ["http", "https"], require_tld: true})) {
+    return res.redirect(`/linkforge?error=${encodeURIComponent("Enter a valid URL (http/https)")}`);
   }
 
-  let shortID;
-  let exists;
-
-  do {
-    shortID = nanoid(7);
-    exists = await URL.findOne({ shortId: shortID });
-  } while (exists);
-
   try {
-    await URL.create({
-      shortId: shortID,
-      redirectURL: body.url,
-      visitHistory: [],
-      createdBy: req.user.id,
-    });
+    const shortid = await generateShortURL(body.url, req.user.id);
 
     //PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
-    return res.redirect(`/linkforge/?id=${shortID}`);
+    return res.redirect(`/linkforge/?id=${shortid}`);
   } catch (error) {
-    console.log(error)
+    console.log(error);
+
     return res.redirect(`/linkforge?error=${encodeURIComponent("Something went wrong, please try again")}`);
   }
 });
 
 // redirect to original URL
 const handleRedirectToURL = asyncHandler(async (req, res) => {
-  const shortId = req.params.shortId;
-  const entry = await URL.findOneAndUpdate(
-    {
-      shortId,
-    },
-    {
-      $push: {
-        visitHistory: {
-          timestamp: Date.now(),
-        },
-      },
-    }
-  );
+  const entry = await redirectToOriginalURL(req.params.shortId);
 
   if (!entry) {
-    return res.redirect(
-      `/linkforge?error=${encodeURIComponent("URL not found")}`
-    );
+    return res.redirect(`/linkforge?error=${encodeURIComponent("URL not found")}`);
   }
 
   res.redirect(entry.redirectURL);
@@ -71,8 +35,8 @@ const handleRedirectToURL = asyncHandler(async (req, res) => {
 
 // get analytics of a short URL
 const handleGetAnalytics = asyncHandler(async (req, res) => {
-  const shortId = req.params.shortId;
-  const result = await URL.findOne({ shortId });
+  const result = await getURLAnalytics(req.params.shortId);
+
   return res.json({
     totalClicks: result.visitHistory.length,
     analytics: result.visitHistory,
@@ -81,16 +45,15 @@ const handleGetAnalytics = asyncHandler(async (req, res) => {
 
 //get all URLs created by a user
 const handleGetAllURL = asyncHandler(async (req, res) => {
-  const allUrls = await URL.find({ createdBy: req.user.id });
+  const allUrls = await getUserURLs(req.user.id);
   const error = req.query.error || null;
   const Id = req.query.id || null;
-
-  return res.render("home", { Id, urls: allUrls, error });
+  return res.render("home", { Id, urls: allUrls, error});
 });
 
 export {
-  handleGenerateNewShortURL,
+  handleGenerateShortURL,
   handleRedirectToURL,
   handleGetAnalytics,
-  handleGetAllURL,
+  handleGetAllURL
 };

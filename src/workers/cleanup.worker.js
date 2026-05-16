@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
-import redis from "../config/redis.js";
-import User from "../models/user.models.js";
+import redis from "../configs/redis.config.js";
+import User from "../models/user.model.js";
 
 new Worker("cleanupQueue", async () => {
     await User.deleteMany({

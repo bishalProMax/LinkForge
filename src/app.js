@@ -1,11 +1,11 @@
 import express from "express";
-import { errorHandler, notFound } from "./middleware/error.middleware.js";
+import { errorHandler, notFound } from "./middlewares/error.middleware.js";
 import cookieParser from "cookie-parser";
-import authenticateUser from "./middleware/auth.middleware.js";
+import authenticateUser from "./middlewares/auth.middleware.js";
 import path from "path";
 import helmet from "helmet";
 import urlRoute from "./routes/url.route.js";
-import staticRouter from "./routes/staticRouter.route.js";
+import pageRouter from "./routes/page.route.js";
 import userRoute from "./routes/user.route.js";
 import { fileURLToPath } from "url";
 
@@ -78,7 +78,7 @@ app.set("views", path.join(__dirname, "views"))
 // routes
 app.use("/url",authenticateUser, urlRoute)
 app.use("/user", userRoute)
-app.use("/", staticRouter)
+app.use("/", pageRouter)
 
 app.use(notFound)
 

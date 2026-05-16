@@ -1,6 +1,6 @@
 import rateLimit from "express-rate-limit";
 import { RedisStore } from "rate-limit-redis";
-import redis from "../config/redis.js";
+import redis from "../configs/redis.config.js";
 import { ipKeyGenerator } from "express-rate-limit";
 
 // SIGNUP RATE LIMITER

@@ -1,6 +1,6 @@
 /*eslint-disable no-useless-catch */
 import mongoose from "mongoose";
-import db_name from "../constants.js";
+import db_name from "./constants.config.js";
 
 async function connectToMongoDB(){
     try {

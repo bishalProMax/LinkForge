@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail } from "../controllers/User.controller.js";
-import { validateSignup, validateLogin } from "../middleware/validation.middleware.js";
-import authenticateUser from "../middleware/auth.middleware.js";
-import { signupLimiter, loginLimiter } from "../middleware/rateLimit.middleware.js";
-import emailThrottle from "../middleware/emailThrottle.middleware.js";
+import { validateSignup, validateLogin } from "../middlewares/validation.middleware.js";
+import authenticateUser from "../middlewares/auth.middleware.js";
+import { signupLimiter, loginLimiter } from "../middlewares/rateLimit.middleware.js";
+import emailThrottle from "../middlewares/emailThrottle.middleware.js";
 
 
 const router = Router()

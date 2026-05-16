@@ -3,7 +3,7 @@ import app from "./app.js";
 import "./workers/email.worker.js";
 import "./workers/cleanup.worker.js";
 import cleanupQueue from "./queues/cleanup.queue.js";
-import connectToMongoDB from "./config/db.js";
+import connectToMongoDB from "./configs/db.config.js";
 
 // schedule cleanup job to run every hour
 (async () => {await cleanupQueue.add("cleanup-unverified-users", {}, { jobId: "cleanup-unverified-users", 

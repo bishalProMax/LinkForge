@@ -1,4 +1,4 @@
-import redis from "../config/redis.js";
+import redis from "../configs/redis.config.js";
 
 const emailThrottle = async (req, res, next) => {
   let { email } = req.body;
