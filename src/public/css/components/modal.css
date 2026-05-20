@@ -1,0 +1,85 @@
+.qr-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.qr-modal.show {
+    opacity: 1;
+}
+
+.qr-content {
+    background: white;
+    padding: 24px 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.15),
+        0 4px 10px rgba(0, 0, 0, 0.1);
+
+    transform: scale(0.9);
+    opacity: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    position: relative;
+}
+
+.qr-modal.show .qr-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.qr-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.qr-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.qr-actions button {
+    width: 64px;
+    height: 44px;
+    font-size: 18px;
+}
+
+.qr-actions button:hover {
+    transform: translateY(-1px);
+}
+
+.qr-actions button:active {
+    transform: scale(0.95);
+}
+
+.close {
+    cursor: pointer;
+    font-size: 20px;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+}
+
+#qrCanvas {
+    opacity: 0;
+    transform: scale(0.7);
+    transition:
+        transform 0.3s ease-out,
+        opacity 0.3s ease-out;
+}
+
+#qrCanvas.show {
+    opacity: 1;
+    transform: scale(1);
+}

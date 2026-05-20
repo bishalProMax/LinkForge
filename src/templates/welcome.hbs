@@ -1,29 +1,48 @@
 <html lang="en">
 
   <head>
+
     <meta charset="UTF-8" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Welcome to LinkForge</title>
+    <title>
+      Welcome to LinkForge
+    </title>
+
   </head>
 
   <body
     style="
-    margin: 0;
-    padding: 0;
-    background-color: #f4f7fb;
-    font-family: Arial, sans-serif;
-  "
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fb;
+      font-family: Arial, sans-serif;
+    "
   >
 
+    <!-- PREHEADER -->
+
+    <div
+      style="
+        display: none;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+      "
+    >
+      Your LinkForge account has been verified successfully.
+    </div>
+
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
+
       <tr>
+
         <td
           align="center"
           style="
-          padding: 28px 16px;
-        "
+            padding: 32px 16px;
+          "
         >
 
           <table
@@ -32,157 +51,224 @@
             cellspacing="0"
             border="0"
             style="
-            background: #ffffff;
-            border-radius: 14px;
-            overflow: hidden;
+              background: #ffffff;
+              border-radius: 18px;
+              overflow: hidden;
 
-            box-shadow:
-              0 10px 30px rgba(0,0,0,0.08);
-          "
+              box-shadow:
+                0 10px 30px rgba(0,0,0,0.08);
+            "
           >
 
-            <!-- Header -->
+            <!-- HEADER -->
 
             <tr>
+
               <td
                 align="center"
                 style="
-                background:
-                linear-gradient(
-                  135deg,
-                  #667eea,
-                  #764ba2
-                );
+                  background:
+                  linear-gradient(
+                    135deg,
+                    #667eea,
+                    #764ba2
+                  );
 
-                padding: 15px 20px;
-              "
+                  padding: 22px 20px;
+                "
               >
 
                 <img
                   src="https://res.cloudinary.com/bishal101/image/upload/v1778382653/emailLogo_ebh3hr.png"
                   alt="LinkForge Logo"
-                  width="125"
+                  width="140"
                   style="
-                  display: block;
-                  margin: 0 auto 6px auto;
-                  border-radius: 10px;
-                "
+                    display: block;
+                    margin: 0 auto 12px auto;
+                    border-radius: 12px;
+                  "
                 />
 
                 <p
                   style="
-                  margin: 0;
-                  color: #e5e7eb;
-                  font-size: 15px;
-                  font-weight: 500;
-                "
+                    margin: 0;
+                    color: #f3f4f6;
+                    font-size: 20px;
+                    font-weight: 600;
+                    letter-spacing: 0.3px;
+                  "
                 >
-                  Your account is now verified
+                  Your Account Is Now Verified
                 </p>
 
               </td>
+
             </tr>
 
-            <!-- Body -->
+            <!-- BODY -->
 
             <tr>
+
               <td
                 style="
-                padding: 34px 30px;
-                color: #374151;
-                line-height: 1.7;
-                font-size: 15px;
-              "
+                  padding: 42px 36px;
+                  color: #374151;
+                  line-height: 1.8;
+                  font-size: 16px;
+                "
               >
 
                 <p
                   style="
-                  margin-top: 0;
-                  margin-bottom: 18px;
-                  font-size: 18px;
-                  font-weight: 600;
-                "
+                    margin-top: 0;
+                    margin-bottom: 20px;
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #111827;
+                  "
                 >
                   Hi
                   {{name}},
                 </p>
 
-                <p>
-                  Your email has been verified successfully.
+                <p
+                  style="
+                    margin-bottom: 18px;
+                  "
+                >
+                  Your email address has been verified successfully.
                 </p>
 
-                <p>
-                  Welcome to LinkForge. Your account is now active and ready to use.
+                <p
+                  style="
+                    margin-bottom: 18px;
+                  "
+                >
+                  Welcome to LinkForge — your account is now active and ready to use.
                 </p>
 
-                <p>
-                  We’re excited to have you onboard 🚀
+                <p
+                  style="
+                    margin-bottom: 22px;
+                  "
+                >
+                  We're excited to have you onboard 🚀
                 </p>
+
+                <!-- BUTTON -->
 
                 <table
                   cellpadding="0"
                   cellspacing="0"
                   border="0"
                   style="
-                  margin: 28px 0;
-                "
+                    margin: 30px 0;
+                  "
                 >
+
                   <tr>
+
                     <td align="center">
 
                       <a
                         href="{{loginLink}}"
                         style="
-                        background: #667eea;
-                        color: #ffffff;
-                        text-decoration: none;
-                        padding: 14px 28px;
-                        border-radius: 8px;
-                        font-size: 15px;
-                        font-weight: 600;
-                        display: inline-block;
-                      "
+                          background:
+                            linear-gradient(
+                              135deg,
+                              #667eea,
+                              #5a67d8
+                            );
+
+                          color: #ffffff;
+
+                          text-decoration: none;
+
+                          padding: 16px 34px;
+
+                          border-radius: 12px;
+
+                          font-size: 16px;
+
+                          font-weight: 700;
+
+                          display: inline-block;
+
+                          box-shadow:
+                            0 8px 20px rgba(102,126,234,0.28);
+                        "
                       >
                         Login to LinkForge
                       </a>
 
                     </td>
+
                   </tr>
+
                 </table>
+
+                <!-- INFO BOX -->
+
+                <div
+                  style="
+                    background: #f9fafb;
+                    border-left: 4px solid #16a34a;
+                    padding: 16px 18px;
+                    border-radius: 10px;
+                    margin: 28px 0;
+                    color: #374151;
+                    font-size: 15px;
+                  "
+                >
+
+                  <strong>
+                    Account Ready:
+                  </strong>
+
+                  Your LinkForge account has been activated successfully and is ready to use.
+
+                </div>
 
                 <p
                   style="
-                  margin-bottom: 0;
-                "
+                    margin-bottom: 0;
+                    color: #6b7280;
+                    font-size: 14px;
+                  "
                 >
-                  Thank you for joining us.
+                  Thank you for joining LinkForge.
                 </p>
 
               </td>
+
             </tr>
 
-            <!-- Footer -->
+            <!-- FOOTER -->
 
             <tr>
+
               <td
                 align="center"
                 style="
-                padding: 22px;
-                background: #f9fafb;
-                color: #6b7280;
-                font-size: 13px;
-              "
+                  padding: 22px;
+                  background: #f9fafb;
+                  color: #9ca3af;
+                  font-size: 13px;
+                "
               >
 
                 © 2026 LinkForge. All rights reserved.
 
               </td>
+
             </tr>
 
           </table>
 
         </td>
+
       </tr>
+
     </table>
 
   </body>
