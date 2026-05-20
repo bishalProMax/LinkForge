@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script type="module" src="/js/main.js" defer></script>
+    <title>Verify OTP</title>
+  </head>
+
+  <body>
+    <div class="container auth-box">
+      <h1 class="auth-title">Verify OTP</h1>
+
+      <% if (error) { %>
+      <p class="error"><%= error %></p>
+      <% } %>
+
+      <% if (message) { %>
+      <p class="auth-message"><%= message %></p>
+      <% } %>
+
+      <form action="/user/verify-reset-otp" method="POST">
+        <input type="hidden" name="email" value="<%= old.email %>" />
+        <div class="form-group">
+          <label> OTP </label>
+          <input type="text" name="otp" class="otp-input" placeholder="------" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required />
+        </div>
+        <button type="submit" class="auth-btn">Verify OTP</button>
+      </form>
+
+      <!-- RESEND OTP -->
+      <div class="resend-section" data-cooldown="<%= cooldown || 0 %>">
+        <form action="/user/forgot-password" method="POST">
+          <input type="hidden" name="email" value="<%= old.email %>" />
+          <button type="submit" class="resend-btn" id="resendBtn" disabled>Resend OTP</button>
+        </form>
+
+        <p class="resend-timer" id="resendTimer"></p>
+      </div>
+
+      <div class="back-to-login">
+        <a href="/login"> Back to Login </a>
+      </div>
+    </div>
+  </body>
+</html>

@@ -11,9 +11,10 @@ type TemplateData = {
   [key: string]: string;
 };
 
+// Function to render Handlebars templates
 const renderTemplate = (templateName: string, data: TemplateData): string => {
-  const templatePath = path.join(__dirname,`../templates/${templateName}.hbs`);
-  const source = fs.readFileSync(templatePath,"utf-8");
+  const templatePath = path.join(__dirname, `../templates/${templateName}.hbs`);
+  const source = fs.readFileSync(templatePath, "utf-8");
   const template = handlebars.compile(source);
 
   return template(data);
@@ -27,7 +28,7 @@ type VerificationEmailProps = {
 };
 
 const sendVerificationEmail = async ({ email, name, verificationLink }: VerificationEmailProps): Promise<void> => {
-  const html = renderTemplate("verifyEmail",{ name, verificationLink });
+  const html = renderTemplate("verifyEmail", { name, verificationLink });
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
@@ -55,7 +56,40 @@ const sendWelcomeEmail = async ({ email, name, loginLink }: WelcomeEmailProps): 
   });
 };
 
-export {
-  sendVerificationEmail,
-  sendWelcomeEmail,
+//password reset OTP email
+type PasswordResetOTPProps = {
+  email: string;
+  name: string;
+  otp: string;
 };
+
+const sendPasswordResetOTP = async ({ email, name, otp }: PasswordResetOTPProps): Promise<void> => {
+  const html = renderTemplate("passwordResetOTP", { name, otp });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Password Reset OTP",
+    html,
+  });
+};
+
+//password changed notification email
+type SendPasswordChangedEmailJob = {
+  email: string;
+  name: string;
+  loginLink: string;
+};
+
+const sendPasswordChangedEmail = async ({ email, name, loginLink }: SendPasswordChangedEmailJob): Promise<void> => {
+  const html = renderTemplate("passwordChanged", { name, loginLink });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Password Changed",
+    html,
+  });
+};
+
+export { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetOTP, sendPasswordChangedEmail };

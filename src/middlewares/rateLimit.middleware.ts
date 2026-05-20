@@ -1,8 +1,8 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { RedisStore } from "rate-limit-redis";
 import redis from "../configs/redis.config.js";
-import { ipKeyGenerator } from "express-rate-limit";
 import type { Request, Response } from "express";
+import getRateLimitRetryTime from "../utils/getRateLimitRetryTime.js";
 
 // SIGNUP RATE LIMITER
 const signupLimiter = rateLimit({
@@ -23,8 +23,10 @@ const signupLimiter = rateLimit({
     const old = { ...req.body };
     delete old.password;
 
+    const retryAfter = getRateLimitRetryTime(req);
+
     return res.status(429).render("signup", {
-      error: "Too many signup attempts. Please try again later.",
+      error: `Too many signup attempts. Try again in ${retryAfter}s.`,
       old,
     });
   },
@@ -39,7 +41,7 @@ const loginLimiter = rateLimit({
 
   windowMs: 15 * 60 * 1000, // 15 min
 
-  max: 20,
+  max: 10,
 
   standardHeaders: true,
 
@@ -49,8 +51,10 @@ const loginLimiter = rateLimit({
     const old = { ...req.body };
     delete old.password;
 
+    const retryAfter = getRateLimitRetryTime(req);
+
     return res.status(429).render("login", {
-      error: "Too many login attempts. Please try again later.",
+      error: `Too many login attempts. Try again in ${retryAfter}s.`,
       old,
       verificationMessage: null,
     });

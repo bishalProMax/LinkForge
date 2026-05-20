@@ -25,7 +25,7 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
     });
 
     if (result.type === "CAPTCHA_FAILED") {
-      return res.render("signup", {
+      return res.status(400).render("signup", {
         error: "Captcha verification failed",
         old,
         message: null
@@ -33,7 +33,7 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
     }
 
     if (result.type === "EMAIL_EXISTS") {
-      return res.render("signup", {
+      return res.status(409).render("signup", {
         error: "Email already exists",
         old
       });
@@ -48,7 +48,7 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
   } 
   catch (error) {
     console.error(error);
-    return res.render("signup", {
+    return res.status(500).render("signup", {
       error: "something went wrong while registering the user",
       old
     });
@@ -69,7 +69,7 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (result.type === "EMAIL_NOT_FOUND") {
-    return res.render("login", {
+    return res.status(401).render("login", {
       error: "Invalid credentials",
       old,
       verificationMessage: null
@@ -77,15 +77,24 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (result.type === "NOT_VERIFIED") {
-    return res.render("login", {
+    return res.status(403).render("login", {
       error: "Please verify your email first",
       old,
       verificationMessage: null
     });
   }
 
+  if (result.type === "TOO_MANY_ATTEMPTS") {
+    return res.status(429).render("login", {
+        error: `Too many failed login attempts. Try again in ${result.retryAfter} seconds.`,
+        old,
+        verificationMessage: null,
+      }
+    )
+  }
+
   if (result.type === "INVALID_PASSWORD") {
-    return res.render("login", {
+    return res.status(401).render("login", {
       error: "Invalid credentials",
       old,
       verificationMessage: null
@@ -114,14 +123,14 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   const result = await verifyUserEmail(token);
 
   if (result.type === "INVALID_TOKEN") {
-    return res.render("verificationStatus", {
+    return res.status(400).render("verificationStatus", {
       success: false,
       message: "Invalid or expired verification link ❌",
     });
   }
 
   if(result.type === "SUCCESS") {
-  return res.render("verificationStatus", {
+  return res.status(200).render("verificationStatus", {
     success: true,
     message: "Email verified successfully ✅",
   });

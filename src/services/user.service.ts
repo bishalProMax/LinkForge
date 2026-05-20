@@ -68,8 +68,19 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
 
 //----------------------------LOGIN SERVICE------------------------------------
 const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResult> => {
-  const user = await findUserByEmail(email);
 
+  const attempts = Number(await redis.get(`login:${email}`)) || 0;
+
+  if (attempts >= 5) {
+    const ttl = await redis.ttl(`login:${email}`);
+    return {
+      type: "TOO_MANY_ATTEMPTS",
+      retryAfter: ttl,
+    };
+  }
+
+  const user = await findUserByEmail(email);
+  
   if (!user) {
     return {
       type: "EMAIL_NOT_FOUND"
@@ -85,8 +96,11 @@ const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResu
   const isMatch = await user.comparePassword(password);
 
   if (!isMatch) {
-    await redis.incr(`login:${email}`);
+
+    const attempts = await redis.incr(`login:${email}`);
+    if (attempts === 1) {
     await redis.expire(`login:${email}`, 300);
+    }
 
     return {
       type: "INVALID_PASSWORD",

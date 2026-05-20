@@ -389,3 +389,73 @@ a:hover {
     line-height: 1.5;
 }
 
+/* ---------------- FORGOT PASSWORD ---------------- */
+
+.auth-box {
+    max-width: 450px;
+    margin: 80px auto;
+}
+
+.auth-title {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.auth-btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.auth-message {
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 500;
+}
+
+.otp-input {
+    text-align: center;
+    letter-spacing: 10px;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.back-to-login {
+    margin-top: 18px;
+    text-align: center;
+}
+
+.back-to-login a {
+    color: #667eea;
+    font-weight: 500;
+}
+
+/* OTP RESEND */
+
+.resend-section {
+    margin-top: 18px;
+    text-align: center;
+}
+
+.resend-btn {
+    background: transparent;
+    color: #667eea;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.resend-btn:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.resend-timer {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #6b7280;
+}

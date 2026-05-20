@@ -28,6 +28,8 @@ function setupPasswordToggle(buttonId, inputId) {
 
 setupPasswordToggle("toggleLoginPassword", "loginPassword");
 setupPasswordToggle("toggleSignupPassword", "signupPassword");
+setupPasswordToggle("toggleResetPassword","resetPassword");
+setupPasswordToggle("toggleConfirmResetPassword","confirmResetPassword");
 
 // ---------------- CREATE ACCOUNT REDIRECT ----------------
 const createAccountBtn = document.getElementById("createAccountBtn");
