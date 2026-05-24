@@ -6,10 +6,12 @@ import type { HydratedDocument } from "mongoose";
 export interface IUser {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   isVerified: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
+  authProviders: ("local" | "google")[];
+  googleId?: string;
 }
 
 // -----------------------------USER METHODS-----------------------
@@ -47,6 +49,7 @@ const userSchema = new mongoose.Schema<
       trim: true,
       minlength: 3,
     },
+
     email: {
       type: String,
       required: true,
@@ -54,12 +57,13 @@ const userSchema = new mongoose.Schema<
       trim: true,
       lowercase: true,
     },
+
     password: {
       type: String,
-      required: true,
       trim: true,
       minlength: 8,
     },
+
     isVerified: {
       type: Boolean,
       default: false,
@@ -72,6 +76,18 @@ const userSchema = new mongoose.Schema<
     emailVerificationExpires: {
       type: Date,
     },
+
+    authProviders: {
+      type: [String],
+      enum: ["local", "google"],
+      default: ["local"],
+    },
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   {
     timestamps: true,
@@ -80,14 +96,21 @@ const userSchema = new mongoose.Schema<
 
 // -----------------------------PRE SAVE HOOK-----------------------------
 userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+  if (!this.password || !this.isModified("password")) return;
 
   this.password = await bcrypt.hash(this.password, 10);
 });
 
 // -----------------------------INSTANCE METHODS---------------------------
 userSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
-  return bcrypt.compare(password, this.password);
+  if (!this.password) {
+  return false;
+}
+
+return bcrypt.compare(
+  password,
+  this.password
+);
 };
 
 const User = mongoose.model<

@@ -24,17 +24,6 @@ button:hover {
     background: #c53030;
 }
 
-.create-account-btn {
-    background: transparent;
-    border: 1px solid #667eea;
-    color: #667eea;
-}
-
-.create-account-btn:hover {
-    background: #667eea;
-    color: white;
-}
-
 .signup-btn {
     display: block;
     margin: 20px auto 0;

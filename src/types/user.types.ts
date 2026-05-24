@@ -11,7 +11,8 @@ export type SignupResult = {
           "CAPTCHA_FAILED"
         | "EMAIL_EXISTS"
         | "RESENT"
-        | "PENDING";
+        | "PENDING"
+        | "LOCAL_PROVIDER_LINKED"
     };
 
 export type LoginUserProps = {
@@ -24,7 +25,8 @@ export type LoginResult = {
           "EMAIL_NOT_FOUND"
         | "NOT_VERIFIED"
         | "INVALID_PASSWORD"
-        | "TOO_MANY_ATTEMPTS";
+        | "TOO_MANY_ATTEMPTS"
+        | "GOOGLE_LOGIN_REQUIRED";
       retryAfter?: number;
     }
   | {
@@ -49,7 +51,8 @@ export type ForgotPasswordResult = {
   type: "SUCCESS"
     | "COOLDOWN_ACTIVE"
     | "USER_NOT_FOUND"
-    | "OTP_LIMIT_REACHED";
+    | "OTP_LIMIT_REACHED"
+    | "GOOGLE_LOGIN_REQUIRED"
   cooldown?: number;
 };
 

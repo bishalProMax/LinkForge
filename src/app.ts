@@ -8,6 +8,9 @@ import urlRoute from "./routes/url.route.js";
 import pageRouter from "./routes/page.route.js";
 import userRoute from "./routes/user.route.js";
 import { fileURLToPath } from "url";
+import oauthRoutes from "./routes/oauth.route.js";
+import passport from "passport";
+import "./configs/passport.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,19 +18,65 @@ const __dirname = path.dirname(__filename);
 const app = express()
 
 // security headers
+// app.use(helmet({
+// contentSecurityPolicy: {
+//   directives: {
+//         defaultSrc: [ "'self'" ],
+//         scriptSrc: ["'self'", "https://challenges.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+//         styleSrc: [ "'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com" ],
+//         fontSrc: [ "'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com" ],
+//         frameSrc: [ "'self'", "https://challenges.cloudflare.com" ],
+//         imgSrc: [ "'self'", "data:", "https://res.cloudinary.com" ],
+//       },
+//     },
+//   })
+// );
 app.use(helmet({
-contentSecurityPolicy: {
-  directives: {
-        defaultSrc: [ "'self'" ],
-        scriptSrc: ["'self'", "https://challenges.cloudflare.com", "https://cdn.jsdelivr.net"],
-        styleSrc: [ "'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net" ],
-        fontSrc: [ "'self'", "https://cdn.jsdelivr.net" ],
-        frameSrc: [ "'self'", "https://challenges.cloudflare.com" ],
-        imgSrc: [ "'self'", "data:" ],
-      },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:  ["'self'"],
+
+      scriptSrc: [
+        "'self'",
+        "https://challenges.cloudflare.com",
+        "https://cdn.jsdelivr.net",
+        "https://cdnjs.cloudflare.com",
+        "https://fonts.googleapis.com",
+      ],
+
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.googleapis.com",
+      ],
+
+      fontSrc: [
+        "'self'",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.gstatic.com",
+      ],
+
+      frameSrc: [
+        "'self'",
+        "https://challenges.cloudflare.com",
+      ],
+
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https://res.cloudinary.com",
+        "https://developers.google.com",
+      ],
+
+      connectSrc: [
+        "'self'",
+      ],
     },
-  })
-);
+  },
+}));
+
+app.use(passport.initialize());
 
 // parsing
 app.use(express.urlencoded({extended: false}))
@@ -44,7 +93,7 @@ app.set("views", path.join(__dirname, "views"))
 app.use("/url",authenticateUser, urlRoute)
 app.use("/user", userRoute)
 app.use("/", pageRouter)
-
+app.use("/auth", oauthRoutes)
 app.use(notFound)
 
 app.use(errorHandler)

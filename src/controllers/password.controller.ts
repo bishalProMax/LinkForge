@@ -31,13 +31,21 @@ const handleForgotPassword = asyncHandler(async (req: Request, res: Response) =>
       old,
     });
   }
+
+  if (result.type === "GOOGLE_LOGIN_REQUIRED") {
+    return res.status(400).render("forgot-password", {
+      error: "Please continue with Google or create a local signup first.",
+      message: null,
+    });
+  }
+
   if (result.type === "USER_NOT_FOUND" || result.type === "SUCCESS") {
-  return res.status(200).render("verify-otp", {
-    error: null,
-    message: "OTP has been sent to your email address.",
-    cooldown: 60,
-    old,
-  });
+    return res.status(200).render("verify-otp", {
+      error: null,
+      message: "OTP has been sent to your email address.",
+      cooldown: 60,
+      old,
+    });
   }
 });
 
@@ -87,16 +95,15 @@ const handleVerifyResetOTP = asyncHandler(async (req: Request, res: Response) =>
 
 // -----------------------------RESET PASSWORD-----------------------------
 const handleResetPassword = asyncHandler(async (req: Request, res: Response) => {
-  const old = { ...req.body};
+  const old = { ...req.body };
   delete old.password;
 
-  if ( req.body.password !== req.body.confirmPassword) {
-  return res.status(400).render( "reset-password", {
+  if (req.body.password !== req.body.confirmPassword) {
+    return res.status(400).render("reset-password", {
       error: "Passwords do not match",
       old,
-    }
-  );
-}
+    });
+  }
 
   const result = await resetPassword({
     email: req.body.email,

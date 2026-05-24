@@ -19,6 +19,18 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
   const existedUser = await findUserByEmail(email);
 
   if (existedUser) {
+    if (existedUser.authProviders.includes("google") && !existedUser.authProviders.includes("local")) {
+      existedUser.password = password;
+
+      existedUser.authProviders.push("local");
+
+      await saveUser(existedUser);
+
+      return {
+        type: "LOCAL_PROVIDER_LINKED",
+      };
+    }
+
     if (existedUser.isVerified) {
       return {
         type: "EMAIL_EXISTS",
@@ -50,7 +62,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     email,
     password,
     emailVerificationToken: token,
-    emailVerificationExpires: new Date (Date.now() + 1000 * 60 * 30)
+    emailVerificationExpires: new Date(Date.now() + 1000 * 60 * 30),
   });
 
   const verificationLink = `${process.env.BASE_URL}/user/verify-email/${token}`;
@@ -58,17 +70,16 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
   await emailQueue.add("sendVerificationEmail", {
     email: user.email,
     name: user.name,
-    verificationLink
+    verificationLink,
   });
 
   return {
-    type: "PENDING"
+    type: "PENDING",
   };
 };
 
 //----------------------------LOGIN SERVICE------------------------------------
 const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResult> => {
-
   const attempts = Number(await redis.get(`login:${email}`)) || 0;
 
   if (attempts >= 5) {
@@ -80,10 +91,16 @@ const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResu
   }
 
   const user = await findUserByEmail(email);
-  
+
   if (!user) {
     return {
-      type: "EMAIL_NOT_FOUND"
+      type: "EMAIL_NOT_FOUND",
+    };
+  }
+
+  if (!user.authProviders.includes("local")) {
+    return {
+      type: "GOOGLE_LOGIN_REQUIRED",
     };
   }
 
@@ -96,10 +113,9 @@ const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResu
   const isMatch = await user.comparePassword(password);
 
   if (!isMatch) {
-
     const attempts = await redis.incr(`login:${email}`);
     if (attempts === 1) {
-    await redis.expire(`login:${email}`, 300);
+      await redis.expire(`login:${email}`, 300);
     }
 
     return {
@@ -123,7 +139,7 @@ const verifyUserEmail = async (token: string): Promise<VerifyEmailResult> => {
 
   if (!user) {
     return {
-      type: "INVALID_TOKEN"
+      type: "INVALID_TOKEN",
     };
   }
 
@@ -141,12 +157,8 @@ const verifyUserEmail = async (token: string): Promise<VerifyEmailResult> => {
   });
 
   return {
-    type: "SUCCESS"
+    type: "SUCCESS",
   };
 };
 
-export { 
-  signupUser, 
-  loginUser, 
-  verifyUserEmail 
-};
+export { signupUser, loginUser, verifyUserEmail };

@@ -1,4 +1,3 @@
-/*eslint-disable no-unused-vars */
 import jwt from "jsonwebtoken";
 import type { UserPayload, TokenPayload } from "../types/auth.types.js";
 
@@ -22,7 +21,7 @@ function verifyToken(token: string): TokenPayload | null {
       id: decoded.id,
       email: decoded.email,
     };
-  } catch (error) {
+  } catch  {
     return null;
   }
 }

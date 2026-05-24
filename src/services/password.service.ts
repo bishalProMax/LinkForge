@@ -15,8 +15,14 @@ const forgotPassword = async ({ email }: ForgotPasswordProps): Promise<ForgotPas
     };
   }
 
-  // EMAIL OTP LIMIT 
-  const sendCount = Number(await redis.get(`password-resend-otp-count:${email}`)) || 0; 
+  if (!user.authProviders.includes("local")) {
+    return {
+      type: "GOOGLE_LOGIN_REQUIRED",
+    };
+  }
+
+  // EMAIL OTP LIMIT
+  const sendCount = Number(await redis.get(`password-resend-otp-count:${email}`)) || 0;
 
   if (sendCount >= 5) {
     return {
@@ -24,13 +30,13 @@ const forgotPassword = async ({ email }: ForgotPasswordProps): Promise<ForgotPas
     };
   }
 
-  // COOLDOWN 
+  // COOLDOWN
   //this part only runs when attacker tries to bypass frontend, by calling api directly. For normal users, frontend will prevent them from making requests until cooldown expires.
-  const cooldown = await redis.ttl(`password-resend-otp-cooldown-timer:${email}`); 
+  const cooldown = await redis.ttl(`password-resend-otp-cooldown-timer:${email}`);
   if (cooldown > 0) {
     return {
       type: "COOLDOWN_ACTIVE",
-      cooldown
+      cooldown,
     };
   }
 
@@ -135,12 +141,11 @@ const resetPassword = async ({ email, password }: ResetPasswordProps): Promise<R
 
   const loginLink = `${process.env.BASE_URL}/login`;
 
-  await emailQueue.add( "sendPasswordChangedEmail", {
+  await emailQueue.add("sendPasswordChangedEmail", {
     email,
     name: user.name,
-    loginLink
-  }
-  );
+    loginLink,
+  });
 
   return {
     type: "SUCCESS",

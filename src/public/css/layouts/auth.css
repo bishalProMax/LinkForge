@@ -8,11 +8,6 @@
     margin-bottom: 25px;
 }
 
-.auth-footer {
-    margin-top: 15px;
-    text-align: center;
-}
-
 .back-to-login {
     margin-top: 18px;
     text-align: center;
@@ -26,4 +21,62 @@
 .resend-section {
     margin-top: 18px;
     text-align: center;
+}
+
+/* ---------------- OAuth Divider ---------------- */
+
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #777;
+  font-size: 14px;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+.oauth-divider span {
+  padding: 0 12px;
+}
+
+/* ---------------- Google Button ---------------- */
+
+.oauth-container {
+  margin-bottom: 20px;
+}
+
+.google-auth-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 12px 16px;
+
+  border: 1px solid #ddd;
+  border-radius: 10px;
+
+  background: #fff;
+  color: #111;
+
+  text-decoration: none;
+  font-weight: 500;
+
+  transition: all 0.2s ease;
+}
+
+.google-auth-btn:hover {
+  background: #f5f5f5;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
 }
