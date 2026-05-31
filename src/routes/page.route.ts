@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { handleGetAllURL } from "../controllers/url.controller.js";
-import { handleShowSignupPage, handleShowLoginPage} from "../controllers/static.controller.js";
+import { handleShowSignupPage, handleShowLoginPage,handleShowForgotPasswordPage, handleShowLandingPage, handleShowTermsPage, handleShowPrivacyPage, handleShowAboutPage} from "../controllers/static.controller.js";
 import authenticateUser from "../middlewares/auth.middleware.js";
-import { handleShowForgotPasswordPage } from "../controllers/static.controller.js";
+
 
 const router = Router()
 
 //SSR
+router.route("/").get(handleShowLandingPage);
+
 router.route("/linkforge").get(authenticateUser,handleGetAllURL)
 
 router.route("/signup").get(handleShowSignupPage)
@@ -14,5 +16,11 @@ router.route("/signup").get(handleShowSignupPage)
 router.route("/login").get(handleShowLoginPage)
 
 router.route("/forgot-password").get(handleShowForgotPasswordPage);
+
+router.route("/privacy").get(handleShowPrivacyPage);
+
+router.route("/terms").get(handleShowTermsPage);
+
+router.route("/about").get(handleShowAboutPage);
 
 export default router;

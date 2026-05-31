@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/pages/landing.css" />
+    <link rel="icon" type="image/png" href="/images/icon.png" />
+    <script src="js/landing.js" defer></script>
+    <title>LinkForge — Shorten. Share. Track.</title>
+  </head>
+  <body>
+    <!-- BACKGROUND LAYERS -->
+    <div class="bg-layer"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-noise"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- NAVBAR -->
+    <header class="navbar" id="navbar">
+      <div class="logo">
+        <img src="/images/LinkForge.png" alt="LinkForge" />
+      </div>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="ri-menu-line"></i>
+      </button>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#usecases">Use Cases</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="/login" class="nav-login magnetic">Sign in</a>
+        <a href="/signup" class="nav-signup magnetic">Get Started →</a>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-pulse"></span>
+          <span class="badge-text">Built for creators, teams & businesses</span>
+        </div>
+
+        <h1>
+          Shorten links.<br />
+          Share anywhere.<br />
+          <span class="gradient-text">Track every click.</span>
+        </h1>
+
+        <p>Manage branded links, generate QR codes, and monitor engagement from one powerful dashboard.</p>
+
+        <div class="hero-buttons">
+          <a href="/signup" class="primary-btn magnetic">Get Started →</a>
+        </div>
+      </div>
+
+      <!-- HERO CARD — demo UI mockup -->
+      <div class="hero-card">
+        <div class="hero-card-header">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="card-title-bar">LinkForge — try it</span>
+        </div>
+
+        <div class="url-input-row">
+          <input type="text" id="demoInput" placeholder="Paste any long URL here..." value="https://example.com/my-very-long-url-here" />
+          <button class="shorten-btn" id="shortenBtn">Shorten →</button>
+        </div>
+
+        <div class="link-result" id="linkResult">
+          <div>
+            <div class="link-result-url" id="shortUrl">lnkfg.io/launch</div>
+            <div class="link-result-clicks" id="clickCount">Click tracking available</div>
+          </div>
+          <button class="link-copy-btn" id="copyBtn">Copy</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-num gradient-text-2">QR</div>
+            <div class="stat-label">Auto-generated</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num gradient-text-2">Free</div>
+            <div class="stat-label">No credit card</div>
+          </div>
+          <p style="font-size: 11px; color: rgba(255, 255, 255, 0.25); text-align: center; margin-top: 14px; font-family: var(--font-display)">Demo only — sign up to create real links</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES — only real ones -->
+    <section class="features-section" id="features">
+      <div class="reveal">
+        <div class="section-label">✦ Features</div>
+        <h2 class="section-heading">Built for sharing <br /><span class="gradient-text">and tracking links.</span></h2>
+      </div>
+
+      <div class="features-grid features-grid-4">
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon icon-blue"><i class="ri-links-fill"></i></div>
+          <h3>Instant Shortening</h3>
+          <p>Transform long URLs into clean, professional links.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon icon-cyan"><i class="ri-bar-chart-grouped-fill"></i></div>
+          <h3>Click Analytics</h3>
+          <p>Track clicks and engagement from your dashboard.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon icon-purple"><i class="ri-qr-code-fill"></i></div>
+          <h3>QR Generation</h3>
+          <p>Create QR codes instantly for online and offline sharing.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- use case -->
+    <section class="usecase-section" id="usecases">
+      <div class="section-label">✦ Use Cases</div>
+
+      <h2 class="section-heading">
+        More than a <br />
+        <span class="gradient-text">link shortener.</span>
+      </h2>
+
+      <div class="usecase-grid">
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <i class="ri-share-forward-fill"></i>
+          </div>
+
+          <h3>Social Sharing</h3>
+
+          <p>Create clean links for Instagram bios, YouTube descriptions and social media posts.</p>
+        </div>
+
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <i class="ri-qr-scan-fill"></i>
+          </div>
+
+          <h3>Offline Campaigns</h3>
+
+          <p>Generate QR codes for posters, business cards and printed materials.</p>
+        </div>
+
+        <div class="usecase-card">
+          <div class="usecase-icon">
+            <i class="ri-line-chart-fill"></i>
+          </div>
+
+          <h3>Performance Tracking</h3>
+
+          <p>Understand which links perform best using click analytics and activity logs.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section reveal">
+      <div class="cta-glow"></div>
+      <h2>Create your first short link <br /><span class="gradient-text">in seconds.</span></h2>
+      <div class="cta-buttons">
+        <a href="/signup" class="primary-btn magnetic">Create Free Account →</a>
+      </div>
+      <p class="cta-note">✓ Free · <span>✓ No credit card</span> · ✓ Ready in 30 seconds</p>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="contact-section" id="contact">
+      <div class="section-label">✦ Support</div>
+
+      <h2 class="section-heading">We're here to help.</h2>
+
+      <div class="support-grid">
+        <div class="support-card">
+          <div class="support-icon">
+          <i class="ri-mail-send-fill"></i>
+          </div>
+          <h3>Email Support</h3>
+          <p>Get help with your account and links.</p>
+        </div>
+
+        <div class="support-card">
+          <div class="support-icon">
+          <i class="ri-bug-fill"></i>
+          </div>
+          <h3>Bug Reports</h3>
+          <p>Found an issue? Let us know.</p>
+        </div>
+
+        <div class="support-card">
+          <div class="support-icon">
+          <i class="ri-lightbulb-fill"></i>
+          </div>
+          <h3>Feature Requests</h3>
+          <p>Help shape future LinkForge updates.</p>
+        </div>
+      </div>
+
+      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=support@linkforge.com" target="_blank" class="primary-btn"> Contact Support </a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-logo">Link<span>Forge</span></div>
+      <div class="footer-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/about">About</a>
+      </div>
+
+      <div class="footer-copy">© 2026 LinkForge. All rights reserved.</div>
+    </footer>
+  </body>
+</html>

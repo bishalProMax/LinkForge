@@ -31,8 +31,20 @@ const handleShowForgotPasswordPage = (req: Request, res: Response): void => {
   });
 };
 
-export { 
-  handleShowSignupPage, 
-  handleShowLoginPage, 
-  handleShowForgotPasswordPage 
+const handleShowLandingPage = (req: Request, res: Response): void => {
+  res.render("landing");
 };
+
+const handleShowPrivacyPage = (req: Request, res: Response): void => {
+  res.render("privacy");
+};
+
+const handleShowTermsPage = (req: Request, res: Response): void => {
+  res.render("terms");
+};
+
+const handleShowAboutPage = (req: Request, res: Response): void => {
+  res.render("about");
+};
+
+export { handleShowSignupPage, handleShowLoginPage, handleShowForgotPasswordPage, handleShowLandingPage, handleShowPrivacyPage, handleShowTermsPage, handleShowAboutPage };

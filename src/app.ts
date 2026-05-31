@@ -17,20 +17,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express()
 
-// security headers
-// app.use(helmet({
-// contentSecurityPolicy: {
-//   directives: {
-//         defaultSrc: [ "'self'" ],
-//         scriptSrc: ["'self'", "https://challenges.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-//         styleSrc: [ "'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com" ],
-//         fontSrc: [ "'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com" ],
-//         frameSrc: [ "'self'", "https://challenges.cloudflare.com" ],
-//         imgSrc: [ "'self'", "data:", "https://res.cloudinary.com" ],
-//       },
-//     },
-//   })
-// );
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
