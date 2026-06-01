@@ -6,8 +6,11 @@ if (resendSection && resendBtn && resendTimer) {
   let timeLeft = Number(resendSection.dataset.cooldown) || 0;
 
   if (timeLeft > 0) {
+    resendBtn.disabled = true;
     resendTimer.textContent = `Resend OTP in ${timeLeft}s`;
-  } 
+  } else {
+  resendBtn.disabled = false;
+}
 
   const timer = setInterval(() => {
     if (timeLeft <= 0) {

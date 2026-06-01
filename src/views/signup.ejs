@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
-    <link rel="stylesheet" href="/css/main.css" />
-    <link rel="icon" type="image/png" href="/images/icon.png" />
-    <script type="module" src="/js/main.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="/images/icon.png" />
+    <link rel="stylesheet" href="/css/pages/auth.css" />
+    <script type="module" src="/js/main.js"></script>
+
     <title>Signup</title>
   </head>
+
   <body>
-    <div class="container">
+    <div class="auth-container">
       <h1>Signup</h1>
 
       <!-- Error Message -->
@@ -50,14 +56,14 @@
 
         <div class="oauth-container">
           <a href="/auth/google" class="google-auth-btn">
-            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon" />
+            <img src="/images/google.svg" alt="Google" class="google-icon" />
 
-            <span> Google </span>
+            <span> Continue with Google </span>
           </a>
         </div>
         
         <!-- login link -->
-        <p>
+        <p class="auth-footer">
           Already have an account?
             <a href="/login">  Login </a>
         </p>

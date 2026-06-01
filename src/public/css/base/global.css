@@ -1,40 +1,16 @@
+:root {
+  --font-display: "Syne", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+}
+
 body {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    min-height: 100vh;
-}
-
-.container {
-    max-width: 900px;
-    margin: 50px auto;
-    background: #fff;
-    padding: 35px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 28px;
-    color: #333;
+  font-family: var(--font-body);
 }
 
 a {
-    color: #4f46e5;
     text-decoration: none;
 }
 
 a:hover {
     text-decoration: underline;
-}
-
-.logo-container {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.logo {
-    width: 250px;
-    height: 150px;
-    object-fit: cover;
 }
