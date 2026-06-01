@@ -57,7 +57,7 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
   const allUrls = await getUserURLs(req.user!.id);
   const error = typeof req.query.error === "string" ? req.query.error : null;
   const Id = typeof req.query.id === "string" ? req.query.id : null;
-  return res.render("home", { Id, urls: allUrls, error});
+  return res.render("dashboard", { Id, urls: allUrls, error});
 });
 
 export {

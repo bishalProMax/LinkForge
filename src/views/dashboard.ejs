@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <link rel="icon" type="image/png" href="/images/icon.png"/>
+    <link rel="stylesheet" href="/css/pages/dashboard.css">
+    <script type="module" src="/js/main.js"></script>
+    
+    <title>HomePage</title>
+</head>
+
+<body>
+    <div class="dashboard-container">
+
+        <div class="header">
+        
+            <h1>Welcome to LinkForge</h1>
+
+            <form action="/user/logout" method="POST" class="logout-form">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+
+        <!-- Form -->
+    
+        <form class="url-form" method="POST" action="/url/generate">
+            <label >Enter your original URL</label>
+            <input type="text" name="url" placeholder="https://example.com/my-long-url" required>
+            <button type="submit"> Generate </button>
+        </form>
+        
+        <!-- Error Message -->
+        <% if (error) { %>
+            <p class="error"><%= error %></p>
+        <% } %>
+
+
+        <!-- Generated URL -->
+        <% if (Id) { %>
+        <div class="generated">
+        URL Generated: 
+            <a href="/url/<%= Id %>" target="_blank"><%= Id %> </a>
+        </div>
+        <% } %>
+
+
+
+        <!-- URL List -->
+        <div class="table-section">
+
+        <% if (urls && urls.length > 0) { %>
+
+        <h3>All URLs</h3>
+
+        <table cellpadding="20" cellspacing="0">
+            <thead> 
+                <tr>
+                    <th> S. No.</th>  
+                    <th> ShortID</th>  
+                    <th> Website</th>  
+                    <th> Clicks</th>
+                    <th>QR</th>  
+                </tr>
+            </thead>
+            <tbody>
+                <% urls.forEach((url,index) => { %>
+                <tr>
+                    <td><%= index + 1  %></td>
+                    <td class="shortid-cell">
+                        <a href="/url/<%= url.shortId %>" target="_blank"> <%= url.shortId %> </a>
+                        <button type="button" class="copy-btn" data-id="<%= url.shortId %>" title="Copy short URL">
+                            <i class="ri-file-copy-line"></i>
+                        </button>
+                    </td>
+                    <td> 
+                        <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"> <%= url.redirectURL %> </a> 
+                    </td>
+                    <td>
+                        <%= url.visitHistory.length  %>
+                    </td>
+                    <td>
+                        <button class="qr-btn" title="Show QR" data-id="<%= url.shortId %>"> 
+                            <i class="ri-qr-code-line"></i> 
+                        </button>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <% } else { %>
+            <p>No URLs generated yet</p>
+        <% } %>
+
+        </div>
+
+    
+
+    </div>
+
+<!-- QR MODAL -->
+        <div id="qrModal" class="qr-modal">
+            <div class="qr-content">
+                <span class="close" id="closeQRBtn"> &times; </span>
+                <h3>Scan QR Code</h3>
+
+                <div id="qrLoader" class="dots-loader">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                </div>
+
+                <canvas id="qrCanvas"></canvas>
+
+            <div class="qr-actions">
+                <button id="downloadQR" title="Download">
+                    <i class="ri-download-2-line"></i>
+                </button>
+                <button id="shareQR" title="Share">
+                    <i class="ri-share-line"></i>
+                </button>
+            </div>
+
+            </div>
+        </div>
+    
+
+    
+</body>
+</html>
