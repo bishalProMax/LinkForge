@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail } from "../controllers/user.controller.js";
 import { validateSignup, validateLogin } from "../middlewares/validation.middleware.js";
-import authenticateUser from "../middlewares/auth.middleware.js";
+import { authenticateUser } from "../middlewares/auth.middleware.js";
 import { signupLimiter, loginLimiter } from "../middlewares/rateLimit.middleware.js";
 import { handleForgotPassword, handleVerifyResetOTP, handleResetPassword } from "../controllers/password.controller.js";
 import OTPLimiter from "../middlewares/otpLimiter.js";

@@ -120,7 +120,7 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
 const handleUserLogout = (req: Request, res: Response) => {
   res.clearCookie("token", cookieOptions);
 
-  return res.redirect("/login");
+  return res.redirect("/");
 };
 
 // -----------------------------EMAIL VERIFICATION-------------------

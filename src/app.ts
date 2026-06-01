@@ -1,7 +1,7 @@
 import express from "express";
 import { errorHandler, notFound } from "./middlewares/error.middleware.js";
 import cookieParser from "cookie-parser";
-import authenticateUser from "./middlewares/auth.middleware.js";
+import { authenticateUser } from "./middlewares/auth.middleware.js";
 import path from "path";
 import helmet from "helmet";
 import urlRoute from "./routes/url.route.js";
