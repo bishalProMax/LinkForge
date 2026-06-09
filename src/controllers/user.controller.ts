@@ -113,7 +113,7 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
     res.cookie("token", result.token, cookieOptions);
   }
 
-  return res.redirect("/linkforge");
+  return res.redirect("/dashboard");
 });
 
 // -----------------------------LOGOUT-----------------------------

@@ -9,7 +9,7 @@ const router = Router()
 //SSR
 router.route("/").get(handleShowLandingPage);
 
-router.route("/linkforge").get(authenticateUser,handleGetAllURL)
+router.route("/dashboard").get(authenticateUser,handleGetAllURL)
 
 router.route("/signup").get(redirectIfAuthenticated, handleShowSignupPage)
 

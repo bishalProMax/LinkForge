@@ -19,7 +19,7 @@ const redirectIfAuthenticated = asyncHandler(async (req: Request, res: Response,
 
   const user = verifyToken(token);
   if (user) {
-    return res.redirect("/linkforge");
+    return res.redirect("/dashboard");
   }
 
   next();

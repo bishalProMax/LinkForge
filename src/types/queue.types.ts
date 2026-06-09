@@ -22,5 +22,4 @@ export type SendPasswordResetOTPJob = {
 export type SendPasswordChangedEmailJob = {
   email: string;
   name: string;
-  loginLink: string;
 };

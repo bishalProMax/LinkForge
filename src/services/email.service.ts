@@ -78,11 +78,10 @@ const sendPasswordResetOTP = async ({ email, name, otp }: PasswordResetOTPProps)
 type SendPasswordChangedEmailJob = {
   email: string;
   name: string;
-  loginLink: string;
 };
 
-const sendPasswordChangedEmail = async ({ email, name, loginLink }: SendPasswordChangedEmailJob): Promise<void> => {
-  const html = renderTemplate("passwordChanged", { name, loginLink });
+const sendPasswordChangedEmail = async ({ email, name}: SendPasswordChangedEmailJob): Promise<void> => {
+  const html = renderTemplate("passwordChanged", { name });
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,

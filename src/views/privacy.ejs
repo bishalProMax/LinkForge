@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet"/>
     <link rel="stylesheet" href="/css/pages/legal.css" />
     <link rel="icon" type="image/png" href="/images/icon.png" />
-    
     <title>Privacy Policy | LinkForge</title>
   </head>
-
+  
   <body>
     <div class="bg-layer"></div>
     <div class="bg-grid"></div>
@@ -31,45 +29,177 @@
 
     <div class="legal-container">
       <h1>Privacy Policy</h1>
-
       <p class="legal-badge">LinkForge Legal Documentation</p>
-
       <p class="legal-date">Last updated: June 2026 · Version 1.0</p>
+      <p class="legal-subtitle">
+        LinkForge respects your privacy. This page explains exactly what data we
+        collect, why we collect it, and how it is used.
+      </p>
 
-      <p class="legal-subtitle">Learn how LinkForge collects, uses and protects your information.</p>
+      <!-- SUMMARY CARDS -->
+      <div class="legal-summary-cards">
+        <div class="legal-summary-card">
+          <i class="ri-database-2-line"></i>
+          <h3>What we collect</h3>
+          <p>Email address, click logs, IP addresses on link visits</p>
+        </div>
+        <div class="legal-summary-card">
+          <i class="ri-settings-3-line"></i>
+          <h3>Why we collect it</h3>
+          <p>
+            To run the platform, provide analytics, and keep accounts secure
+          </p>
+        </div>
+        <div class="legal-summary-card">
+          <i class="ri-share-forward-line"></i>
+          <h3>Who we share with</h3>
+          <p>
+            Only trusted infrastructure providers — Google OAuth, Cloudinary,
+            Nodemailer
+          </p>
+        </div>
+        <div class="legal-summary-card">
+          <i class="ri-shield-check-line"></i>
+          <h3>Your control</h3>
+          <p>You can delete your account and associated data at any time</p>
+        </div>
+      </div>
 
-      <p>LinkForge respects your privacy and is committed to protecting your data.</p>
+      <!-- SECTION 1 -->
+      <h2>1. Information We Collect</h2>
+      <p>
+        When you create a LinkForge account, we collect your email address and
+        authentication details. This is required to create and manage your
+        account.
+      </p>
+      <p>
+        When someone visits one of your shortened links, we record the
+        timestamp, IP address, and click count for that link. This data powers
+        the analytics shown on your dashboard.
+      </p>
+      <p>
+        We do not collect your phone number, payment details, or any
+        sensitive personal information beyond what is listed above.
+      </p>
 
-      <h2>Information We Collect</h2>
+      <!-- SECTION 2 -->
+      <h2>2. How We Use Your Data</h2>
 
-      <p>We collect account information such as email addresses and authentication details required to provide our services.</p>
+      <div class="legal-list">
+        <div class="legal-list-item">
+          <i class="ri-check-line"></i>
+          <span>To create and authenticate your account</span>
+        </div>
+        <div class="legal-list-item">
+          <i class="ri-check-line"></i>
+          <span>To display click analytics on your dashboard</span>
+        </div>
+        <div class="legal-list-item">
+          <i class="ri-check-line"></i>
+          <span
+            >To send transactional emails — verification, OTP, password change
+            notifications</span
+          >
+        </div>
+        <div class="legal-list-item">
+          <i class="ri-check-line"></i>
+          <span>To maintain platform security and prevent abuse</span>
+        </div>
+        <div class="legal-list-item">
+          <i class="ri-close-line legal-list-no"></i>
+          <span
+            >We do <strong>not</strong> sell your data to third parties</span
+          >
+        </div>
+        <div class="legal-list-item">
+          <i class="ri-close-line legal-list-no"></i>
+          <span>We do <strong>not</strong> use your data for advertising</span>
+        </div>
+      </div>
 
-      <h2>Analytics Data</h2>
+      <!-- SECTION 3 -->
+      <h2>3. Third-Party Services</h2>
+      <p>
+        LinkForge uses a small number of trusted third-party services to
+        operate. Each handles data according to their own privacy policies:
+      </p>
 
-      <p>When visitors access shortened links, we may record timestamps, IP addresses, browser information and click counts.</p>
+      <div class="about-stack" style="margin: 16px 0 36px">
+        <div class="about-stack-item">
+          <span class="stack-label">Google OAuth</span>
+          <span class="stack-value">Optional sign-in provider</span>
+        </div>
+        <div class="about-stack-item">
+          <span class="stack-label">Cloudinary</span>
+          <span class="stack-value">Image hosting for logos and assets</span>
+        </div>
+        <div class="about-stack-item">
+          <span class="stack-label">Nodemailer</span>
+          <span class="stack-value">Transactional email delivery</span>
+        </div>
+        <div class="about-stack-item">
+          <span class="stack-label">MongoDB</span>
+          <span class="stack-value">Database for account and link data</span>
+        </div>
+        <div class="about-stack-item">
+          <span class="stack-label">Redis</span>
+          <span class="stack-value">Session and cache storage</span>
+        </div>
+      </div>
 
-      <h2>How We Use Information</h2>
+      <!-- SECTION 4 -->
+      <h2>4. Data Retention</h2>
+      <p>
+        Your account data is retained for as long as your account is active.
+        Click log data is stored and associated with the links you create. If
+        you delete your account, your personal data and links are removed from
+        our systems.
+      </p>
 
-      <p>Data is used to operate LinkForge, generate analytics and improve platform security and reliability.</p>
+      <!-- SECTION 5 -->
+      <h2>5. Cookies</h2>
+      <p>
+        LinkForge uses session cookies to keep you logged in. We do not use
+        tracking cookies, advertising cookies, or any third-party cookie
+        services.
+      </p>
 
-      <h2>Third-Party Services</h2>
+      <!-- SECTION 6 -->
+      <h2>6. Security</h2>
+      <p>
+        We take reasonable measures to protect your data. Passwords are hashed
+        and never stored in plain text. All sessions are managed securely with
+        JWT tokens. Account actions such as password changes trigger email
+        notifications so you are always informed of activity on your account.
+      </p>
 
-      <p>LinkForge may use trusted third-party services such as Google OAuth, Cloudinary and other infrastructure providers.</p>
+      <!-- SECTION 7 -->
+      <h2>7. Changes to This Policy</h2>
+      <p>
+        If we make significant changes to this privacy policy, we will update
+        the version number and date at the top of this page. Continued use of
+        LinkForge after changes constitutes acceptance of the updated policy.
+      </p>
 
-      <h2>Terms of Service</h2>
+      <!-- RELATED -->
+      <h2>Related</h2>
+      <p>
+        Read our <a href="/terms">Terms of Service</a> for usage guidelines.
+      </p>
 
-      <p>Read our <a href="/terms">Terms of Service</a>.</p>
-
+      <!-- CONTACT -->
       <h2>Contact</h2>
-
-      <p>Questions regarding privacy can be sent to:</p>
-
-      <a class="legal-email" href="https://mail.google.com/mail/?view=cm&fs=1&to=support@linkforge.com" target="_blank"> support@linkforge.com </a>
+      <p>Questions about this privacy policy can be sent to:</p>
+      <a
+        class="legal-email"
+        href="https://mail.google.com/mail/?view=cm&fs=1&to=support@linkforge.com"
+        target="_blank"
+      >
+        support@linkforge.com
+      </a>
 
       <hr class="legal-divider" />
-
       <p class="legal-footer">© 2026 LinkForge. All rights reserved.</p>
     </div>
-
   </body>
 </html>

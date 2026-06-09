@@ -13,7 +13,7 @@
   --text: #ffffff;
   --text-muted: rgba(255, 255, 255, 0.65);
   --brand-1: #5b6dff;
-  --brand-2: #5b6dff;
+  --brand-2: #8b5cf6;
 }
 
 /* =========================
@@ -361,6 +361,8 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-text-fill-color: #ffffff !important;
 
+   caret-color: #ffffff !important;
+
   -webkit-box-shadow:
     0 0 0px 1000px rgba(255,255,255,.04) inset !important;
 
@@ -368,6 +370,26 @@ input:-webkit-autofill:active {
     0 0 0px 1000px rgba(255,255,255,.04) inset !important;
 
   transition: background-color 9999s ease-in-out 0s;
+}
+/* =========================
+   SCROLLBAR
+========================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #050816;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--brand-1), var(--brand-2));
+  border-radius: 999px;
+}
+
+/* align password toggle button to the right end of the input field */
+.forgot-password {
+  display: block;
+  text-align: right;
 }
 
 /* =========================

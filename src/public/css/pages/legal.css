@@ -8,6 +8,8 @@
   --card: rgba(14, 22, 48, 0.65);
   --border: rgba(255, 255, 255, 0.08);
   --text: rgba(255, 255, 255, 0.75);
+  --brand-1: #5b6dff;
+  --brand-2: #8b5cf6;
 }
 
 body {
@@ -21,16 +23,14 @@ body {
 .bg-layer {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at left, rgba(120, 50, 255, 0.15), transparent 40%), 
-  radial-gradient(circle at right, rgba(0, 220, 255, 0.15), transparent 40%);
+  background: radial-gradient(circle at left, rgba(120, 50, 255, 0.15), transparent 40%), radial-gradient(circle at right, rgba(0, 220, 255, 0.15), transparent 40%);
   z-index: -2;
 }
 
 .bg-grid {
   position: fixed;
   inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
-  linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 80px 80px;
   z-index: -1;
 }
@@ -152,6 +152,246 @@ body {
   border-radius: 999px;
 }
 
+.legal-divider {
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 50px 0 24px;
+}
+
+.legal-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.9rem;
+}
+
+/* FEATURE CARDS */
+.about-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 24px 0 40px;
+}
+
+.about-feature-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  transition:
+    border-color 0.25s,
+    background 0.25s;
+}
+
+.about-feature-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(91, 109, 255, 0.3);
+}
+
+.about-feature-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: rgba(91, 109, 255, 0.12);
+  border: 1px solid rgba(91, 109, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  font-size: 18px;
+}
+
+.about-feature-card h3 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 6px 0;
+}
+
+.about-feature-card p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* TAGS */
+.about-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 36px;
+}
+
+.about-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-display);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.65);
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.about-tag:hover {
+  background: rgba(91, 109, 255, 0.1);
+  border-color: rgba(91, 109, 255, 0.3);
+  color: #a5b4fc;
+}
+
+/* SUMMARY CARDS  */
+.legal-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 0 0 40px;
+}
+
+.legal-summary-card {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  transition: border-color 0.25s, background 0.25s;
+}
+
+.legal-summary-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(91, 109, 255, 0.25);
+}
+
+.legal-summary-card i {
+  font-size: 22px;
+  color: #818cf8;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.legal-summary-card h3 {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 6px;
+}
+
+.legal-summary-card p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* CHECKMARK LIST */
+.legal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 36px;
+}
+
+.legal-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.55;
+}
+
+.legal-list-item i {
+  font-size: 16px;
+  color: #34d399;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.legal-list-item i.legal-list-no {
+  color: #f87171;
+}
+
+.legal-list-item strong {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.about-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 16px 0 36px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  overflow: hidden;
+}
+ 
+.about-stack-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s;
+}
+ 
+.about-stack-item:last-child {
+  border-bottom: none;
+}
+ 
+.about-stack-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+ 
+.stack-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-width: 100px;
+}
+ 
+.stack-value {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: var(--font-body);
+  text-align: right;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #050816;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--brand-1), var(--brand-2));
+  border-radius: 999px;
+}
+
+
+/* =========================
+MOBILE RESPONSIVENESS
+========================= */
 @media (max-width: 768px) {
   .legal-nav {
     padding: 20px;
@@ -180,9 +420,20 @@ body {
   }
 }
 
-/* =========================
-    MOBILE RESPONSIVENESS
-========================= */
+@media (max-width: 640px) {
+  .about-features {
+    grid-template-columns: 1fr;
+  }
+
+  .about-feature-card {
+    padding: 16px;
+  }
+
+  .legal-summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 480px) {
   .legal-container {
     padding: 24px 18px;
@@ -213,15 +464,4 @@ body {
   }
 }
 
-.legal-divider {
-  border: none;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  margin: 50px 0 24px;
-}
 
-.legal-footer {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 0.9rem;
-}

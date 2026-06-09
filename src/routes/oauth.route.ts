@@ -16,7 +16,7 @@ router.get("/google/callback", passport.authenticate("google", {session: false, 
 
     const token = createToken(user);
     res.cookie("token", token, cookieOptions);
-    res.redirect("/linkforge");
+    res.redirect("/dashboard");
   }
 );
 

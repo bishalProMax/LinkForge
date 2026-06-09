@@ -37,16 +37,26 @@ const findURLByShortId = (shortId: string) => {
   return URL.findOne({ shortId });
 };
 
-const getURLsByUserId = (userId: string) => {
+const getURLsByUserId = (userId: string, page: number, limit: number) => {
   return URL.find({
+    createdBy: userId,
+  })
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+};
+
+const countURLsByUserId = (userId: string) => {
+  return URL.countDocuments({
     createdBy: userId,
   });
 };
 
-export {
-  checkShortIdExists,
-  createShortURL,
-  updateVisitHistory,
-  findURLByShortId,
-  getURLsByUserId,
+export { 
+  checkShortIdExists, 
+  createShortURL, 
+  updateVisitHistory, 
+  findURLByShortId, 
+  getURLsByUserId, 
+  countURLsByUserId 
 };

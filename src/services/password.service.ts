@@ -139,12 +139,9 @@ const resetPassword = async ({ email, password }: ResetPasswordProps): Promise<R
 
   await redis.del(`password-reset-session:${email}`);
 
-  const loginLink = `${process.env.BASE_URL}/login`;
-
   await emailQueue.add("sendPasswordChangedEmail", {
     email,
-    name: user.name,
-    loginLink,
+    name: user.name
   });
 
   return {
