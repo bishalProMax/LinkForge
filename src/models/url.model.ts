@@ -41,7 +41,8 @@ const urlSchema = new mongoose.Schema<
     },
     redirectURL: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     visitHistory: [{
         timestamp: { type: Number}

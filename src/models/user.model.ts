@@ -62,6 +62,7 @@ const userSchema = new mongoose.Schema<
       type: String,
       trim: true,
       minlength: 8,
+      select: false
     },
 
     isVerified: {

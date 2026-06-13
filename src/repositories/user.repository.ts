@@ -9,7 +9,7 @@ type CreateUserData = {
 };
 
 const findUserByEmail = (email: string) => {
-  return User.findOne({ email });
+  return User.findOne({ email }).select("+password");;
 };
 
 const createUser = (data: CreateUserData) => {
