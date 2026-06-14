@@ -1,16 +1,16 @@
 import express from "express";
-import { errorHandler, notFound } from "./middlewares/error.middleware.js";
+import { errorHandler, notFound } from "./shared/middlewares/error.middleware.js";
 import cookieParser from "cookie-parser";
-import { authenticateUser } from "./middlewares/auth.middleware.js";
+import { authenticateUser } from "./shared/middlewares/auth.middleware.js";
 import path from "path";
 import helmet from "helmet";
-import urlRoute from "./routes/url.route.js";
-import pageRouter from "./routes/page.route.js";
-import userRoute from "./routes/user.route.js";
+import urlRoute from "./modules/url/url.route.js";
+import pageRouter from "./modules/page/page.route.js";
+import userRoute from "./modules/auth/auth.route.js";
 import { fileURLToPath } from "url";
-import oauthRoutes from "./routes/oauth.route.js";
+import oauthRoutes from "./modules/auth/auth.route.js";
 import passport from "passport";
-import "./configs/passport.js";
+import "./infrastructure/configs/passport.config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -2,8 +2,8 @@ import "dotenv/config";
 import app from "./app.js";
 import "./workers/email.worker.js";
 import "./workers/cleanup.worker.js";
-import cleanupQueue from "./queues/cleanup.queue.js";
-import connectToMongoDB from "./configs/db.config.js";
+import cleanupQueue from "./infrastructure/queues/cleanup.queue.js";
+import connectToMongoDB from "./infrastructure/configs/db.config.js";
 
 // schedule cleanup job to run every hour
 (async (): Promise<void> => {await cleanupQueue.add("cleanup-unverified-users", {triggeredBy: "cron",}, { jobId: "cleanup-unverified-users", 

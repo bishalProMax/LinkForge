@@ -1,7 +1,7 @@
 import { Worker, Job } from "bullmq";
-import redis from "../configs/redis.config.js";
-import {sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail } from "../services/email.service.js";
-import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob } from "../types/queue.types.js";
+import redis from "../infrastructure/configs/redis.config.js";
+import {sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail } from "../shared/services/email.service.js";
+import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob } from "../shared/types/queue.types.js";
 
 type EmailJobData = SendVerificationEmailJob | SendWelcomeEmailJob | SendPasswordResetOTPJob | SendPasswordChangedEmailJob;
 

@@ -1,7 +1,7 @@
 import { Worker, Job} from "bullmq";
-import redis from "../configs/redis.config.js";
+import redis from "../infrastructure/configs/redis.config.js";
 import User from "../models/user.model.js";
-import type { CleanupJob } from "../types/queue.types.js";
+import type { CleanupJob } from "../shared/types/queue.types.js";
 
 new Worker<CleanupJob>("cleanupQueue", async (job: Job<CleanupJob>): Promise<void> => {
     await User.deleteMany({
