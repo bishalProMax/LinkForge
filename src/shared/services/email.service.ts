@@ -3,6 +3,7 @@ import path from "path";
 import handlebars from "handlebars";
 import transporter from "../../infrastructure/configs/email.config.js";
 import { fileURLToPath } from "url";
+import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob } from "../types/queue.types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +14,7 @@ type TemplateData = {
 
 // Function to render Handlebars templates
 const renderTemplate = (templateName: string, data: TemplateData): string => {
-  const templatePath = path.join(__dirname, `../templates/${templateName}.hbs`);
+  const templatePath = path.join(__dirname, `../../templates/${templateName}.hbs`);
   const source = fs.readFileSync(templatePath, "utf-8");
   const template = handlebars.compile(source);
 
@@ -21,13 +22,7 @@ const renderTemplate = (templateName: string, data: TemplateData): string => {
 };
 
 //verification email after registration
-type VerificationEmailProps = {
-  email: string;
-  name: string;
-  verificationLink: string;
-};
-
-const sendVerificationEmail = async ({ email, name, verificationLink }: VerificationEmailProps): Promise<void> => {
+const sendVerificationEmail = async ({ email, name, verificationLink }: SendVerificationEmailJob): Promise<void> => {
   const html = renderTemplate("verifyEmail", { name, verificationLink });
 
   await transporter.sendMail({
@@ -39,13 +34,7 @@ const sendVerificationEmail = async ({ email, name, verificationLink }: Verifica
 };
 
 //welcome email after successful verification
-type WelcomeEmailProps = {
-  email: string;
-  name: string;
-  loginLink: string;
-};
-
-const sendWelcomeEmail = async ({ email, name, loginLink }: WelcomeEmailProps): Promise<void> => {
+const sendWelcomeEmail = async ({ email, name, loginLink }: SendWelcomeEmailJob): Promise<void> => {
   const html = renderTemplate("welcome", { name, loginLink });
 
   await transporter.sendMail({
@@ -57,13 +46,7 @@ const sendWelcomeEmail = async ({ email, name, loginLink }: WelcomeEmailProps): 
 };
 
 //password reset OTP email
-type PasswordResetOTPProps = {
-  email: string;
-  name: string;
-  otp: string;
-};
-
-const sendPasswordResetOTP = async ({ email, name, otp }: PasswordResetOTPProps): Promise<void> => {
+const sendPasswordResetOTP = async ({ email, name, otp }: SendPasswordResetOTPJob): Promise<void> => {
   const html = renderTemplate("passwordResetOTP", { name, otp });
 
   await transporter.sendMail({
@@ -75,11 +58,6 @@ const sendPasswordResetOTP = async ({ email, name, otp }: PasswordResetOTPProps)
 };
 
 //password changed notification email
-type SendPasswordChangedEmailJob = {
-  email: string;
-  name: string;
-};
-
 const sendPasswordChangedEmail = async ({ email, name}: SendPasswordChangedEmailJob): Promise<void> => {
   const html = renderTemplate("passwordChanged", { name });
 

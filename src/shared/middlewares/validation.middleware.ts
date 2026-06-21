@@ -1,77 +1,67 @@
-import validator from "validator";
 import type { Request, Response, NextFunction } from "express";
+import type { ZodType } from "zod";
+import type { viewName, redirectPath } from "../types/validation.types.js";
 
-//Signup validation
-    const validateSignup = (req: Request, res: Response, next: NextFunction): void  => {
-    let { name, email, password } = req.body;
 
-    name = name?.trim();
-    email = email?.trim().toLowerCase();
+const SENSITIVE_FIELDS = ["password", "confirmPassword"] as const;
 
-    const old = { ...req.body };
-    delete old.password; 
+interface renderValidationOptions {
+  view: viewName;
+  extraNullField?: string[];
+}
 
-    if (!name || name.length < 3) {
-        return res.render("signup", {
-            error: "Name must be at least 3 characters",
-            old,
-        });
+interface redirectValidationOptions {
+  redirectPath: redirectPath;
+}
+
+const stripSensitiveFields = (data: Record<string, unknown>): Record<string, unknown> => {
+  const clean = { ...data };
+  for (const field of SENSITIVE_FIELDS) {
+    delete clean[field];
+  }
+  return clean;
+};
+
+
+const validateRender = <T>(schema: ZodType<T>, options: renderValidationOptions) => {
+
+  return (req: Request, res: Response, next: NextFunction): void => {
+
+    const result = schema.safeParse(req.body);
+
+    if (!result.success) {
+      const error = result.error.issues[0]?.message ?? "Invalid input";
+      const old = stripSensitiveFields(req.body as Record<string, unknown>);
+
+      const renderData: Record<string, unknown> = { error, old };
+
+      for (const field of options.extraNullField ?? []) {  //?? fallback to empty array if extraNullField is undefined
+      renderData[field] = null;
+      }
+
+      res.status(400).render(options.view, renderData);
+      return;
     }
 
-    if (!email || !validator.isEmail(email)) {
-        return res.render("signup", {
-            error: "Please enter a valid email address",
-            old
-        });
-    }
-
-    const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-    if (!password || !strongPassword.test(password)) {
-        return res.render("signup", {
-            error: "Password must be 8 characters with uppercase, lowercase, number &  special character (@$!%*?&)",
-            old
-        });
-    }
-
-    req.body.name = name
-    req.body.email = email
+    req.body = result.data as never;
     next();
+  };
 };
 
-//Login validation
+const validateRedirect = <T>(schema: ZodType<T>, options: redirectValidationOptions) => {
 
-const validateLogin = (req: Request, res: Response, next: NextFunction): void  => {
-    let { email, password } = req.body;
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.body);
 
-    email = email?.trim().toLowerCase();
-
-    const old = { ...req.body };
-    delete old.password;
-
-    if (!email || !validator.isEmail(email)) {
-        return res.render("login", {
-            error: "Please enter a valid email address",
-            old,
-            verificationMessage: null
-        });
+    if (!result.success) {
+      const error = result.error.issues[0]?.message ?? "Invalid input";
+      res.redirect(`${options.redirectPath}?error=${encodeURIComponent(error)}`);
+      return;
     }
 
-    
-    if (!password || password.length < 1) {
-        return res.render("login", {
-            error: "Password is required",
-            old,
-            verificationMessage: null
-        });
-    }
-
-    req.body.email = email;
-
+    req.body = result.data as never;
     next();
+  };
 };
 
-export {
-  validateSignup,
-  validateLogin,
-};
+export { validateRender, validateRedirect };

@@ -12,7 +12,7 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
     ...req.body,
   };
 
-  delete old.password;
+  delete old.password
 
   try {
     const result = await signupUser({

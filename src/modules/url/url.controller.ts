@@ -1,15 +1,10 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import validator from "validator";
 import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs } from "./url.service.js";
 import type { Request, Response } from "express";
 
 // Generate short URL
 const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) => {
   const body = req.body;
-
-  if (!body.url || !validator.isURL(body.url, { require_protocol: true, protocols: ["http", "https"], require_tld: true })) {
-    return res.redirect(`/dashboard?error=${encodeURIComponent("Enter a valid URL (http/https)")}`);
-  }
 
   try {
     const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id });

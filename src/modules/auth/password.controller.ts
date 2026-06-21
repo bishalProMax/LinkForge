@@ -97,13 +97,7 @@ const handleVerifyResetOTP = asyncHandler(async (req: Request, res: Response) =>
 const handleResetPassword = asyncHandler(async (req: Request, res: Response) => {
   const old = { ...req.body };
   delete old.password;
-
-  if (req.body.password !== req.body.confirmPassword) {
-    return res.status(400).render("reset-password", {
-      error: "Passwords do not match",
-      old,
-    });
-  }
+  delete old.confirmPassword; 
 
   const result = await resetPassword({
     email: req.body.email,
