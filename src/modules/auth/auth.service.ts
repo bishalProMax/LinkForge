@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 import redis from "../../infrastructure/configs/redis.config.js";
 import emailQueue from "../../infrastructure/queues/email.queue.js";
 import { createToken } from "../../shared/services/jwt.service.js";
@@ -39,7 +40,8 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
 
     // UNVERIFIED USER EXISTS RESEND NEW LINK
     const token = crypto.randomBytes(32).toString("hex");
-    existedUser.emailVerificationToken = token;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    existedUser.emailVerificationToken = hashedToken;
     existedUser.emailVerificationExpires = new Date(Date.now() + 1000 * 60 * 30);
     await saveUser(existedUser);
 
@@ -57,11 +59,12 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
   }
 
   const token = crypto.randomBytes(32).toString("hex");
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
   const user = await createUser({
     name,
     email,
     password,
-    emailVerificationToken: token,
+    emailVerificationToken: hashedToken,
     emailVerificationExpires: new Date(Date.now() + 1000 * 60 * 30),
   });
 
@@ -135,7 +138,8 @@ const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResu
 
 //----------------------------VERIFY EMAIL SERVICE------------------------------------
 const verifyUserEmail = async (token: string): Promise<VerifyEmailResult> => {
-  const user = await findUserByVerificationToken(token);
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await findUserByVerificationToken(hashedToken);
 
   if (!user) {
     return {
