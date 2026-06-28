@@ -42,10 +42,10 @@
       <% } %>
 
       <!-- Generated URL -->
-      <% if (Id) { %>
+      <% if (shortId) { %>
       <div class="generated">
         URL Generated:
-        <a href="/url/<%= Id %>" target="_blank"><%= Id %> </a>
+        <a href="/url/<%= shortId %>" target="_blank"> <%= shortId %> </a>
       </div>
       <% } %>
 
@@ -79,7 +79,7 @@
                 <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"> <%= url.redirectURL %> </a>
               </td>
               <td>
-                <%= url.visitHistory.length  %>
+              <%= url.totalClicks || 0 %>
               </td>
               <td>
                 <button class="qr-btn" title="Show QR" data-id="<%= url.shortId %>">

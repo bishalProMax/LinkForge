@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
-import { checkShortIdExists, createShortURL, updateVisitHistory, findURLByShortId, getURLsByUserId, countURLsByUserId } from "./url.repository.js";
+import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, countURLsByUserId } from "./url.repository.js";
 import type { GenerateShortURLProps } from "./url.types.js";
+import { createVisit, countVisits, getVisits } from "./visit.repository.js";
 
 const generateShortURL = async ({ originalURL, userId }: GenerateShortURLProps): Promise<string> => {
   let shortid: string;
@@ -13,7 +14,6 @@ const generateShortURL = async ({ originalURL, userId }: GenerateShortURLProps):
   await createShortURL({
     shortId: shortid,
     redirectURL: originalURL,
-    visitHistory: [],
     createdBy: userId,
   });
 
@@ -21,11 +21,28 @@ const generateShortURL = async ({ originalURL, userId }: GenerateShortURLProps):
 };
 
 const redirectToOriginalURL = async (shortId: string): Promise<any> => {
-  return updateVisitHistory(shortId);
+  const url = await findURLByShortId(shortId);
+
+  if (!url) {
+    return null;
+  }
+  await createVisit(url._id.toString());
+  return url;
 };
 
 const getURLAnalytics = async (shortId: string): Promise<any> => {
-  return findURLByShortId(shortId);
+  const url = await findURLByShortId(shortId);
+
+  if (!url) {
+    return null;
+  }
+  const totalClicks = await countVisits(url._id.toString());
+  const analytics = await getVisits(url._id.toString());
+
+  return {
+    totalClicks,
+    analytics,
+  };
 };
 
 const getUserURLs = async (userId: string, page: number, limit: number): Promise<any> => {
@@ -41,5 +58,5 @@ export {
   redirectToOriginalURL, 
   getURLAnalytics, 
   getUserURLs, 
-  getTotalUserURLs 
-};
+  getTotalUserURLs
+ };

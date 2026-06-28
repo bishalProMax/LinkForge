@@ -34,28 +34,30 @@ const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => 
 const handleGetAnalytics = asyncHandler(async (req: Request, res: Response) => {
   const shortId = req.params.shortId as string;
   const result = await getURLAnalytics(shortId);
+
   if (!result) {
     return res.status(404).json({ message: "URL not found" });
   }
+  
   return res.status(200).json({
-    totalClicks: result.visitHistory.length,
-    analytics: result.visitHistory,
+  totalClicks: result.totalClicks,
+  analytics: result.analytics,
   });
-});
+  });
 
 //get all URLs created by a user
 const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = 6;
-  const allUrls = await getUserURLs(req.user!.id, page, limit);
+  const allUrls = await getUserURLs(req.user!.id, page, limit);  //! non-null assertion operator, used by TS while runtime
   const totalUrls = await getTotalUserURLs(req.user!.id);
 
   const totalPages = Math.ceil(totalUrls / limit);
 
   const error = typeof req.query.error === "string" ? req.query.error : null;
-  const Id = typeof req.query.id === "string" ? req.query.id : null;
+  const shortId = typeof req.query.id === "string" ? req.query.id : null;
 
-  return res.render("dashboard", { Id, urls: allUrls, error, currentPage: page, totalPages });
+  return res.render("dashboard", { shortId, urls: allUrls, error, currentPage: page, totalPages });
 });
 
 export { 

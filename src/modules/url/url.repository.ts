@@ -1,13 +1,7 @@
 import URL from "../../models/url.model.js";
+import mongoose from "mongoose";
+import type { CreateShortURLData } from "./url.types.js";
 
-type CreateShortURLData = {
-  shortId: string;
-  redirectURL: string;
-  visitHistory: {
-    timestamp: number;
-  }[];
-  createdBy: string;
-};
 
 const checkShortIdExists = (shortId: string) => {
   return URL.findOne({ shortId });
@@ -17,33 +11,55 @@ const createShortURL = (data: CreateShortURLData) => {
   return URL.create(data);
 };
 
-const updateVisitHistory = (shortId: string) => {
-  return URL.findOneAndUpdate(
-    {
-      shortId,
-    },
-
-    {
-      $push: {
-        visitHistory: {
-          timestamp: Date.now(),
-        },
-      },
-    }
-  );
-};
-
 const findURLByShortId = (shortId: string) => {
   return URL.findOne({ shortId });
 };
 
-const getURLsByUserId = (userId: string, page: number, limit: number) => {
-  return URL.find({
-    createdBy: userId,
-  })
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit);
+const getURLsByUserId = (userId: string,page: number,limit: number) => {
+  return URL.aggregate([
+    {
+      $match: {
+        createdBy: new mongoose.Types.ObjectId(userId),
+      },
+    },
+
+    {
+      $lookup: {
+        from: "visits",
+        localField: "_id",
+        foreignField: "linkId",
+        as: "visits",
+      },
+    },
+
+    {
+      $addFields: {
+        totalClicks: {
+          $size: "$visits", //$ means Take the value inside visits
+        },
+      },
+    },
+
+    {
+      $project: {
+        visits: 0,
+      },
+    },
+
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+
+    {
+      $skip: (page - 1) * limit,
+    },
+
+    {
+      $limit: limit,
+    },
+  ]);
 };
 
 const countURLsByUserId = (userId: string) => {
@@ -55,8 +71,7 @@ const countURLsByUserId = (userId: string) => {
 export { 
   checkShortIdExists, 
   createShortURL, 
-  updateVisitHistory, 
   findURLByShortId, 
   getURLsByUserId, 
   countURLsByUserId 
-};
+  };
