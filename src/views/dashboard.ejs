@@ -23,16 +23,22 @@
       <div class="header">
         <h1>Welcome to LinkForge</h1>
 
+        <!-- Logout Form -->
         <form action="/user/logout" method="POST" class="logout-form">
           <button type="submit" class="logout-btn">Logout</button>
         </form>
       </div>
 
-      <!-- Form -->
+      <!-- URL Generation Form -->
 
       <form class="url-form" method="POST" action="/url/generate">
-        <label>Enter your original URL</label>
-        <input type="text" name="url" placeholder="https://example.com/my-long-url" required />
+        <label for="url">Destination URL</label>
+        <input type="url" id="url" name="url" placeholder="https://example.com/my-long-url" required />
+
+        <label for="customAlias">Custom Alias (Optional)</label>
+        <input type="text" id="customAlias" name="customAlias" placeholder="e.g. MyPortfolio" minlength="3" maxlength="50" />
+        <small class="form-hint"> Leave blank to auto-generate. Aliases are case-sensitive. </small>
+        
         <button type="submit">Generate</button>
       </form>
 
@@ -79,7 +85,7 @@
                 <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"> <%= url.redirectURL %> </a>
               </td>
               <td>
-              <%= url.totalClicks || 0 %>
+                <%= url.totalClicks || 0 %>
               </td>
               <td>
                 <button class="qr-btn" title="Show QR" data-id="<%= url.shortId %>">

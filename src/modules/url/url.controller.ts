@@ -7,14 +7,15 @@ const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) 
   const body = req.body;
 
   try {
-    const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id });
+    const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id, customAlias: body.customAlias });
 
     //PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
     return res.redirect(`/dashboard/?id=${shortid}`);
-  } catch (error) {
-    console.error(error);
+  } 
+  catch (error) {
 
-    return res.redirect(`/dashboard?error=${encodeURIComponent("Something went wrong, please try again")}`);
+    const message = error instanceof Error ? error.message : "Something went wrong. Please try again.";
+    return res.redirect(`/dashboard?error=${encodeURIComponent(message)}`);
   }
 });
 

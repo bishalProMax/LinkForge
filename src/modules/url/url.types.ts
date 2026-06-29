@@ -1,6 +1,7 @@
 export type GenerateShortURLProps = {
   originalURL: string;
   userId: string;
+  customAlias?: string;
 };
 
 export type CreateShortURLData = {
