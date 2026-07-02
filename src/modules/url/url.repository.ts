@@ -68,10 +68,18 @@ const countURLsByUserId = (userId: string) => {
   });
 };
 
+const deleteURLByShortId = (shortId: string) => {
+  return URL.findOneAndDelete({
+    shortId,
+  });
+}
+
+
 export { 
   checkShortIdExists, 
   createShortURL, 
   findURLByShortId, 
   getURLsByUserId, 
-  countURLsByUserId 
+  countURLsByUserId,
+  deleteURLByShortId
   };

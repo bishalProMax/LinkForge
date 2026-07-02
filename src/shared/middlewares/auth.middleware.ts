@@ -11,6 +11,7 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
   next();
 });
 
+// Middleware to redirect authenticated users away from login/signup pages
 const redirectIfAuthenticated = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const token = req.cookies?.token;
   if (!token) {

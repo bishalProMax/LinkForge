@@ -1,85 +1,220 @@
-.qr-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+/* ==========================================================
+   Base Modal
+========================================================== */
+
+.qr-modal,
+.delete-modal {
+  position: fixed;
+  inset: 0;
+
+  display: none;
+
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.45);
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  opacity: 0;
+
+  transition: opacity 0.2s ease;
+
+  z-index: 9999;
 }
 
-.qr-modal.show {
-    opacity: 1;
+.qr-modal.show,
+.delete-modal.show {
+  opacity: 1;
 }
+
+/* ==========================================================
+   Modal Content
+========================================================== */
+
+.qr-content,
+.delete-content {
+  position: relative;
+
+  background: #fff;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.18),
+    0 8px 16px rgba(0, 0, 0, 0.08);
+
+  transform: scale(0.92);
+
+  opacity: 0;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.qr-modal.show .qr-content,
+.delete-modal.show .delete-content {
+  transform: scale(1);
+
+  opacity: 1;
+}
+
+/* ==========================================================
+   QR Modal
+========================================================== */
 
 .qr-content {
-    background: white;
-    padding: 24px 20px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-    box-shadow:
-        0 10px 25px rgba(0, 0, 0, 0.15),
-        0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 360px;
 
-    transform: scale(0.9);
-    opacity: 0;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-    position: relative;
-}
+  padding: 24px;
 
-.qr-modal.show .qr-content {
-    transform: scale(1);
-    opacity: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 18px;
 }
 
 .qr-content h3 {
-    font-size: 16px;
-    font-weight: 600;
+  font-size: 18px;
+
+  font-weight: 700;
 }
 
 .qr-actions {
-    display: flex;
-    gap: 10px;
+  display: flex;
+
+  gap: 10px;
 }
 
 .qr-actions button {
-    width: 64px;
-    height: 44px;
-    font-size: 18px;
+  width: 64px;
+
+  height: 44px;
+
+  font-size: 18px;
 }
 
 .qr-actions button:hover {
-    transform: translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .qr-actions button:active {
-    transform: scale(0.95);
+  transform: scale(0.95);
 }
+
+/* ==========================================================
+   Delete Modal
+========================================================== */
+
+.delete-content {
+  width: 420px;
+
+  padding: 28px;
+}
+
+.delete-content h3 {
+  font-size: 22px;
+
+  color: #111827;
+
+  margin-bottom: 12px;
+}
+
+.delete-content p {
+  color: #6b7280;
+
+  line-height: 1.7;
+
+  margin-bottom: 28px;
+}
+
+.delete-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+}
+
+.delete-actions button {
+  min-width: 110px;
+}
+
+#cancelDeleteBtn {
+  background: #f3f4f6;
+
+  color: #374151;
+}
+
+#cancelDeleteBtn:hover {
+  background: #e5e7eb;
+}
+
+#confirmDeleteBtn {
+  background: #dc2626;
+}
+
+#confirmDeleteBtn:hover {
+  background: #b91c1c;
+}
+
+/* ==========================================================
+   Close Icon
+========================================================== */
 
 .close {
-    cursor: pointer;
-    font-size: 20px;
-    position: absolute;
-    top: 10px;
-    right: 15px;
+  position: absolute;
+
+  top: 12px;
+
+  right: 16px;
+
+  cursor: pointer;
+
+  font-size: 22px;
+
+  color: #6b7280;
 }
 
+.close:hover {
+  color: #111827;
+}
+
+/* ==========================================================
+   QR Animation
+========================================================== */
+
 #qrCanvas {
-    opacity: 0;
-    transform: scale(0.7);
-    transition:
-        transform 0.3s ease-out,
-        opacity 0.3s ease-out;
+  opacity: 0;
+
+  transform: scale(0.75);
+
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
 }
 
 #qrCanvas.show {
-    opacity: 1;
-    transform: scale(1);
+  opacity: 1;
+
+  transform: scale(1);
+}
+
+/* ==========================================================
+   Responsive
+========================================================== */
+
+@media (max-width: 600px) {
+  .delete-content {
+    width: 92%;
+
+    padding: 24px;
+  }
+
+  .qr-content {
+    width: 92%;
+  }
 }

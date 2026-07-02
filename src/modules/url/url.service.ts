@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
-import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, countURLsByUserId } from "./url.repository.js";
+import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, countURLsByUserId, deleteURLByShortId } from "./url.repository.js";
 import type { GenerateShortURLProps } from "./url.types.js";
-import { createVisit, countVisits, getVisits } from "./visit.repository.js";
+import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { RESERVED_ALIASES } from "../../shared/utils/reservedAliases.js";
 
 const generateShortURL = async ({ originalURL, userId, customAlias }: GenerateShortURLProps): Promise<string> => {
@@ -70,4 +70,26 @@ const getTotalUserURLs = async (userId: string): Promise<number> => {
   return countURLsByUserId(userId);
 };
 
-export { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs };
+const deleteURL = async (shortId: string, userId: string): Promise<boolean> => {
+  const url = await findURLByShortId(shortId);
+
+  if (!url) {
+    return false;
+  }
+
+  if (url.createdBy.toString() !== userId) {
+    throw new Error("Unauthorized to delete this URL.");
+  }
+
+  const deletedURL = await deleteURLByShortId(shortId);
+
+  if (!deletedURL) {
+    return false;
+  }
+
+  await deleteVisitsByLinkId(deletedURL._id.toString());
+
+  return true;
+};
+
+export { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs, deleteURL };

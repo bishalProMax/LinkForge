@@ -1,36 +1,53 @@
 // ---------------- COPY TO CLIPBOARD ----------------
-async function copyToClipboard(btn) {
-    if (!btn) {
+
+async function copyToClipboard(button) {
+  if (!button) {
     return;
   }
 
-  const shortId = btn.dataset.id;
+  const fullUrl = button.dataset.url;
 
-  if (!shortId) return;
-
-  const fullUrl = `${window.location.origin}/url/${shortId}`;
+  if (!fullUrl) {
+    return;
+  }
 
   try {
     await navigator.clipboard.writeText(fullUrl);
-    btn.classList.add("copied");
-    const icon = btn.querySelector("i");
 
-    if (!icon) return;
+    const icon = button.querySelector("i");
 
-    icon.classList.replace("ri-file-copy-line", "ri-check-line");
+    if (!icon) {
+      return;
+    }
+
+    button.classList.add("copied");
+
+    icon.classList.replace(
+      "ri-file-copy-line",
+      "ri-check-line"
+    );
 
     setTimeout(() => {
-      btn.classList.remove("copied");
-      icon.classList.replace("ri-check-line", "ri-file-copy-line");
+      button.classList.remove("copied");
+
+      icon.classList.replace(
+        "ri-check-line",
+        "ri-file-copy-line"
+      );
     }, 1500);
-  } catch {
-    alert("Failed to copy");
+
+  } catch (error) {
+
+    console.error("Failed to copy:", error);
+
+    alert("Failed to copy the link.");
   }
 }
 
 // ---------------- COPY BUTTON EVENTS ----------------
-document.querySelectorAll(".copy-btn").forEach((btn) => {
-  btn.addEventListener("click", function () {
-    copyToClipboard(this);
+
+document.querySelectorAll(".copy-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    copyToClipboard(button);
   });
 });

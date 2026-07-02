@@ -4,6 +4,8 @@
 @import "../components/table.css";
 @import "../components/modal.css";
 @import "../components/loader.css";
+@import "../components/badge.css";
+@import "../components/dropdown.css";
 
 .header {
   display: flex;
@@ -29,15 +31,11 @@ button:hover {
   background: #5a67d8;
 }
 
-.logout-form {
-  margin: 0;
-}
-
 .url-form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin: 20px 0;
+    gap: 10px;
+    margin:28px 0 40px;
 }
 
 .url-form label {
@@ -56,10 +54,13 @@ button:hover {
     margin-top: -4px;
 }
 
-.url-form button {
-    align-self: center;
-    min-width: 160px;
-    padding: 12px 20px;
+.url-form button{
+align-self:center;
+min-width:220px;
+height:52px;
+font-weight:600;
+margin-top:8px;
+font-size:16px;
 }
 
 .url-form input:focus {
@@ -69,19 +70,41 @@ button:hover {
 }
 
 .dashboard-container {
-  max-width: 1100px;
-  margin: 50px auto;
-  background: #fff;
-  padding: 35px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width:min(1400px,95%);
+    margin:32px auto;
+    padding:32px 36px;
+    background: #fff;
+    border-radius: 15px;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 28px;
-  color: #333;
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
 }
+
+.dashboard-header small {
+  display: block;
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.dashboard-header small strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.dashboard-header h1 {
+  font-size: 48px;
+  font-weight: 800;
+  line-height:1.1;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+
 
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -89,11 +112,10 @@ body {
   min-height: 100vh;
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+input{
+height:48px;
+padding:0 16px;
+font-size:15px;
 }
 
 .copy-btn {
@@ -156,9 +178,13 @@ input {
 
 .logout-btn {
   background: #e53e3e;
-  padding: 8px 14px;
   font-size: 14px;
+  margin-top: 4px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
 }
+
 
 .logout-btn:hover {
   background: #c53030;

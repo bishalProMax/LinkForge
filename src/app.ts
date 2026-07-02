@@ -1,7 +1,6 @@
 import express from "express";
 import { errorHandler, notFound } from "./shared/middlewares/error.middleware.js";
 import cookieParser from "cookie-parser";
-import { authenticateUser } from "./shared/middlewares/auth.middleware.js";
 import path from "path";
 import helmet from "helmet";
 import urlRoute from "./modules/url/url.route.js";
@@ -77,7 +76,7 @@ app.set("view engine","ejs")
 app.set("views", path.join(__dirname, "views"))
 
 // routes
-app.use("/url",authenticateUser, urlRoute)
+app.use("/url", urlRoute)
 app.use("/user", userRoute)
 app.use("/", pageRouter)
 app.use("/auth", oauthRoutes)

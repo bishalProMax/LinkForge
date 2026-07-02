@@ -3,12 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <link rel="icon" type="image/png" href="/images/icon.png" />
@@ -20,117 +18,250 @@
 
   <body>
     <div class="dashboard-container">
-      <div class="header">
-        <h1>Welcome to LinkForge</h1>
+      <!-- Header -->
+      <header class="dashboard-header">
+        <div>
+          <h1>Dashboard</h1>
+          <small>Welcome back, <strong><%= username %></strong> — here's your link overview</small>
+        </div>
 
-        <!-- Logout Form -->
-        <form action="/user/logout" method="POST" class="logout-form">
-          <button type="submit" class="logout-btn">Logout</button>
+        <!-- logout -->
+        <form action="/user/logout" method="POST">
+          <button class="logout-btn" type="submit"> <i class="ri-logout-box-r-line"></i> Logout</button>
         </form>
-      </div>
+      </header>
 
-      <!-- URL Generation Form -->
+      <!-- Create URL -->
+      <form class="url-form" action="/url/generate" method="POST">
+        <label>Destination URL</label>
+        <input required id="url" name="url" type="url" placeholder="https://example.com" />
+        <label>Custom Alias (Optional)</label>
+        <input id="customAlias" name="customAlias" minlength="3" maxlength="50" placeholder="e.g. portfolio" />
+        <small> Leave blank to auto-generate. </small>
 
-      <form class="url-form" method="POST" action="/url/generate">
-        <label for="url">Destination URL</label>
-        <input type="url" id="url" name="url" placeholder="https://example.com/my-long-url" required />
-
-        <label for="customAlias">Custom Alias (Optional)</label>
-        <input type="text" id="customAlias" name="customAlias" placeholder="e.g. MyPortfolio" minlength="3" maxlength="50" />
-        <small class="form-hint"> Leave blank to auto-generate. Aliases are case-sensitive. </small>
-        
-        <button type="submit">Generate</button>
+        <button type="submit"> <i class="ri-links-line"></i> Generate Short URL</button>
       </form>
 
-      <!-- Error Message -->
-      <% if (error) { %>
+      <!-- error message -->
+      <% if(error){ %>
       <p class="error"><%= error %></p>
       <% } %>
-
-      <!-- Generated URL -->
-      <% if (shortId) { %>
+      <% if(shortId){ %>
       <div class="generated">
-        URL Generated:
-        <a href="/url/<%= shortId %>" target="_blank"> <%= shortId %> </a>
+        URL Generated :
+        <a target="_blank" href="/url/<%= shortId %>"> <%= `${baseUrl}/url/${shortId}` %> </a>
       </div>
       <% } %>
 
-      <!-- URL List -->
-      <div class="table-section">
-        <% if (urls && urls.length > 0) { %>
+      <h2>My Links</h2>
 
-        <h3>All URLs</h3>
+      <!-- table section -->
+      <section class="table-section">
+        <% if(urls && urls.length >0){ %>
 
-        <table cellpadding="20" cellspacing="0">
-          <thead>
-            <tr>
-              <th>S. No.</th>
-              <th>ShortID</th>
-              <th>Website</th>
-              <th>Clicks</th>
-              <th>QR</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% urls.forEach((url,index) => { %>
-            <tr>
-              <td><%= index + 1  %></td>
-              <td class="shortid-cell">
-                <a href="/url/<%= url.shortId %>" target="_blank"> <%= url.shortId %> </a>
-                <button type="button" class="copy-btn" data-id="<%= url.shortId %>" title="Copy short URL">
-                  <i class="ri-file-copy-line"></i>
-                </button>
-              </td>
-              <td>
-                <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"> <%= url.redirectURL %> </a>
-              </td>
-              <td>
-                <%= url.totalClicks || 0 %>
-              </td>
-              <td>
-                <button class="qr-btn" title="Show QR" data-id="<%= url.shortId %>">
-                  <i class="ri-qr-code-line"></i>
-                </button>
-              </td>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Short Link</th>
+                <th>Destination URL</th>
+                <th>Status</th>
+                <th>Clicks</th>
+                <th>Created</th>
+                <th>Expires</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-        <!-- pagination -->
+            <tbody>
+              <% urls.forEach((url) => { %>
+
+              <tr>
+                <!-- Short Link -->
+
+                <td class="short-link-cell">
+                  <a href="/url/<%= url.shortId %>" target="_blank" class="short-link"> <%= `${baseUrl}/url/${url.shortId}` %> </a>
+                </td>
+
+                <!-- Destination -->
+
+                <td class="destination-cell">
+                  <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link" title="<%= url.redirectURL %>"> <%= url.redirectURL %> </a>
+                </td>
+
+                <!-- Status -->
+
+                <td>
+                  <span class="status-badge status-active"> Active </span>
+                </td>
+
+                <!-- Clicks -->
+
+                <td class="click-count"><%= url.totalClicks || 0 %></td>
+
+                <!-- Created -->
+
+                <td>
+                  <%= new Date(url.createdAt).toLocaleDateString(
+            "en-IN",
+            {
+                day:"numeric",
+                month:"numeric",
+                year:"numeric"
+            }
+        ) %>
+                </td>
+
+                <!-- Expires -->
+
+                <td>Never</td>
+
+                <!-- Actions -->
+
+                <td>
+                  <div class="action-dropdown">
+                    <button class="action-btn" type="button" aria-label="Open actions">
+                      <i class="ri-more-2-fill"></i>
+                    </button>
+
+                    <div class="action-menu">
+                      <button class="analytics-btn" data-shortid="<%= url.shortId %>">
+                        <i class="ri-line-chart-line"></i>
+                        Analytics
+                      </button>
+
+                      <button class="copy-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>">
+                        <i class="ri-file-copy-line"></i>
+                        Copy Link
+                      </button>
+
+                      <button class="qr-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>" data-id="<%= url.shortId %>">
+                        <i class="ri-qr-code-line"></i>
+                        Show QR
+                      </button>
+
+                      <hr />
+
+                      <button class="edit-btn" data-shortid="<%= url.shortId %>">
+                        <i class="ri-edit-line"></i>
+                        Edit
+                      </button>
+
+                      <button class="disable-btn" data-shortid="<%= url.shortId %>">
+                        <i class="ri-forbid-line"></i>
+                        Disable
+                      </button>
+
+                      <hr />
+
+                      <button class="delete-btn danger" data-shortid="<%= url.shortId %>" data-url="<%= url.redirectURL %>">
+                        <i class="ri-delete-bin-line"></i>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- urls links length shown -->
+        <div class="table-header">
+          <span>
+            Showing
+            <%= startIndex %>–<%= endIndex %>
+            of
+            <%= totalUrls %>
+            links
+          </span>
+        </div>
+        <!-- PAGINATION -->
+
         <% if (totalPages > 1) { %>
+
         <div class="pagination">
           <% if (currentPage > 1) { %>
-          <a href="/dashboard?page=<%= currentPage - 1 %>" class="pagination-btn nav">← Prev</a>
+
+          <a href="/dashboard?page=<%= currentPage - 1 %>" class="pagination-btn nav"> ← Prev </a>
+
           <% } else { %>
-          <span class="pagination-btn nav disabled">← Prev</span>
+
+          <span class="pagination-btn nav disabled"> ← Prev </span>
+
           <% } %>
 
-          <% const pages = new Set(); pages.add(1); pages.add(totalPages); for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) pages.add(i); const
-          sorted = [...pages].sort((a, b) => a - b); let prev = 0; for (const p of sorted) { if (p - prev > 1) { %>
-          <span class="pagination-dots">···</span>
-          <%  } %>
-          <a href="/dashboard?page=<%= p %>" class="pagination-btn <%= currentPage === p ? 'active' : '' %>"><%= p %></a>
-          <%  prev = p;
-          }%>
-          <% if (currentPage < totalPages) { %>
-          <a href="/dashboard?page=<%= currentPage + 1 %>" class="pagination-btn nav">Next →</a>
+          <% const pages = new Set(); pages.add(1); pages.add(totalPages); for ( let i = Math.max(1,currentPage-1); i <= Math.min(totalPages,currentPage+1); i++ ){ pages.add(i); } const
+          sorted=[...pages].sort((a,b)=>a-b); let prev=0; for(const p of sorted){ if(p-prev>1){ %>
+
+          <span class="pagination-dots"> ··· </span>
+
+          <%
+
+      }
+
+  %>
+
+          <a href="/dashboard?page=<%= p %>" class="pagination-btn <%= currentPage===p?'active':'' %>"> <%= p %> </a>
+
+          <%
+
+      prev=p;
+
+    }
+
+  %>
+
+          <% if(currentPage<totalPages){ %>
+
+          <a href="/dashboard?page=<%= currentPage+1 %>" class="pagination-btn nav"> Next → </a>
+
           <% } else { %>
-          <span class="pagination-btn nav disabled">Next →</span>
+
+          <span class="pagination-btn nav disabled"> Next → </span>
+
           <% } %>
         </div>
+
         <% } %>
 
         <% } else { %>
-        <p>No URLs generated yet</p>
+
+        <div class="empty-state">
+          <i class="ri-links-line"></i>
+
+          <h3>No links yet</h3>
+
+          <p>Create your first short URL to start managing links.</p>
+        </div>
+
         <% } %>
+      </section>
+    </div>
+
+    <!-- DELETE MODAL -->
+    <div id="deleteModal" class="delete-modal">
+      <div class="delete-content">
+        <h3 id="deleteTitle">Delete Link?</h3>
+
+        <p id="deleteMessage"></p>
+
+        <div class="delete-actions">
+          <button id="cancelDeleteBtn" data-close-modal type="button">Cancel</button>
+
+          <button id="confirmDeleteBtn" type="button" class="danger">Delete</button>
+        </div>
       </div>
     </div>
 
     <!-- QR MODAL -->
+
     <div id="qrModal" class="qr-modal">
       <div class="qr-content">
-        <span class="close" id="closeQRBtn"> &times; </span>
+        <span class="close" data-close-modal> &times; </span>
+
         <h3>Scan QR Code</h3>
 
         <div id="qrLoader" class="dots-loader">
@@ -142,10 +273,11 @@
         <canvas id="qrCanvas"></canvas>
 
         <div class="qr-actions">
-          <button id="downloadQR" title="Download">
+          <button id="downloadQR">
             <i class="ri-download-2-line"></i>
           </button>
-          <button id="shareQR" title="Share">
+
+          <button id="shareQR">
             <i class="ri-share-line"></i>
           </button>
         </div>

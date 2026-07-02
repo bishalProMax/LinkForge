@@ -7,7 +7,7 @@ import connectToMongoDB from "./infrastructure/configs/db.config.js";
 
 // schedule cleanup job to run every hour
 (async (): Promise<void> => {await cleanupQueue.add("cleanup-unverified-users", {triggeredBy: "cron",}, { jobId: "cleanup-unverified-users", 
-      repeat: {every:1000 * 60 * 60 * 1}, 
+      repeat: {every:1000 * 60 * 60 }, 
     });
 }
 )();

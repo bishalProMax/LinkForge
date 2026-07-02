@@ -1,6 +1,8 @@
 // ---------------- CLOSE MODAL ----------------
-function closeQR() {
-  const modal = document.getElementById("qrModal");
+
+function closeModal(modal) {
+  if (!modal) return;
+
   modal.classList.remove("show");
 
   setTimeout(() => {
@@ -8,35 +10,58 @@ function closeQR() {
   }, 200);
 }
 
-// ---------------- CLOSE BUTTON EVENT ----------------
-const closeQRBtn = document.getElementById("closeQRBtn");
-if (closeQRBtn) {
-  closeQRBtn.addEventListener("click", closeQR);
+// ---------------- OPEN MODAL ----------------
+
+function openModal(modal) {
+  if (!modal) return;
+
+  modal.style.display = "flex";
+
+  requestAnimationFrame(() => {
+    modal.classList.add("show");
+  });
 }
 
-// ---------------- CLOSE ON OUTSIDE CLICK ----------------
-window.addEventListener("click", function (e) {
-  const modal = document.getElementById("qrModal");
-  const content = document.querySelector(".qr-content");
+// ---------------- CLOSE BUTTONS ----------------
 
-  if (!modal || !content) {
+document.querySelectorAll("[data-close-modal]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const modal = button.closest(".qr-modal, .delete-modal");
+
+    closeModal(modal);
+  });
+});
+
+// ---------------- OUTSIDE CLICK ----------------
+
+window.addEventListener("click", (e) => {
+  const openedModal = document.querySelector(
+    ".qr-modal.show, .delete-modal.show"
+  );
+
+  if (!openedModal) {
     return;
   }
 
-  if (modal.style.display === "flex") {
-    if (e.target.closest("button")) {
-      return;
-    }
+  const modalContent = openedModal.querySelector(
+    ".qr-content, .delete-content"
+  );
 
-    if (!content.contains(e.target)) {
-      closeQR();
-    }
+  if (!modalContent.contains(e.target)) {
+    closeModal(openedModal);
   }
 });
 
-// ---------------- ESC KEY CLOSE ----------------
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    closeQR();
+// ---------------- ESC ----------------
+
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") {
+    return;
   }
+
+  document
+    .querySelectorAll(".qr-modal.show, .delete-modal.show")
+    .forEach(closeModal);
 });
+
+export { openModal, closeModal };
