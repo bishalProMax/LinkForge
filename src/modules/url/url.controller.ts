@@ -1,13 +1,15 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
+import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
 import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs, deleteURL } from "./url.service.js";
 import type { Request, Response } from "express";
+import type { DashboardURL } from "./url.types.js";
 
 // Generate short URL
 const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) => {
   const body = req.body;
 
   try {
-    const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id, customAlias: body.customAlias });
+    const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id, customAlias: body.customAlias, expiration: body.expiration, customExpiry: body.customExpiry });
 
     //PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
     return res.redirect(`/dashboard/?id=${shortid}`);
@@ -58,7 +60,11 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
   const shortId = typeof req.query.id === "string" ? req.query.id : null;
 
   const username = req.user!.username;
-  return res.render("dashboard", { shortId, urls: allUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex,totalUrls,username });
+  const formattedUrls:DashboardURL[] = allUrls.map((url) => ({
+    ...url,
+    expiryDisplay: getExpiryDisplay(url.expiresAt),
+  }));
+  return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, username });
 });
 
 // delete a short URL

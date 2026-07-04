@@ -22,12 +22,14 @@
       <header class="dashboard-header">
         <div>
           <h1>Dashboard</h1>
-          <small>Welcome back, <strong><%= username %></strong> — here's your link overview</small>
+          <small
+            >Welcome back, <strong><%= username %></strong> — here's your link overview</small
+          >
         </div>
 
         <!-- logout -->
         <form action="/user/logout" method="POST">
-          <button class="logout-btn" type="submit"> <i class="ri-logout-box-r-line"></i> Logout</button>
+          <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
         </form>
       </header>
 
@@ -38,8 +40,26 @@
         <label>Custom Alias (Optional)</label>
         <input id="customAlias" name="customAlias" minlength="3" maxlength="50" placeholder="e.g. portfolio" />
         <small> Leave blank to auto-generate. </small>
+        <div class="form-group">
+          <label for="expiration">Expiration</label>
 
-        <button type="submit"> <i class="ri-links-line"></i> Generate Short URL</button>
+          <select id="expiration" name="expiration">
+            <option value="never" selected>Never</option>
+            <option value="1d">1 Day</option>
+            <option value="7d">7 Days</option>
+            <option value="30d">30 Days</option>
+            <option value="90d">90 Days</option>
+            <option value="custom">Custom Date</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="customDateWrapper" style="display: none">
+          <label for="customExpiry">Expiry Date</label>
+
+          <input type="datetime-local" id="customExpiry" name="customExpiry" />
+        </div>
+
+        <button type="submit"><i class="ri-links-line"></i> Generate Short URL</button>
       </form>
 
       <!-- error message -->
@@ -101,8 +121,8 @@
 
                 <!-- Created -->
 
-                <td>
-                  <%= new Date(url.createdAt).toLocaleDateString(
+                <td title="<%= url.createdAt.toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) %>">
+                  <%= url.createdAt.toLocaleDateString( 
             "en-IN",
             {
                 day:"numeric",
@@ -114,7 +134,7 @@
 
                 <!-- Expires -->
 
-                <td>Never</td>
+                <td title="<%= url.expiryDisplay.title %>"><%= url.expiryDisplay.text %></td>
 
                 <!-- Actions -->
 

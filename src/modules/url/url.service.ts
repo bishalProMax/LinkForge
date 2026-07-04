@@ -4,7 +4,7 @@ import type { GenerateShortURLProps } from "./url.types.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { RESERVED_ALIASES } from "../../shared/utils/reservedAliases.js";
 
-const generateShortURL = async ({ originalURL, userId, customAlias }: GenerateShortURLProps): Promise<string> => {
+const generateShortURL = async ({ originalURL, userId, customAlias, expiration, customExpiry }: GenerateShortURLProps): Promise<string> => {
   let shortid: string;
 
   if (customAlias) {
@@ -18,8 +18,7 @@ const generateShortURL = async ({ originalURL, userId, customAlias }: GenerateSh
     }
 
     shortid = customAlias;
-  } 
-  else {
+  } else {
     let exists;
 
     do {
@@ -28,10 +27,13 @@ const generateShortURL = async ({ originalURL, userId, customAlias }: GenerateSh
     } while (exists);
   }
 
+  const expiresAt = getExpiryDate(expiration, customExpiry );
+
   await createShortURL({
     shortId: shortid,
     redirectURL: originalURL,
     createdBy: userId,
+    expiresAt,
   });
 
   return shortid;
@@ -62,7 +64,7 @@ const getURLAnalytics = async (shortId: string): Promise<any> => {
   };
 };
 
-const getUserURLs = async (userId: string, page: number, limit: number): Promise<any> => {
+const getUserURLs = async (userId: string, page: number, limit: number): Promise<any[]> => {
   return getURLsByUserId(userId, page, limit);
 };
 
@@ -90,6 +92,31 @@ const deleteURL = async (shortId: string, userId: string): Promise<boolean> => {
   await deleteVisitsByLinkId(deletedURL._id.toString());
 
   return true;
+};
+
+const getExpiryDate = ( expiration:GenerateShortURLProps["expiration"], customExpiry?: Date ): Date | undefined => {
+
+  const now = Date.now();
+
+  switch (expiration) {
+    case "never":
+      return undefined;
+
+    case "1d":
+      return new Date(now + 24 * 60 * 60 * 1000);
+
+    case "7d":
+      return new Date(now + 7 * 24 * 60 * 60 * 1000);
+
+    case "30d":
+      return new Date(now + 30 * 24 * 60 * 60 * 1000);
+
+    case "90d":
+      return new Date(now + 90 * 24 * 60 * 60 * 1000);
+
+    case "custom":
+      return customExpiry;
+  }
 };
 
 export { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs, deleteURL };

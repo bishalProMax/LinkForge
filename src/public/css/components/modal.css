@@ -112,7 +112,9 @@
 .delete-content {
   width: 420px;
 
+  max-height: 85vh;
   padding: 28px;
+
 }
 
 .delete-content h3 {
@@ -124,11 +126,18 @@
 }
 
 .delete-content p {
-  color: #6b7280;
+  color: #6b7280; 
 
   line-height: 1.7;
 
   margin-bottom: 28px;
+}
+
+.delete-content p strong {
+  color: #111827;
+  font-weight: 700;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .delete-actions {

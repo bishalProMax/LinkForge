@@ -131,3 +131,9 @@
 .action-menu .danger:hover {
     background: rgba(220,38,38,.08);
 }
+
+.action-menu.open-fixed {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}

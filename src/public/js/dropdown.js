@@ -1,56 +1,97 @@
 // ---------------- ACTION DROPDOWN ----------------
+const DROPDOWN_TRANSITION_MS = 180;
 
-const dropdowns = document.querySelectorAll(".action-dropdown");
+function closeMenu(menu, home) {
+  menu.classList.remove("open-fixed");
 
-// ---------------- CLOSE ALL ----------------
+  window.setTimeout(() => {
+    if (!menu.classList.contains("open-fixed")) {
+      menu.style.position = "";
+      menu.style.top = "";
+      menu.style.bottom = "";
+      menu.style.right = "";
+      menu.style.left = "";
+      menu.style.visibility = "";
+      menu.style.display = "none"; 
 
-function closeAllDropdowns() {
-  dropdowns.forEach((dropdown) => {
-    dropdown.classList.remove("open");
-  });
+      if (home && menu.parentElement !== home) {
+        home.appendChild(menu);
+      }
+    }
+  }, DROPDOWN_TRANSITION_MS);
 }
 
-// ---------------- TOGGLE ----------------
+function openMenu(btn, menu) {
+  document.body.appendChild(menu); 
 
-dropdowns.forEach((dropdown) => {
-  const button = dropdown.querySelector(".action-btn");
+  menu.style.position = "fixed";
+  menu.style.visibility = "hidden";
+  menu.style.display = "block";
+  menu.classList.add("open-fixed");
 
-  if (!button) {
+  const rect = btn.getBoundingClientRect();
+  const menuHeight = menu.offsetHeight;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+
+  menu.style.right = `${window.innerWidth - rect.right}px`;
+  menu.style.left = "auto";
+
+  if (spaceBelow < menuHeight + 8 && spaceAbove > spaceBelow) {
+    menu.style.bottom = `${window.innerHeight - rect.top + 8}px`;
+    menu.style.top = "auto";
+  } else {
+    menu.style.top = `${rect.bottom + 8}px`;
+    menu.style.bottom = "auto";
+  }
+
+  menu.style.visibility = "visible";
+}
+
+// ---------------- CACHE btn <-> menu <-> home PAIRS ONCE ----------------
+const dropdownPairs = [];
+
+document.querySelectorAll(".action-dropdown").forEach((dropdown) => {
+  const btn = dropdown.querySelector(".action-btn");
+  const menu = dropdown.querySelector(".action-menu");
+
+  if (!btn || !menu) {
     return;
   }
 
-  button.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+  dropdownPairs.push({ btn, menu, home: dropdown });
 
-    const isOpen = dropdown.classList.contains("open");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
 
-    closeAllDropdowns();
+    dropdownPairs.forEach(({ menu: m, home }) => {
+      if (m !== menu) closeMenu(m, home);
+    });
 
-    if (!isOpen) {
-      dropdown.classList.add("open");
+    if (menu.classList.contains("open-fixed")) {
+      closeMenu(menu, dropdown);
+    } else {
+      openMenu(btn, menu);
     }
   });
 });
 
-// ---------------- MENU CLICK ----------------
-
-document.querySelectorAll(".action-menu").forEach((menu) => {
-  menu.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
-});
-
-// ---------------- OUTSIDE CLICK ----------------
-
 document.addEventListener("click", () => {
-  closeAllDropdowns();
+  dropdownPairs.forEach(({ menu, home }) => closeMenu(menu, home));
 });
-
-// ---------------- ESC ----------------
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
-    closeAllDropdowns();
+    dropdownPairs.forEach(({ menu, home }) => closeMenu(menu, home));
   }
 });
+
+window.addEventListener(
+  "scroll",
+  () => {
+    document.querySelectorAll(".action-menu.open-fixed").forEach((menu) => {
+      closeMenu(menu, menu._dropdownHome);
+    });
+  },
+  true // capture: catches scroll on any scrollable ancestor, not just window
+);

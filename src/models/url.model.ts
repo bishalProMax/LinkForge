@@ -7,6 +7,7 @@ export interface IURL {
   shortId: string;
   redirectURL: string;
   createdBy: mongoose.Types.ObjectId;
+  expiresAt: Date | null;
 }
 
 // -----------------------------URL DOCUMENT-----------------------------
@@ -32,6 +33,11 @@ const urlSchema = new mongoose.Schema<IURL, URLModel>(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+    expiresAt: {
+     type: Date,
+     default: null,
+     index: true,
     },
   },
   {
