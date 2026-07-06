@@ -7,14 +7,6 @@
 @import "../components/badge.css";
 @import "../components/dropdown.css";
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 10px;
-}
-
 button {
   padding: 10px 15px;
   border: none;
@@ -46,12 +38,6 @@ button:hover {
 
 .url-form input {
     width: 100%;
-}
-
-.form-hint {
-    font-size: 13px;
-    color: #6b7280;
-    margin-top: -4px;
 }
 
 .url-form button{
@@ -104,8 +90,6 @@ font-size:16px;
   color: #111827;
 }
 
-
-
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #667eea, #764ba2);
@@ -118,64 +102,6 @@ padding:0 16px;
 font-size:15px;
 }
 
-.copy-btn {
-  background: transparent;
-  padding: 6px;
-  color: #6b7280;
-  font-size: 18px;
-  display: inline-flex;
-  transition:
-    color 0.2s ease,
-    transform 0.1s ease;
-}
-
-.copy-btn:hover {
-  background: #eef2ff;
-  transform: scale(1.1);
-}
-
-.copy-btn:active {
-  transform: scale(0.95);
-}
-
-.copy-btn.copied {
-  color: green;
-  position: relative;
-}
-
-.qr-btn {
-  background: transparent;
-  color: #6b7280;
-  font-size: 20px;
-  padding: 6px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.qr-btn:hover {
-  background: #eef2ff;
-  color: #5a67d8;
-  transform: scale(1.1);
-}
-
-.qr-btn:active {
-  transform: scale(0.95);
-}
-
-.resend-btn {
-  background: transparent;
-  color: #667eea;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.resend-btn:disabled {
-  color: #9ca3af;
-  cursor: not-allowed;
-}
-
 .logout-btn {
   background: #e53e3e;
   font-size: 14px;
@@ -185,44 +111,12 @@ font-size:15px;
   font-weight: 600;
 }
 
-
 .logout-btn:hover {
   background: #c53030;
 }
 
 .form-group {
   margin-bottom: 15px;
-}
-
-.password-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.password-wrapper input {
-  flex: 1;
-}
-
-.password-wrapper button {
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-  width: 70px;
-  text-align: center;
-}
-
-.captcha-container {
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
-}
-
-.otp-input {
-  text-align: center;
-  letter-spacing: 10px;
-  font-size: 22px;
-  font-weight: 600;
 }
 
 .pagination {

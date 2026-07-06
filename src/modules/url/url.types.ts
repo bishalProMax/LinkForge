@@ -26,4 +26,6 @@ export interface DashboardURL {
   expiresAt: Date | null;
   totalClicks: number;
   expiryDisplay: ExpiryDisplay;
+  isDisabled: boolean;
+  status: "active" | "disabled" | "expired";
 }

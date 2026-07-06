@@ -1,6 +1,6 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
-import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs, deleteURL } from "./url.service.js";
+import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs, deleteURL, toggleDisableURL } from "./url.service.js";
 import type { Request, Response } from "express";
 import type { DashboardURL } from "./url.types.js";
 
@@ -60,11 +60,40 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
   const shortId = typeof req.query.id === "string" ? req.query.id : null;
 
   const username = req.user!.username;
-  const formattedUrls:DashboardURL[] = allUrls.map((url) => ({
+  const formattedUrls: DashboardURL[] = allUrls.map((url) => ({
     ...url,
     expiryDisplay: getExpiryDisplay(url.expiresAt),
   }));
+
   return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, username });
+});
+
+// toggle disable a short URL
+const handleToggleDisableURL = asyncHandler(async (req: Request, res: Response) => {
+  const shortId = req.params.shortId as string;
+
+  try {
+    const updated = await toggleDisableURL(shortId, req.user!.id);
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "URL not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "URL status updated successfully.",
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong. Please try again.";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  }
 });
 
 // delete a short URL
@@ -95,4 +124,4 @@ const handleDeleteURL = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-export { handleGenerateShortURL, handleRedirectToURL, handleGetAnalytics, handleGetAllURL, handleDeleteURL };
+export { handleGenerateShortURL, handleRedirectToURL, handleGetAnalytics, handleGetAllURL, handleDeleteURL, handleToggleDisableURL };

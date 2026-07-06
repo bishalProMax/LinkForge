@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { handleGenerateShortURL, handleRedirectToURL, handleGetAnalytics, handleDeleteURL } from "./url.controller.js";
+import { handleGenerateShortURL, handleRedirectToURL, handleGetAnalytics, handleDeleteURL, handleToggleDisableURL } from "./url.controller.js";
 import { createUrlSchema } from "./url.schemas.js";
 import { validateRedirect } from "../../shared/middlewares/validation.middleware.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
@@ -14,5 +14,8 @@ router.route("/:shortId").get(handleRedirectToURL).delete(authenticateUser, hand
 
 //GENERATE THE ANALYTICS OF URL
 router.route("/analytics/:shortId").get(authenticateUser, handleGetAnalytics);
+
+//TOGGLE DISABLE URL
+router.route("/:shortId/disable").patch(authenticateUser, handleToggleDisableURL);
 
 export default router;

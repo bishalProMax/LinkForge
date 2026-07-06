@@ -11,21 +11,27 @@
 
     font-size: 13px;
     font-weight: 600;
-
+    transition: box-shadow .25s ease;
     user-select: none;
 }
 
 .status-active {
     background: rgba(34,197,94,.12);
     color: #15803d;
-}
-
-.status-disabled {
-    background: rgba(239,68,68,.12);
-    color: #b91c1c;
+    border: 1px solid #22c55e;
+    box-shadow: 0 0 10px rgba(34,197,94,.3);;
 }
 
 .status-expired {
+    background: rgba(239,68,68,.12);
+    color: #b91c1c;
+    border: 1px solid #ef4444;
+    box-shadow: 0 0 10px rgba(239,68,68,.3);
+}
+
+.status-disabled {
     background: rgba(245,158,11,.14);
     color: #b45309;
+    border: 1px solid #f59e0b;
+    box-shadow: 0 0 10px rgba(245,158,11,.3);
 }

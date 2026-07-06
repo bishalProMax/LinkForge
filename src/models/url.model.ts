@@ -8,6 +8,7 @@ export interface IURL {
   redirectURL: string;
   createdBy: mongoose.Types.ObjectId;
   expiresAt: Date | null;
+  isDisabled: boolean;
 }
 
 // -----------------------------URL DOCUMENT-----------------------------
@@ -38,6 +39,10 @@ const urlSchema = new mongoose.Schema<IURL, URLModel>(
      type: Date,
      default: null,
      index: true,
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false,
     },
   },
   {

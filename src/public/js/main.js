@@ -7,3 +7,4 @@ import "./otp.js";
 import "./dropdown.js";
 import "./deleteUrl.js";
 import "./expiryDate.js";
+import "./disableUrl.js";

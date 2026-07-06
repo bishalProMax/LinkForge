@@ -35,9 +35,9 @@
 
       <!-- Create URL -->
       <form class="url-form" action="/url/generate" method="POST">
-        <label>Destination URL</label>
+        <label for="url">Destination URL</label>
         <input required id="url" name="url" type="url" placeholder="https://example.com" />
-        <label>Custom Alias (Optional)</label>
+        <label for="customAlias">Custom Alias (Optional)</label>
         <input id="customAlias" name="customAlias" minlength="3" maxlength="50" placeholder="e.g. portfolio" />
         <small> Leave blank to auto-generate. </small>
         <div class="form-group">
@@ -112,7 +112,7 @@
                 <!-- Status -->
 
                 <td>
-                  <span class="status-badge status-active"> Active </span>
+                  <span class="status-badge status-<%= url.status %>"> <%= url.status.charAt(0).toUpperCase() + url.status.slice(1) %> </span>
                 </td>
 
                 <!-- Clicks -->
@@ -122,14 +122,7 @@
                 <!-- Created -->
 
                 <td title="<%= url.createdAt.toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) %>">
-                  <%= url.createdAt.toLocaleDateString( 
-            "en-IN",
-            {
-                day:"numeric",
-                month:"numeric",
-                year:"numeric"
-            }
-        ) %>
+                  <%= url.createdAt.toLocaleDateString( "en-IN", { day:"numeric", month:"numeric", year:"numeric" } ) %>
                 </td>
 
                 <!-- Expires -->
@@ -140,7 +133,7 @@
 
                 <td>
                   <div class="action-dropdown">
-                    <button class="action-btn" type="button" aria-label="Open actions">
+                    <button class="action-btn" type="button">
                       <i class="ri-more-2-fill"></i>
                     </button>
 
@@ -167,9 +160,9 @@
                         Edit
                       </button>
 
-                      <button class="disable-btn" data-shortid="<%= url.shortId %>">
+                      <button class="disable-btn" data-shortid="<%= url.shortId %>" data-disabled="<%= url.isDisabled %>">
                         <i class="ri-forbid-line"></i>
-                        Disable
+                        <%= url.isDisabled ? "Enable" : "Disable" %>
                       </button>
 
                       <hr />

@@ -154,7 +154,6 @@
 
 #cancelDeleteBtn {
   background: #f3f4f6;
-
   color: #374151;
 }
 
@@ -168,6 +167,11 @@
 
 #confirmDeleteBtn:hover {
   background: #b91c1c;
+}
+#confirmDeleteBtn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  background: #dc2626; 
 }
 
 /* ==========================================================

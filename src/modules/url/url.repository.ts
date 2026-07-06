@@ -37,8 +37,26 @@ const getURLsByUserId = (userId: string,page: number,limit: number) => {
         totalClicks: {
           $size: "$visits", //$ means Take the value inside visits
         },
+        status: {
+          $switch: {
+            branches: [
+              { case: "$isDisabled", then: "disabled" },
+              {
+                case: {
+                  $and: [
+                    { $ne: ["$expiresAt", null] },
+                    { $lte: ["$expiresAt", "$$NOW"] },
+                  ],
+                },
+                then: "expired",
+              },
+            ],
+            default: "active",
+          },
+        },
       },
     },
+
 
     {
       $project: {
@@ -74,6 +92,10 @@ const deleteURLByShortId = (shortId: string) => {
   });
 }
 
+const updateURLDisabledStatus = (shortId: string, isDisabled: boolean) => {
+  return URL.findOneAndUpdate({ shortId }, { isDisabled }, { returnDocument: "after" });
+};
+
 
 export { 
   checkShortIdExists, 
@@ -81,5 +103,6 @@ export {
   findURLByShortId, 
   getURLsByUserId, 
   countURLsByUserId,
-  deleteURLByShortId
+  deleteURLByShortId,
+  updateURLDisabledStatus
   };
