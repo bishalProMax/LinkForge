@@ -51,6 +51,11 @@ const redirectToOriginalURL = async (shortId: string): Promise<any> => {
   if (url.isDisabled) {
     return null;
   }
+
+  if (url.expiresAt && url.expiresAt <= new Date()) {
+    return null;
+  }
+  
   await createVisit(url._id.toString());
   return url;
 };
