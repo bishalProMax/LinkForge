@@ -40,7 +40,6 @@ const getURLsByUserId = (userId: string,page: number,limit: number) => {
         status: {
           $switch: {
             branches: [
-              { case: "$isDisabled", then: "disabled" },
               {
                 case: {
                   $and: [
@@ -50,6 +49,7 @@ const getURLsByUserId = (userId: string,page: number,limit: number) => {
                 },
                 then: "expired",
               },
+              { case: "$isDisabled", then: "disabled" },
             ],
             default: "active",
           },
