@@ -75,6 +75,14 @@
 
       <h2>My Links</h2>
 
+      <form class="filter-bar" method="GET" action="/dashboard">
+        <div class="filter-bar-field">
+          <i class="ri-search-line"></i>
+          <input type="text" name="search" placeholder="Search by short code or URL..." value="<%= filters.search || '' %>" />
+        </div>
+        <button type="submit">Search</button>
+      </form>
+
       <!-- table section -->
       <section class="table-section">
         <% if(urls && urls.length >0){ %>
@@ -243,11 +251,15 @@
         <% } else { %>
 
         <div class="empty-state">
+          <% if (filters.search) { %>
+          <i class="ri-search-line"></i>
+          <h3>No results found</h3>
+          <p>No links match "<strong><%= filters.search %></strong>". Try a different search term.</p>
+          <% } else { %>
           <i class="ri-links-line"></i>
-
           <h3>No links yet</h3>
-
           <p>Create your first short URL to start managing links.</p>
+          <% } %>
         </div>
 
         <% } %>

@@ -1,8 +1,8 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
-import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs, deleteURL, toggleDisableURL } from "./url.service.js";
+import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL, getFilteredTotalUserURLs } from "./url.service.js";
 import type { Request, Response } from "express";
-import type { DashboardURL } from "./url.types.js";
+import type { DashboardQueryParams, DashboardURL } from "./url.types.js";
 
 // Generate short URL
 const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) => {
@@ -50,11 +50,15 @@ const handleGetAnalytics = asyncHandler(async (req: Request, res: Response) => {
 const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = 6;
-  const allUrls = await getUserURLs(req.user!.id, page, limit); //! non-null assertion operator, used by TS while runtime
-  const totalUrls = await getTotalUserURLs(req.user!.id);
+
+  const filters: DashboardQueryParams = {
+    search: typeof req.query.search === "string" ? req.query.search.trim() : undefined,
+  };
+  const allUrls = await getUserURLs(req.user!.id, page, limit, filters); //! non-null assertion operator, used by TS while runtime
+  const totalUrls = await getFilteredTotalUserURLs(req.user!.id, filters);
 
   const totalPages = Math.ceil(totalUrls / limit);
-  const startIndex = (page - 1) * limit + 1;
+  const startIndex = totalUrls === 0 ? 0 : (page - 1) * limit + 1;
   const endIndex = Math.min(page * limit, totalUrls);
   const error = typeof req.query.error === "string" ? req.query.error : null;
   const shortId = typeof req.query.id === "string" ? req.query.id : null;
@@ -65,7 +69,7 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
     expiryDisplay: getExpiryDisplay(url.expiresAt),
   }));
 
-  return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, username });
+  return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, username, filters });
 });
 
 // toggle disable a short URL

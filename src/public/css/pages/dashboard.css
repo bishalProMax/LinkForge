@@ -6,6 +6,7 @@
 @import "../components/loader.css";
 @import "../components/badge.css";
 @import "../components/dropdown.css";
+@import "../components/filter-bar.css";
 
 button {
   padding: 10px 15px;

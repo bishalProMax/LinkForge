@@ -1,0 +1,84 @@
+.filter-bar {
+  display: flex;
+  gap: 15px;
+  margin: 18px 0 28px;
+}
+
+.filter-bar-field {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+}
+
+.filter-bar-field i {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.filter-bar input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px 0 44px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  font-size: 14px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.filter-bar input::placeholder {
+  color: #9ca3af;
+}
+
+.filter-bar input:hover {
+  border-color: #d1d5db;
+}
+
+.filter-bar input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+}
+
+.filter-bar button {
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.filter-bar button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.32);
+}
+
+.filter-bar button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (max-width: 640px) {
+  .filter-bar {
+    flex-direction: column;
+  }
+
+  .filter-bar-field {
+    max-width: none;
+  }
+
+  .filter-bar button {
+    width: 100%;
+  }
+}

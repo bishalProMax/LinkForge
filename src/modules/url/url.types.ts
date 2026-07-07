@@ -29,3 +29,7 @@ export interface DashboardURL {
   isDisabled: boolean;
   status: "active" | "disabled" | "expired";
 }
+
+export interface DashboardQueryParams {
+  search?: string;
+}

@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
-import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, countURLsByUserId, deleteURLByShortId, updateURLDisabledStatus } from "./url.repository.js";
-import type { GenerateShortURLProps } from "./url.types.js";
+import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus, countFilteredURLsByUserId } from "./url.repository.js";
+import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { RESERVED_ALIASES } from "../../shared/utils/reservedAliases.js";
 
@@ -55,7 +55,7 @@ const redirectToOriginalURL = async (shortId: string): Promise<any> => {
   if (url.expiresAt && url.expiresAt <= new Date()) {
     return null;
   }
-  
+
   await createVisit(url._id.toString());
   return url;
 };
@@ -77,13 +77,14 @@ const getURLAnalytics = async (shortId: string): Promise<any> => {
 };
 
 // Get all URLs created by a user with pagination
-const getUserURLs = async (userId: string, page: number, limit: number): Promise<any[]> => {
-  return getURLsByUserId(userId, page, limit);
+const getUserURLs = async (userId: string, page: number, limit: number, filters: DashboardQueryParams = {}): Promise<any[]> => {
+  return getURLsByUserId(userId, page, limit, filters);
 };
 
-// Get the total number of URLs created by a user
-const getTotalUserURLs = async (userId: string): Promise<number> => {
-  return countURLsByUserId(userId);
+// Get the total number of filtered URLs for a user
+const getFilteredTotalUserURLs = async (userId: string, filters: DashboardQueryParams = {}): Promise<number> => {
+  const result = await countFilteredURLsByUserId(userId, filters);
+  return result[0]?.total || 0;
 };
 
 // Delete a short URL and its associated visits
@@ -155,4 +156,4 @@ const toggleDisableURL = async (shortId: string, userId: string): Promise<boolea
   return true;
 };
 
-export { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getTotalUserURLs, deleteURL, toggleDisableURL };
+export { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getFilteredTotalUserURLs, deleteURL, toggleDisableURL };

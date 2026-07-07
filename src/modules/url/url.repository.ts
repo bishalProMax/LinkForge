@@ -1,6 +1,6 @@
 import URL from "../../models/url.model.js";
 import mongoose from "mongoose";
-import type { CreateShortURLData } from "./url.types.js";
+import type { CreateShortURLData, DashboardQueryParams } from "./url.types.js";
 
 
 const checkShortIdExists = (shortId: string) => {
@@ -15,14 +15,23 @@ const findURLByShortId = (shortId: string) => {
   return URL.findOne({ shortId });
 };
 
-const getURLsByUserId = (userId: string,page: number,limit: number) => {
-  return URL.aggregate([
-    {
-      $match: {
-        createdBy: new mongoose.Types.ObjectId(userId),
-      },
-    },
+const getURLsByUserId = (userId: string,page: number,limit: number, filters: DashboardQueryParams = {}) => {
 
+  const matchStage: Record<string, unknown> = {
+    createdBy: new mongoose.Types.ObjectId(userId),
+  };
+
+  if (filters.search) {
+    matchStage.$or = [
+      { shortId: { $regex: filters.search, $options: "i" } },
+      { redirectURL: { $regex: filters.search, $options: "i" } },
+    ];
+  }
+
+  return URL.aggregate([
+    { 
+      $match: matchStage 
+    },
     {
       $lookup: {
         from: "visits",
@@ -35,7 +44,7 @@ const getURLsByUserId = (userId: string,page: number,limit: number) => {
     {
       $addFields: {
         totalClicks: {
-          $size: "$visits", //$ means Take the value inside visits
+          $size: "$visits", 
         },
         status: {
           $switch: {
@@ -80,10 +89,19 @@ const getURLsByUserId = (userId: string,page: number,limit: number) => {
   ]);
 };
 
-const countURLsByUserId = (userId: string) => {
-  return URL.countDocuments({
-    createdBy: userId,
-  });
+const countFilteredURLsByUserId = (userId: string, filters: DashboardQueryParams = {}) => {
+  const matchStage: Record<string, unknown> = {
+    createdBy: new mongoose.Types.ObjectId(userId),
+  };
+
+  if (filters.search) {
+    matchStage.$or = [
+      { shortId: { $regex: filters.search, $options: "i" } },
+      { redirectURL: { $regex: filters.search, $options: "i" } },
+    ];
+  }
+
+  return URL.aggregate([{ $match: matchStage }, { $count: "total" }]);
 };
 
 const deleteURLByShortId = (shortId: string) => {
@@ -102,7 +120,7 @@ export {
   createShortURL, 
   findURLByShortId, 
   getURLsByUserId, 
-  countURLsByUserId,
   deleteURLByShortId,
-  updateURLDisabledStatus
+  updateURLDisabledStatus,
+  countFilteredURLsByUserId
   };
