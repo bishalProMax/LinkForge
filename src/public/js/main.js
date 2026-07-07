@@ -3,7 +3,7 @@ import "./clipboard.js";
 import "./qrcode.js";
 import "./modal.js";
 import "./otp.js";
-import "./dropdown.js";
+import "./actionMenu.js";
 import "./deleteUrl.js";
 import "./expiryDate.js";
 import "./disableUrl.js";

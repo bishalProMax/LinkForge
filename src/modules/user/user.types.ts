@@ -14,6 +14,9 @@ export interface SignupResult {
         | "RESENT"
         | "PENDING"
         | "LOCAL_PROVIDER_LINKED"
+        | "COOLDOWN_ACTIVE"
+        | "RESEND_LIMIT_REACHED";
+      cooldown?: number;
     };
 
 export interface LoginUserProps {

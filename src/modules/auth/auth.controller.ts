@@ -38,6 +38,20 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
+     if (result.type === "COOLDOWN_ACTIVE") {
+      return res.status(429).render("signup", {
+        error: `Please wait ${result.cooldown}s before requesting another verification email.`,
+        old,
+      });
+    }
+
+    if (result.type === "RESEND_LIMIT_REACHED") {
+      return res.status(429).render("signup", {
+        error: "Maximum verification email requests reached. Please try again after 1 hour.",
+        old,
+      });
+    }
+
     if (result.type === "LOCAL_PROVIDER_LINKED") {
       return res.redirect("/login");
     }

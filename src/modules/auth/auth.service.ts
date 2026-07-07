@@ -38,6 +38,22 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
       };
     }
 
+    // EMAIL RESEND COOLDOWN
+    const cooldown = await redis.ttl(`signup-resend-cooldown:${email}`);
+    if (cooldown > 0) {
+      return {
+        type: "COOLDOWN_ACTIVE",
+        cooldown,
+      };
+    }
+
+    const sendCount = Number(await redis.get(`signup-resend-count:${email}`)) || 0;
+    if (sendCount >= 2) {
+      return {
+        type: "RESEND_LIMIT_REACHED",
+      };
+    }
+
     // UNVERIFIED USER EXISTS RESEND NEW LINK
     const token = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
@@ -52,6 +68,13 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
       name: existedUser.name,
       verificationLink,
     });
+
+    // SET COOLDOWN + INCREMENT SEND COUNT
+    await redis.set(`signup-resend-cooldown:${email}`, "active", "EX", 60);
+    const updatedCount = await redis.incr(`signup-resend-count:${email}`);
+    if (updatedCount === 1) {
+      await redis.expire(`signup-resend-count:${email}`, 3600);
+    }
 
     return {
       type: "RESENT",
