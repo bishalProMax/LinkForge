@@ -1,4 +1,5 @@
-export type SignupUserProps = {
+// ----------------------------------Login/Signup---------------------------------
+export interface SignupUserProps {
   name: string;
   email: string;
   password: string;
@@ -6,7 +7,7 @@ export type SignupUserProps = {
   ip: string;
 };
 
-export type SignupResult = {
+export interface SignupResult {
       type:
           "CAPTCHA_FAILED"
         | "EMAIL_EXISTS"
@@ -15,7 +16,7 @@ export type SignupResult = {
         | "LOCAL_PROVIDER_LINKED"
     };
 
-export type LoginUserProps = {
+export interface LoginUserProps {
   email: string;
   password: string;
 };
@@ -43,11 +44,11 @@ export type VerifyEmailResult = {
 
 
 // ----------------------------------Forgot Password---------------------------------
-export type ForgotPasswordProps = {
+export interface ForgotPasswordProps {
   email: string;
 };
 
-export type ForgotPasswordResult = {
+export interface ForgotPasswordResult {
   type: "SUCCESS"
     | "COOLDOWN_ACTIVE"
     | "USER_NOT_FOUND"
@@ -56,12 +57,12 @@ export type ForgotPasswordResult = {
   cooldown?: number;
 };
 
-export type VerifyResetOTPProps = {
+export interface VerifyResetOTPProps {
   email: string;
   otp: string;
 };
 
-export type VerifyOTPResult = {
+export interface VerifyOTPResult {
   type:
     | "SUCCESS"
     | "INVALID_OTP"
@@ -69,14 +70,23 @@ export type VerifyOTPResult = {
     | "TOO_MANY_ATTEMPTS";
 };
 
-export type ResetPasswordProps = {
+export interface ResetPasswordProps {
   email: string;
   password: string;
 };
 
-export type ResetPasswordResult = {
+export interface ResetPasswordResult {
   type:
     | "SUCCESS"
     | "SESSION_EXPIRED"
     | "SAME_PASSWORD";
+};
+
+// ----------------------------------SaveUser---------------------------------
+export interface CreateUserData {
+  name: string;
+  email: string;
+  password: string;
+  emailVerificationToken: string;
+  emailVerificationExpires: Date;
 };

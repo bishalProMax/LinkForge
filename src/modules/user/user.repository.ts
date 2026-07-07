@@ -1,12 +1,6 @@
 import User, { UserDocument } from "../../models/user.model.js";
+import type { CreateUserData } from "./user.types.js";
 
-type CreateUserData = {
-  name: string;
-  email: string;
-  password: string;
-  emailVerificationToken: string;
-  emailVerificationExpires: Date;
-};
 
 const findUserByEmail = (email: string) => {
   return User.findOne({ email }).select("+password");;
@@ -29,7 +23,9 @@ const saveUser = (user: UserDocument) => {
   return user.save();
 };
 
-export { findUserByEmail, 
-    createUser, 
-    findUserByVerificationToken, 
-    saveUser };
+export { 
+  findUserByEmail, 
+  createUser, 
+  findUserByVerificationToken, 
+  saveUser 
+};
