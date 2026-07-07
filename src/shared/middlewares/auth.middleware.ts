@@ -3,6 +3,10 @@ import { verifyToken } from "../services/jwt.service.js";
 import type { Request, Response, NextFunction } from "express";
 
 const authenticateUser = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  
   const userToken = req.cookies?.token;
   if (!userToken) return res.redirect("/login");
   const user = verifyToken(userToken);

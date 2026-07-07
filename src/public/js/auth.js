@@ -31,11 +31,10 @@ setupPasswordToggle("toggleSignupPassword", "signupPassword");
 setupPasswordToggle("toggleResetPassword","resetPassword");
 setupPasswordToggle("toggleConfirmResetPassword","confirmResetPassword");
 
-// ---------------- CREATE ACCOUNT REDIRECT ----------------
-const createAccountBtn = document.getElementById("createAccountBtn");
 
-if (createAccountBtn) {
-  createAccountBtn.addEventListener("click", () => {
-    window.location.href = "/signup";
-  });
-}
+// Forces a fresh reload whenever the page is restored from the browser's back/forward cache (bfcache)
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
