@@ -56,8 +56,8 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
     status: typeof req.query.status === "string" ? (req.query.status as any) : "all",
     createdFrom: typeof req.query.createdFrom === "string" ? req.query.createdFrom : undefined,
     createdTo: typeof req.query.createdTo === "string" ? req.query.createdTo : undefined,
-    expiryFrom: typeof req.query.expiryFrom === "string" ? req.query.expiryFrom : undefined,
-    expiryTo: typeof req.query.expiryTo === "string" ? req.query.expiryTo : undefined,
+    expiry: typeof req.query.expiry === "string" ? (req.query.expiry as any) : "all",
+    sortBy: typeof req.query.sortBy === "string" ? (req.query.sortBy as any) : "newest",
   };
 
   const { data: allUrls, total: totalUrls } = await getUserURLs(req.user!.id, page, limit, filters);

@@ -1,4 +1,4 @@
-import type { ExpiryDisplay } from "../../modules/url/url.types.js";
+import type { ExpiryDisplay, GenerateShortURLProps } from "../../modules/url/url.types.js";
 const rtf = new Intl.RelativeTimeFormat("en-IN", { numeric: "always", style: "long" });
 
 const formatUnitPart = (value: number, unit: Intl.RelativeTimeFormatUnit): string => {
@@ -27,63 +27,54 @@ export const getExpiryDisplay = (expiresAt?: Date | null): ExpiryDisplay => {
   const now = new Date();
   const diffMs = expiresAt.getTime() - now.getTime();
 
-  if (diffMs <= 0) {
-    return { text: "-", title };
-  }
-
   const SECOND = 1000;
   const MINUTE = 60 * SECOND;
   const HOUR = 60 * MINUTE;
-  const DAY = 24 * HOUR;
 
-  // < 1 minute
+  if (diffMs <= 0) {
+    const pastDiffMs = Math.abs(diffMs);
+    const DAY = 24 * HOUR;
+
+    if (pastDiffMs < DAY) {
+      return { text: "Expired today", title };
+    }
+    if (pastDiffMs < 30 * DAY) {
+      const days = Math.floor(pastDiffMs / DAY);
+      return { text: `Expired ${formatUnitPart(days, "day")}`, title };
+    }
+    return {
+      text: `Expired ${expiresAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`,
+      title,
+    };
+  }
+
   if (diffMs < MINUTE) {
     return { text: "Less than a minute", title };
   }
 
-  // 1–59 minutes
   if (diffMs < HOUR) {
     const minutes = Math.round(diffMs / MINUTE);
-    
-    if (minutes >= 60) {
-      return { text: `${formatUnitPart(1, "hour")} left`, title };
-    }
     return { text: `${formatUnitPart(minutes, "minute")} left`, title };
   }
 
-  
-  if (diffMs < DAY) {
-    const totalMinutes = Math.round(diffMs / MINUTE);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    
-    if (hours >= 24) {
-      return { text: "Tomorrow", title };
-    }
-    const hourPart = formatUnitPart(hours, "hour");
-    if (minutes === 0) {
-      return { text: `${hourPart} left`, title };
-    }
-    const minutePart = formatUnitPart(minutes, "minute");
-    return { text: `${hourPart} ${minutePart} left`, title };
+  // Compare calendar dates, not elapsed hours
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfExpiryDay = new Date(expiresAt.getFullYear(), expiresAt.getMonth(), expiresAt.getDate());
+  const calendarDayDiff = Math.round((startOfExpiryDay.getTime() - startOfToday.getTime()) / (24 * HOUR));
+
+  if (calendarDayDiff === 0) {
+    const hours = Math.round(diffMs / HOUR);
+    return { text: `${formatUnitPart(hours, "hour")} left`, title };
   }
 
-  // 24–48 hours
-  if (diffMs < 2 * DAY) {
+  if (calendarDayDiff === 1) {
     return { text: "Tomorrow", title };
   }
 
-  // 48–72 hours
-  if (diffMs < 3 * DAY) {
-    return { text: `${formatUnitPart(2, "day")} left`, title };
+  if (calendarDayDiff <= 4) {
+    return { text: `${formatUnitPart(calendarDayDiff, "day")} left`, title };
   }
 
-  // 72–96 hours
-  if (diffMs < 4 * DAY) {
-    return { text: `${formatUnitPart(3, "day")} left`, title };
-  }
-
-  // Beyond 4 days — exact date
   return {
     text: expiresAt.toLocaleDateString("en-IN", {
       day: "numeric",
@@ -92,4 +83,29 @@ export const getExpiryDisplay = (expiresAt?: Date | null): ExpiryDisplay => {
     }),
     title,
   };
+};
+
+// Helper function to calculate the expiry date based on the expiration option
+export const getExpiryDate = (expiration: GenerateShortURLProps["expiration"], customExpiry?: Date): Date | undefined => {
+  const now = Date.now();
+
+  switch (expiration) {
+    case "never":
+      return undefined;
+
+    case "1d":
+      return new Date(now + 24 * 60 * 60 * 1000);
+
+    case "7d":
+      return new Date(now + 7 * 24 * 60 * 60 * 1000);
+
+    case "30d":
+      return new Date(now + 30 * 24 * 60 * 60 * 1000);
+
+    case "90d":
+      return new Date(now + 90 * 24 * 60 * 60 * 1000);
+
+    case "custom":
+      return customExpiry;
+  }
 };

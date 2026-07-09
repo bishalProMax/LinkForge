@@ -1,12 +1,15 @@
 .error {
     color: red;
+    position: relative;
+    padding-right: 40px;
     margin-bottom: 10px;
     text-align: center;
 }
 
 .generated {
+    position: relative;
     background: #e6f0ff;
-    padding: 12px;
+    padding: 12px 40px 12px 12px;
     border-left: 5px solid #667eea;
     border-radius: 6px;
     margin: 15px 0;

@@ -1,29 +1,35 @@
 import { z } from "zod";
 
-export const createUrlSchema = z.object({
-  url: z.url("Please enter a valid URL"),
+export const createUrlSchema = z
+  .object({
+    url: z.preprocess(
+      (value) => {
+        if (typeof value !== "string") return value;
+        const trimmed = value.trim();
 
-  customAlias: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z
-      .string()
-      .trim()
-      .regex(/^(?=.*[a-zA-Z0-9])[a-zA-Z0-9_-]{3,50}$/, "Alias can only contain letters, numbers, hyphens and underscores.")
-      .optional()
-  ),
-  expiration: z.enum([
-      "never",
-      "1d",
-      "7d",
-      "30d",
-      "90d",
-      "custom",
-    ]),
+        if (!trimmed) return trimmed;
 
-    customExpiry: z.preprocess(
-      (value) => (value === "" ? undefined : value),
-      z.coerce.date().optional()
+        try {
+          new URL(trimmed);
+          return trimmed; 
+        } catch {
+          return `https://${trimmed}`; 
+        }
+      },
+      z.url({ message: "Please enter a valid URL." })
     ),
+
+    customAlias: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z
+        .string()
+        .trim()
+        .regex(/^(?=.*[a-zA-Z0-9])[a-zA-Z0-9_-]{3,50}$/, "Alias can only contain letters, numbers, hyphens and underscores.")
+        .optional()
+    ),
+    expiration: z.enum(["never", "1d", "7d", "30d", "90d", "custom"]),
+
+    customExpiry: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
   })
   .superRefine((data, ctx) => {
     if (data.expiration === "custom") {
@@ -45,4 +51,4 @@ export const createUrlSchema = z.object({
         });
       }
     }
-});
+  });

@@ -3,6 +3,7 @@ import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, 
 import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { RESERVED_ALIASES } from "../../shared/utils/reservedAliases.js";
+import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 
 // Generate a short URL with optional custom alias and expiration
 const generateShortURL = async ({ originalURL, userId, customAlias, expiration, customExpiry }: GenerateShortURLProps): Promise<string> => {
@@ -105,31 +106,6 @@ const deleteURL = async (shortId: string, userId: string): Promise<boolean> => {
   await deleteVisitsByLinkId(deletedURL._id.toString());
 
   return true;
-};
-
-// Helper function to calculate the expiry date based on the expiration option
-const getExpiryDate = (expiration: GenerateShortURLProps["expiration"], customExpiry?: Date): Date | undefined => {
-  const now = Date.now();
-
-  switch (expiration) {
-    case "never":
-      return undefined;
-
-    case "1d":
-      return new Date(now + 24 * 60 * 60 * 1000);
-
-    case "7d":
-      return new Date(now + 7 * 24 * 60 * 60 * 1000);
-
-    case "30d":
-      return new Date(now + 30 * 24 * 60 * 60 * 1000);
-
-    case "90d":
-      return new Date(now + 90 * 24 * 60 * 60 * 1000);
-
-    case "custom":
-      return customExpiry;
-  }
 };
 
 // toggle disable a short URL

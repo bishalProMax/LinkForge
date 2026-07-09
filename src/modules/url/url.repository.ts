@@ -14,6 +14,20 @@ const findURLByShortId = (shortId: string) => {
   return URL.findOne({ shortId });
 };
 
+const getSortStage = (sortBy?: string): Record<string, 1 | -1> => {
+  switch (sortBy) {
+    case "oldest":
+      return { createdAt: 1 };
+    case "mostClicked":
+      return { totalClicks: -1 };
+    case "leastClicked":
+      return { totalClicks: 1 };
+    case "newest":
+    default:
+      return { createdAt: -1 };
+  }
+};
+
 const getURLsByUserId = (userId: string, page: number, limit: number, filters: DashboardQueryParams = {}) => {
   const matchStage: Record<string, unknown> = {
     createdBy: new mongoose.Types.ObjectId(userId),
@@ -29,10 +43,10 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
     if (filters.createdTo) (matchStage.createdAt as any).$lte = new Date(filters.createdTo);
   }
 
-  if (filters.expiryFrom || filters.expiryTo) {
-    matchStage.expiresAt = {};
-    if (filters.expiryFrom) (matchStage.expiresAt as any).$gte = new Date(filters.expiryFrom);
-    if (filters.expiryTo) (matchStage.expiresAt as any).$lte = new Date(filters.expiryTo);
+  if (filters.expiry === "set") {
+    matchStage.expiresAt = { $ne: null };
+  } else if (filters.expiry === "never") {
+    matchStage.expiresAt = null;
   }
 
   const pipeline: mongoose.PipelineStage[] = [
@@ -68,7 +82,7 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
     { $project: { visits: 0 } },
     {
       $facet: {
-        data: [{ $sort: { createdAt: -1 } }, { $skip: (page - 1) * limit }, { $limit: limit }],
+        data: [{ $sort: getSortStage(filters.sortBy) }, { $skip: (page - 1) * limit }, { $limit: limit }],
         totalCount: [{ $count: "total" }],
       },
     },
@@ -87,4 +101,4 @@ const updateURLDisabledStatus = (shortId: string, isDisabled: boolean) => {
   return URL.findOneAndUpdate({ shortId }, { isDisabled }, { returnDocument: "after" });
 };
 
-export { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus};
+export { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus };

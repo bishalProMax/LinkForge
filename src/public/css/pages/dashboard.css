@@ -12,7 +12,7 @@ button {
   padding: 10px 15px;
   border: none;
   border-radius: 8px;
-  background: #667eea;
+  background: #5a67d8;
   color: white;
   cursor: pointer;
   transition: 0.2s ease;
@@ -21,7 +21,7 @@ button {
 }
 
 button:hover {
-  background: #5a67d8;
+  background: linear-gradient(135deg, #667eea, #764ba2);
 }
 
 .url-form {
@@ -180,5 +180,23 @@ font-size:15px;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  color: #111827;
+}
+
+.generated-close-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important;;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+button.generated-close-btn:hover {
   color: #111827;
 }

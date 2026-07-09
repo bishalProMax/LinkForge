@@ -35,6 +35,6 @@ export interface DashboardQueryParams {
   status?: "active" | "disabled" | "expired" | "all";
   createdFrom?: string;
   createdTo?: string;
-  expiryFrom?: string;
-  expiryTo?: string;
+  expiry?: "all" | "set" | "never";
+  sortBy?: "newest" | "oldest" | "mostClicked" | "leastClicked";
 }

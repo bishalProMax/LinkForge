@@ -39,7 +39,7 @@
     <!-- Create URL -->
     <form class="url-form" action="/url/generate" method="POST">
       <label for="url">Destination URL</label>
-      <input required id="url" name="url" type="url" placeholder="https://example.com" />
+      <input id="url" name="url" type="text" placeholder="example.com or https://example.com" required />
       <label for="customAlias">Custom Alias (Optional)</label>
       <input id="customAlias" name="customAlias" minlength="3" maxlength="50" placeholder="e.g. portfolio" />
       <small> Leave blank to auto-generate. </small>
@@ -58,8 +58,8 @@
 
       <div class="form-group" id="customDateWrapper" style="display: none">
         <label for="customExpiry">Expiry Date</label>
-
-        <input type="datetime-local" id="customExpiry" name="customExpiry" />
+        <input type="datetime-local" id="customExpiry" name="customExpiry"
+          min="<%= new Date().toISOString().slice(0,16) %>" />
       </div>
 
       <button type="submit"><i class="ri-links-line"></i> Generate Short URL</button>
@@ -82,242 +82,244 @@
 
             <h2>My Links</h2>
             <!-- Search Form -->
-            <% const hasActiveFilters=(filters.status && filters.status !=="all" ) || filters.createdFrom ||
-              filters.createdTo || filters.expiryFrom || filters.expiryTo; %>
+            <% const todayStr=new Date().toISOString().split('T')[0]; %>
+              <% const hasActiveFilters=(filters.status && filters.status !=="all" ) || filters.createdFrom ||
+                filters.createdTo || (filters.expiry && filters.expiry !=="all" ) || (filters.sortBy && filters.sortBy
+                !=="newest" ); %>
 
-              <form class="url-toolbar" method="GET" action="/dashboard" id="urlToolbarForm">
-                <div class="search-input-wrap">
-                  <i class="ri-search-line search-icon"></i>
-                  <input type="text" name="search" id="searchInput" placeholder="Search by short code or URL..."
-                    value="<%= filters.search || '' %>" autocomplete="off" />
-                  <button type="button" class="clear-search-btn <%= filters.search ? '' : 'is-hidden' %>"
-                    id="clearSearchBtn">
-                    <i class="ri-close-line"></i>
-                  </button>
-                </div>
+                <form class="url-toolbar" method="GET" action="/dashboard" id="urlToolbarForm">
+                  <div class="search-input-wrap">
+                    <i class="ri-search-line search-icon"></i>
+                    <input type="text" name="search" id="searchInput" placeholder="Search by short code or URL..."
+                      value="<%= filters.search || '' %>" autocomplete="off" />
+                    <button type="button" class="clear-search-btn <%= filters.search ? '' : 'is-hidden' %>"
+                      id="clearSearchBtn">
+                      <i class="ri-close-line"></i>
+                    </button>
+                  </div>
 
-                  <button type="button" class="filter-trigger-btn" id="filterTriggerBtn" >
+                  <button type="button" class="filter-trigger-btn" id="filterTriggerBtn">
                     <i class="ri-equalizer-3-line"></i>
                     <% if (hasActiveFilters) { %>
-                      <span class="filter-badge-dot"></span>
+                      <span class="filter-badge-dot" id="filterBadgeDot"></span>
                       <% } %>
-                  </button>  
-              </form>
+                  </button>
+                </form>
 
-              <!-- table section -->
-              <section class="table-section">
-                <% if(urls && urls.length>0){ %>
+                <!-- table section -->
+                <section class="table-section">
+                  <% if(urls && urls.length>0){ %>
 
-                  <div class="table-wrapper">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Short Link</th>
-                          <th>Destination URL</th>
-                          <th>Status</th>
-                          <th>Clicks</th>
-                          <th>Created</th>
-                          <th>Expiry</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        <% urls.forEach((url)=> { %>
-
+                    <div class="table-wrapper">
+                      <table>
+                        <thead>
                           <tr>
-                            <!-- Short Link -->
-
-                            <td class="short-link-cell">
-                              <a href="/url/<%= url.shortId %>" target="_blank" class="short-link">
-                                <%= `${baseUrl}/url/${url.shortId}` %>
-                              </a>
-                            </td>
-
-                            <!-- Destination -->
-
-                            <td class="destination-cell">
-                              <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"
-                                title="<%= url.redirectURL %>">
-                                <%= url.redirectURL %>
-                              </a>
-                            </td>
-
-                            <!-- Status -->
-
-                            <td>
-                              <span class="status-badge status-<%= url.status %>">
-                                <%= url.status.charAt(0).toUpperCase() + url.status.slice(1) %>
-                              </span>
-                            </td>
-
-                            <!-- Clicks -->
-
-                            <td class="click-count">
-                              <%= url.totalClicks || 0 %>
-                            </td>
-
-                            <!-- Created -->
-
-                            <td
-                              title="<%= url.createdAt.toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) %>">
-                              <%= url.createdAt.toLocaleDateString( "en-IN" , { day:"numeric", month:"numeric",
-                                year:"numeric" } ) %>
-                            </td>
-
-                            <!-- Expires -->
-
-                            <td title="<%= url.expiryDisplay.title %>">
-                              <%= url.expiryDisplay.text %>
-                            </td>
-
-                            <!-- Actions -->
-
-                            <td>
-                              <div class="action-dropdown">
-                                <button class="action-btn" type="button">
-                                  <i class="ri-more-2-fill"></i>
-                                </button>
-
-                                <div class="action-menu">
-                                  <button class="analytics-btn" data-shortid="<%= url.shortId %>">
-                                    <i class="ri-line-chart-line"></i>
-                                    Analytics
-                                  </button>
-
-                                  <button class="copy-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>">
-                                    <i class="ri-file-copy-line"></i>
-                                    Copy Link
-                                  </button>
-
-                                  <button class="qr-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>"
-                                    data-id="<%= url.shortId %>">
-                                    <i class="ri-qr-code-line"></i>
-                                    Show QR
-                                  </button>
-
-                                  <hr />
-
-                                  <button class="edit-btn" data-shortid="<%= url.shortId %>">
-                                    <i class="ri-edit-line"></i>
-                                    Edit
-                                  </button>
-
-                                  <button class="disable-btn" data-shortid="<%= url.shortId %>"
-                                    data-disabled="<%= url.isDisabled %>">
-                                    <i class="ri-forbid-line"></i>
-                                    <%= url.isDisabled ? "Enable" : "Disable" %>
-                                  </button>
-
-                                  <hr />
-
-                                  <button class="delete-btn danger" data-shortid="<%= url.shortId %>"
-                                    data-url="<%= url.redirectURL %>">
-                                    <i class="ri-delete-bin-line"></i>
-                                    Delete
-                                  </button>
-                                </div>
-                              </div>
-                            </td>
+                            <th>Short Link</th>
+                            <th>Destination URL</th>
+                            <th>Status</th>
+                            <th>Clicks</th>
+                            <th>Created</th>
+                            <th>Expiry</th>
+                            <th>Actions</th>
                           </tr>
+                        </thead>
 
-                          <% }) %>
-                      </tbody>
-                    </table>
-                  </div>
+                        <tbody>
+                          <% urls.forEach((url)=> { %>
 
-                  <!-- urls links length shown -->
-                  <div class="table-header">
-                    <span>
-                      Showing
-                      <%= startIndex %>–<%= endIndex %>
-                          of
-                          <%= totalUrls %>
-                            links
-                    </span>
-                  </div>
+                            <tr>
+                              <!-- Short Link -->
 
-                  <% const buildPageUrl=(pageNum)=> {
-                    const params = new URLSearchParams();
-                    if (filters.search) params.set('search', filters.search);
-                    if (filters.status && filters.status !== 'all') params.set('status', filters.status);
-                    if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
-                    if (filters.createdTo) params.set('createdTo', filters.createdTo);
-                    if (filters.expiryFrom) params.set('expiryFrom', filters.expiryFrom);
-                    if (filters.expiryTo) params.set('expiryTo', filters.expiryTo);
-                    params.set('page', pageNum);
-                    return `/dashboard?${params.toString()}`;
-                    };
-                    %>
-                    <!-- PAGINATION -->
+                              <td class="short-link-cell">
+                                <a href="/url/<%= url.shortId %>" target="_blank" class="short-link">
+                                  <%= `${baseUrl}/url/${url.shortId}` %>
+                                </a>
+                              </td>
 
-                    <% if (totalPages> 1) { %>
+                              <!-- Destination -->
 
-                      <div class="pagination">
-                        <% if (currentPage> 1) { %>
+                              <td class="destination-cell">
+                                <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"
+                                  title="<%= url.redirectURL %>">
+                                  <%= url.redirectURL %>
+                                </a>
+                              </td>
 
-                          <a href="<%= buildPageUrl(currentPage - 1) %>" class="pagination-btn nav"> ← Prev </a>
+                              <!-- Status -->
+
+                              <td>
+                                <span class="status-badge status-<%= url.status %>">
+                                  <%= url.status.charAt(0).toUpperCase() + url.status.slice(1) %>
+                                </span>
+                              </td>
+
+                              <!-- Clicks -->
+
+                              <td class="click-count">
+                                <%= url.totalClicks || 0 %>
+                              </td>
+
+                              <!-- Created -->
+
+                              <td
+                                title="<%= url.createdAt.toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) %>">
+                                <%= url.createdAt.toLocaleDateString( "en-IN" , { day:"numeric", month:"numeric",
+                                  year:"numeric" } ) %>
+                              </td>
+
+                              <!-- Expires -->
+
+                              <td title="<%= url.expiryDisplay.title %>">
+                                <%= url.expiryDisplay.text %>
+                              </td>
+
+                              <!-- Actions -->
+
+                              <td>
+                                <div class="action-dropdown">
+                                  <button class="action-btn" type="button">
+                                    <i class="ri-more-2-fill"></i>
+                                  </button>
+
+                                  <div class="action-menu">
+                                    <button class="analytics-btn" data-shortid="<%= url.shortId %>">
+                                      <i class="ri-line-chart-line"></i>
+                                      Analytics
+                                    </button>
+
+                                    <button class="copy-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>">
+                                      <i class="ri-file-copy-line"></i>
+                                      Copy Link
+                                    </button>
+
+                                    <button class="qr-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>"
+                                      data-id="<%= url.shortId %>">
+                                      <i class="ri-qr-code-line"></i>
+                                      Show QR
+                                    </button>
+
+                                    <hr />
+
+                                    <button class="edit-btn" data-shortid="<%= url.shortId %>">
+                                      <i class="ri-edit-line"></i>
+                                      Edit
+                                    </button>
+
+                                    <button class="disable-btn" data-shortid="<%= url.shortId %>"
+                                      data-disabled="<%= url.isDisabled %>">
+                                      <i class="ri-forbid-line"></i>
+                                      <%= url.isDisabled ? "Enable" : "Disable" %>
+                                    </button>
+
+                                    <hr />
+
+                                    <button class="delete-btn danger" data-shortid="<%= url.shortId %>"
+                                      data-url="<%= url.redirectURL %>">
+                                      <i class="ri-delete-bin-line"></i>
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+
+                            <% }) %>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <!-- urls links length shown -->
+                    <div class="table-header">
+                      <span>
+                        Showing
+                        <%= startIndex %>–<%= endIndex %>
+                            of
+                            <%= totalUrls %>
+                              links
+                      </span>
+                    </div>
+
+                    <% const buildPageUrl=(pageNum)=> {
+                      const params = new URLSearchParams();
+                      if (filters.search) params.set('search', filters.search);
+                      if (filters.status && filters.status !== 'all') params.set('status', filters.status);
+                      if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
+                      if (filters.createdTo) params.set('createdTo', filters.createdTo);
+                      if (filters.expiry && filters.expiry !== 'all') params.set('expiry', filters.expiry);
+                      if (filters.sortBy && filters.sortBy !== 'newest') params.set('sortBy', filters.sortBy);
+                      params.set('page', pageNum);
+                      return `/dashboard?${params.toString()}`;
+                      };
+                      %>
+                      <!-- PAGINATION -->
+
+                      <% if (totalPages> 1) { %>
+
+                        <div class="pagination">
+                          <% if (currentPage> 1) { %>
+
+                            <a href="<%= buildPageUrl(currentPage - 1) %>" class="pagination-btn nav"> ← Prev </a>
+
+                            <% } else { %>
+
+                              <span class="pagination-btn nav disabled"> ← Prev </span>
+
+                              <% } %>
+
+                                <% const pages=new Set(); pages.add(1); pages.add(totalPages); for ( let
+                                  i=Math.max(1,currentPage-1); i <=Math.min(totalPages,currentPage+1); i++ ){
+                                  pages.add(i); } const sorted=[...pages].sort((a,b)=>a-b); let prev=0; for(const p of
+                                  sorted){
+                                  if(p-prev>1){
+                                  %>
+
+                                  <span class="pagination-dots"> ··· </span>
+
+                                  <% } %>
+
+                                    <a href="<%= buildPageUrl(p) %>"
+                                      class="pagination-btn <%= currentPage===p?'active':'' %>">
+                                      <%= p %>
+                                    </a>
+
+                                    <% prev=p; } %>
+
+                                      <% if(currentPage<totalPages){ %>
+
+                                        <a href="<%= buildPageUrl(currentPage+1) %>" class="pagination-btn nav"> Next →
+                                        </a>
+
+                                        <% } else { %>
+
+                                          <span class="pagination-btn nav disabled"> Next → </span>
+
+                                          <% } %>
+                        </div>
+
+                        <% } %>
 
                           <% } else { %>
 
-                            <span class="pagination-btn nav disabled"> ← Prev </span>
+                            <div class="empty-state">
+                              <% if (hasActiveFilters) { %>
+                                <i class="ri-search-line"></i>
+                                <h3>No results found</h3>
+                                <% if (filters.search) { %>
+                                  <p>No links match "<strong>
+                                      <%= filters.search %>
+                                    </strong>". Try a different search term or adjust your filters.</p>
+                                  <% } else { %>
+                                    <p>No links match the selected filters. Try adjusting or resetting them.</p>
+                                    <% } %>
+                                      <% } else { %>
+                                        <i class="ri-links-line"></i>
+                                        <h3>No links yet</h3>
+                                        <p>Create your first short URL to start managing links.</p>
+                                        <% } %>
+                            </div>
 
                             <% } %>
-
-                              <% const pages=new Set(); pages.add(1); pages.add(totalPages); for ( let
-                                i=Math.max(1,currentPage-1); i <=Math.min(totalPages,currentPage+1); i++ ){
-                                pages.add(i); } const sorted=[...pages].sort((a,b)=>a-b); let prev=0; for(const p of
-                                sorted){
-                                if(p-prev>1){
-                                %>
-
-                                <span class="pagination-dots"> ··· </span>
-
-                                <% } %>
-
-                                  <a href="<%= buildPageUrl(p) %>"
-                                    class="pagination-btn <%= currentPage===p?'active':'' %>">
-                                    <%= p %>
-                                  </a>
-
-                                  <% prev=p; } %>
-
-                                    <% if(currentPage<totalPages){ %>
-
-                                      <a href="<%= buildPageUrl(currentPage+1) %>" class="pagination-btn nav"> Next →
-                                      </a>
-
-                                      <% } else { %>
-
-                                        <span class="pagination-btn nav disabled"> Next → </span>
-
-                                        <% } %>
-                      </div>
-
-                      <% } %>
-
-                        <% } else { %>
-
-                          <div class="empty-state">
-                            <% if (hasActiveFilters) { %>
-                              <i class="ri-search-line"></i>
-                              <h3>No results found</h3>
-                              <% if (filters.search) { %>
-                                <p>No links match "<strong>
-                                    <%= filters.search %>
-                                  </strong>". Try a different search term or adjust your filters.</p>
-                                <% } else { %>
-                                  <p>No links match the selected filters. Try adjusting or resetting them.</p>
-                                  <% } %>
-                                    <% } else { %>
-                                      <i class="ri-links-line"></i>
-                                      <h3>No links yet</h3>
-                                      <p>Create your first short URL to start managing links.</p>
-                                      <% } %>
-                          </div>
-
-                          <% } %>
-              </section>
+                </section>
   </div>
 
   <!-- FILTER MODAL -->
@@ -342,23 +344,51 @@
       <div class="filter-group">
         <label>Created</label>
         <div class="date-range-row">
-          <input type="date" name="createdFrom" value="<%= filters.createdFrom || '' %>" form="urlToolbarForm" />
+          <input type="date" name="createdFrom" value="<%= filters.createdFrom || '' %>" max="<%= todayStr %>"
+            form="urlToolbarForm" />
           <span class="date-range-sep">to</span>
-          <input type="date" name="createdTo" value="<%= filters.createdTo || '' %>" form="urlToolbarForm" />
+          <input type="date" name="createdTo" value="<%= filters.createdTo || '' %>" max="<%= todayStr %>"
+            form="urlToolbarForm" />
+        </div>
+      </div>
+
+      <div class="filter-group" id="expiryGroup">
+        <label>Expiry</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="expiry" value="all" form="urlToolbarForm" <%=(!filters.expiry ||
+              filters.expiry==="all" ) ? "checked" : "" %>
+            <%=filters.status==="expired" ? "disabled" : "" %> />
+              <span>All</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="expiry" value="set" form="urlToolbarForm" <%=filters.expiry==="set" ? "checked"
+              : "" %>
+            <%=filters.status==="expired" ? "disabled" : "" %> />
+              <span>Expiring</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="expiry" value="never" form="urlToolbarForm" <%=filters.expiry==="never"
+              ? "checked" : "" %>
+            <%=filters.status==="expired" ? "disabled" : "" %> />
+              <span>No expiration</span>
+          </label>
         </div>
       </div>
 
       <div class="filter-group">
-        <label>Expiry</label>
-        <div class="date-range-row">
-          <input type="date" name="expiryFrom" value="<%= filters.expiryFrom || '' %>" form="urlToolbarForm" />
-          <span class="date-range-sep">to</span>
-          <input type="date" name="expiryTo" value="<%= filters.expiryTo || '' %>" form="urlToolbarForm" />
-        </div>
+        <label>Sort by</label>
+        <select name="sortBy" id="sortBySelect" form="urlToolbarForm">
+          <option value="newest" <%=(!filters.sortBy || filters.sortBy==="newest" ) ? "selected" : "" %>>Newest first
+          </option>
+          <option value="oldest" <%=filters.sortBy==="oldest" ? "selected" : "" %>>Oldest first</option>
+          <option value="mostClicked" <%=filters.sortBy==="mostClicked" ? "selected" : "" %>>Most clicked</option>
+          <option value="leastClicked" <%=filters.sortBy==="leastClicked" ? "selected" : "" %>>Least clicked</option>
+        </select>
       </div>
 
       <div class="filter-content-footer">
-        <a href="/dashboard" class="clear-filters-btn">Clear all filters</a>
+        <button type="button" class="clear-filters-btn" id="clearAllFiltersBtn">Clear all filters</button>
         <button type="submit" class="apply-filters-btn" form="urlToolbarForm">Apply Filters</button>
       </div>
     </div>
