@@ -48,7 +48,7 @@ function openMenu(btn, menu) {
   menu.style.visibility = "visible";
 }
 
-// ---------------- CACHE btn <-> menu <-> home PAIRS ONCE ----------------
+
 const dropdownPairs = [];
 
 document.querySelectorAll(".action-dropdown").forEach((dropdown) => {
@@ -93,5 +93,5 @@ window.addEventListener(
       closeMenu(menu, menu._dropdownHome);
     });
   },
-  true // capture: catches scroll on any scrollable ancestor, not just window
+  true 
 );

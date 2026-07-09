@@ -1,6 +1,6 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
-import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL, getFilteredTotalUserURLs } from "./url.service.js";
+import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL } from "./url.service.js";
 import type { Request, Response } from "express";
 import type { DashboardQueryParams, DashboardURL } from "./url.types.js";
 
@@ -53,9 +53,14 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
 
   const filters: DashboardQueryParams = {
     search: typeof req.query.search === "string" ? req.query.search.trim() : undefined,
+    status: typeof req.query.status === "string" ? (req.query.status as any) : "all",
+    createdFrom: typeof req.query.createdFrom === "string" ? req.query.createdFrom : undefined,
+    createdTo: typeof req.query.createdTo === "string" ? req.query.createdTo : undefined,
+    expiryFrom: typeof req.query.expiryFrom === "string" ? req.query.expiryFrom : undefined,
+    expiryTo: typeof req.query.expiryTo === "string" ? req.query.expiryTo : undefined,
   };
-  const allUrls = await getUserURLs(req.user!.id, page, limit, filters); //! non-null assertion operator, used by TS while runtime
-  const totalUrls = await getFilteredTotalUserURLs(req.user!.id, filters);
+
+  const { data: allUrls, total: totalUrls } = await getUserURLs(req.user!.id, page, limit, filters);
 
   const totalPages = Math.ceil(totalUrls / limit);
   const startIndex = totalUrls === 0 ? 0 : (page - 1) * limit + 1;
@@ -63,13 +68,13 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
   const error = typeof req.query.error === "string" ? req.query.error : null;
   const shortId = typeof req.query.id === "string" ? req.query.id : null;
 
-  const username = req.user!.username;
+  const name = req.user!.name;
   const formattedUrls: DashboardURL[] = allUrls.map((url) => ({
     ...url,
     expiryDisplay: getExpiryDisplay(url.expiresAt),
   }));
 
-  return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, username, filters });
+  return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, name, filters });
 });
 
 // toggle disable a short URL

@@ -11,12 +11,12 @@
     <link rel="stylesheet" href="/css/pages/auth.css" />
     <script type="module" src="/js/main.js"></script>
 
-    <title>Login</title>
+    <title>Log in</title>
   </head>
 
   <body>
     <div class="auth-container">
-      <h1>Login</h1>
+      <h1>Log in</h1>
 
       <!-- Error Message -->
       <% if (error) { %>
@@ -46,7 +46,7 @@
           </p>
         </div>
 
-        <button type="submit">Login</button>
+        <button type="submit">Log in</button>
       </form>
 
       <div class="oauth-divider">
@@ -66,6 +66,11 @@
         Don't have an account?
         <a href="/signup"> Create Account </a>
       </p>
+       <p class="auth-footer">
+          By logging in with an account, you agree to LinkForge's
+          <a href="/terms">Terms and Conditions</a> and
+          <a href="/privacy">Privacy Policy</a>
+        </p>
     </div>
   </body>
 </html>

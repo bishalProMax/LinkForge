@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus, countFilteredURLsByUserId } from "./url.repository.js";
+import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus } from "./url.repository.js";
 import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { RESERVED_ALIASES } from "../../shared/utils/reservedAliases.js";
@@ -77,14 +77,11 @@ const getURLAnalytics = async (shortId: string): Promise<any> => {
 };
 
 // Get all URLs created by a user with pagination
-const getUserURLs = async (userId: string, page: number, limit: number, filters: DashboardQueryParams = {}): Promise<any[]> => {
-  return getURLsByUserId(userId, page, limit, filters);
-};
-
-// Get the total number of filtered URLs for a user
-const getFilteredTotalUserURLs = async (userId: string, filters: DashboardQueryParams = {}): Promise<number> => {
-  const result = await countFilteredURLsByUserId(userId, filters);
-  return result[0]?.total || 0;
+const getUserURLs = async (userId: string, page: number, limit: number, filters: DashboardQueryParams = {}): Promise<{ data: any[]; total: number }> => {
+  const result = await getURLsByUserId(userId, page, limit, filters);
+  const data = result[0]?.data ?? [];
+  const total = result[0]?.totalCount[0]?.total ?? 0;
+  return { data, total };
 };
 
 // Delete a short URL and its associated visits
@@ -156,4 +153,4 @@ const toggleDisableURL = async (shortId: string, userId: string): Promise<boolea
   return true;
 };
 
-export { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, getFilteredTotalUserURLs, deleteURL, toggleDisableURL };
+export { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL };

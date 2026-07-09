@@ -12,12 +12,12 @@
     <script type="module" src="/js/main.js"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
-    <title>Signup</title>
+    <title>Sign up</title>
   </head>
   
   <body>
     <div class="auth-container">
-      <h1>Signup</h1>
+      <h1>Sign up</h1>
       
       <!-- Error Message -->
       <% if (error) { %>
@@ -26,7 +26,7 @@
       <!-- Signup Form -->
       <form action="/user/signup" method="POST">
         <div class="form-group">
-          <label>Full Name</label>
+          <label>Username</label>
           <input type="text" name="name" required value="<%= old?.name || '' %>" />
         </div>
 
@@ -48,7 +48,8 @@
             <div class="cf-turnstile" data-sitekey="<%= process.env.TURNSTILE_SITE_KEY %>"></div>
         </div>
         
-        <button type="submit" class="signup-btn">Signup</button>
+        <button type="submit" class="signup-btn">Sign up</button>
+        </form>
 
         <div class="oauth-divider">
           <span>or continue with</span>
@@ -61,13 +62,17 @@
             <span> Continue with Google </span>
           </a>
         </div>
-        
+
         <!-- login link -->
         <p class="auth-footer">
           Already have an account?
             <a href="/login">  Login </a>
         </p>
-      </form>
+        <p class="auth-footer">
+          By creating an account, you agree to LinkForge's
+          <a href="/terms">Terms and Conditions</a> and
+          <a href="/privacy">Privacy Policy</a>
+        </p>
     </div>
   </body>
 </html>

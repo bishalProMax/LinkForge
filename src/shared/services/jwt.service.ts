@@ -5,7 +5,7 @@ function createToken(user: UserPayload): string {
   const payload: TokenPayload = {
     id: user._id.toString(),
     email: user.email,
-    username: user.name
+    name: user.name
   };
   const expiresIn = (process.env.JWT_EXPIRES || "1d") as jwt.SignOptions["expiresIn"];
 
@@ -21,7 +21,7 @@ function verifyToken(token: string): TokenPayload | null {
     return {
       id: decoded.id,
       email: decoded.email,
-      username: decoded.username
+      name: decoded.name
     };
   } catch  {
     return null;

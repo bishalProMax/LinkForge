@@ -8,6 +8,10 @@ function closeModal(modal) {
   setTimeout(() => {
     modal.style.display = "none";
   }, 200);
+
+  if (!document.querySelector(".modal.show")) {
+    document.body.classList.remove("modal-open");
+  }
 }
 
 // ---------------- OPEN MODAL ----------------
@@ -20,13 +24,15 @@ function openModal(modal) {
   requestAnimationFrame(() => {
     modal.classList.add("show");
   });
+
+  document.body.classList.add("modal-open");
 }
 
 // ---------------- CLOSE BUTTONS ----------------
 
 document.querySelectorAll("[data-close-modal]").forEach((button) => {
   button.addEventListener("click", () => {
-    const modal = button.closest(".qr-modal, .delete-modal");
+    const modal = button.closest(".modal");
 
     closeModal(modal);
   });
@@ -35,17 +41,13 @@ document.querySelectorAll("[data-close-modal]").forEach((button) => {
 // ---------------- OUTSIDE CLICK ----------------
 
 window.addEventListener("click", (e) => {
-  const openedModal = document.querySelector(
-    ".qr-modal.show, .delete-modal.show"
-  );
+  const openedModal = document.querySelector(".modal.show");
 
   if (!openedModal) {
     return;
   }
 
-  const modalContent = openedModal.querySelector(
-    ".qr-content, .delete-content"
-  );
+  const modalContent = openedModal.querySelector(".modal-content");
 
   if (!modalContent.contains(e.target)) {
     closeModal(openedModal);
@@ -60,7 +62,7 @@ document.addEventListener("keydown", (e) => {
   }
 
   document
-    .querySelectorAll(".qr-modal.show, .delete-modal.show")
+    .querySelectorAll(".modal.show")
     .forEach(closeModal);
 });
 

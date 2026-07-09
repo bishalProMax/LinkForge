@@ -1,11 +1,6 @@
 import type { ExpiryDisplay } from "../../modules/url/url.types.js";
 const rtf = new Intl.RelativeTimeFormat("en-IN", { numeric: "always", style: "long" });
 
-/**
- * Extracts just the "<number> <unit>" text from Intl.RelativeTimeFormat,
- * stripping the "in"/"ago" wrapper — needed because we build our own
- * "left" suffix and combine hrs+mins manually (RTF only formats one unit).
- */
 const formatUnitPart = (value: number, unit: Intl.RelativeTimeFormatUnit): string => {
   return rtf
     .formatToParts(value, unit)
@@ -15,16 +10,6 @@ const formatUnitPart = (value: number, unit: Intl.RelativeTimeFormatUnit): strin
     .trim();
 };
 
-/**
- * Renders a human-readable "time left" display for a link's expiry,
- * plus an exact timestamp for a tooltip/title attribute.
- *
- * Pure elapsed-duration based — no calendar-date comparisons, so it's
- * immune to midnight-rollover mislabeling.
- *
- * NOTE: Evaluated once per EJS render (SSR) — the value is a snapshot
- * as of render time, it will not tick down client-side.
- */
 export const getExpiryDisplay = (expiresAt?: Date | null): ExpiryDisplay => {
   if (!expiresAt) {
     return { text: "Never", title: "This link never expires" };
@@ -43,7 +28,7 @@ export const getExpiryDisplay = (expiresAt?: Date | null): ExpiryDisplay => {
   const diffMs = expiresAt.getTime() - now.getTime();
 
   if (diffMs <= 0) {
-    return { text: "Expired", title };
+    return { text: "-", title };
   }
 
   const SECOND = 1000;
@@ -59,19 +44,19 @@ export const getExpiryDisplay = (expiresAt?: Date | null): ExpiryDisplay => {
   // 1–59 minutes
   if (diffMs < HOUR) {
     const minutes = Math.round(diffMs / MINUTE);
-    // Guard: rounding can overflow 59.5+ mins up to 60
+    
     if (minutes >= 60) {
       return { text: `${formatUnitPart(1, "hour")} left`, title };
     }
     return { text: `${formatUnitPart(minutes, "minute")} left`, title };
   }
 
-  // 1–24 hours — combined hrs + mins
+  
   if (diffMs < DAY) {
     const totalMinutes = Math.round(diffMs / MINUTE);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    // Guard: rounding can overflow 23h59m+ up to 24h
+    
     if (hours >= 24) {
       return { text: "Tomorrow", title };
     }

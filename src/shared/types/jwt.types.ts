@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export type TokenPayload = {
   id: string;
   email: string;
-  username: string;
+  name: string;
 };
 
 export type UserPayload = {

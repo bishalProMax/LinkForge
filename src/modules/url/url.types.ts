@@ -32,4 +32,9 @@ export interface DashboardURL {
 
 export interface DashboardQueryParams {
   search?: string;
+  status?: "active" | "disabled" | "expired" | "all";
+  createdFrom?: string;
+  createdTo?: string;
+  expiryFrom?: string;
+  expiryTo?: string;
 }
