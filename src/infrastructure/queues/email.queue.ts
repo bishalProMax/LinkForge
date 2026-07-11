@@ -6,6 +6,13 @@ type EmailQueueJobs = SendVerificationEmailJob | SendWelcomeEmailJob | SendPassw
 
 const emailQueue = new Queue<EmailQueueJobs>("emailQueue", {
   connection: redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 2000,
+    },
+  },
 });
 
 export default emailQueue;

@@ -28,5 +28,13 @@ type EmailJobData = SendVerificationEmailJob | SendWelcomeEmailJob | SendPasswor
     }
   );
 
+  emailWorker.on("failed", (job, error) => {
+  console.error(
+    `Email job permanently failed after all retries — job: ${job?.name}, id: ${job?.id}, recipient: ${job?.data?.email}`,
+    error
+  );
+});
+
+
   export default emailWorker;
 
