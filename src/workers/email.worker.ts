@@ -5,7 +5,7 @@ import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOT
 
 type EmailJobData = SendVerificationEmailJob | SendWelcomeEmailJob | SendPasswordResetOTPJob | SendPasswordChangedEmailJob;
 
-new Worker<EmailJobData>("emailQueue", async (job: Job<EmailJobData>): Promise<void> => {
+  const emailWorker = new Worker<EmailJobData>("emailQueue", async (job: Job<EmailJobData>): Promise<void> => {
       if (job.name ==="sendVerificationEmail") {
         await sendVerificationEmail(job.data as SendVerificationEmailJob);
       }
@@ -28,4 +28,5 @@ new Worker<EmailJobData>("emailQueue", async (job: Job<EmailJobData>): Promise<v
     }
   );
 
+  export default emailWorker;
 

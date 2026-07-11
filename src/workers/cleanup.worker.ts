@@ -3,7 +3,7 @@ import redis from "../infrastructure/configs/redis.config.js";
 import User from "../models/user.model.js";
 import type { CleanupJob } from "../shared/types/queue.types.js";
 
-new Worker<CleanupJob>("cleanupQueue", async (job: Job<CleanupJob>): Promise<void> => {
+  const cleanupWorker = new Worker<CleanupJob>("cleanupQueue", async (job: Job<CleanupJob>): Promise<void> => {
     await User.deleteMany({
       isVerified: false,
       createdAt: {$lt: new Date(Date.now() - 1000 * 60 * 60 * 24)}, // 24 hrs
@@ -16,3 +16,5 @@ new Worker<CleanupJob>("cleanupQueue", async (job: Job<CleanupJob>): Promise<voi
     connection: redis,
   }
 );
+
+export default cleanupWorker;
