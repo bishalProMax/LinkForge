@@ -1,8 +1,11 @@
 /* eslint-disable no-unused-vars */
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import cookieOptions from "../../shared/utils/cookieOptions.js";
+import type { UserDocument } from "../../models/user.model.js";
+import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../../shared/utils/cookieOptions.js";
+import { createToken, revokeRefreshSession, createRefreshSession } from "../../shared/services/jwt.service.js";
 import { signupUser, loginUser, verifyUserEmail } from "./auth.service.js";
 import type { Request, Response } from "express";
+import type { UserPayload } from "../../shared/types/jwt.types.js";
 
 // -----------------------------SIGNUP-----------------------------
 const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
@@ -124,18 +127,26 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (result.type === "SUCCESS") {
-    res.cookie("token", result.token, cookieOptions);
+  res.cookie("accessToken", result.accessToken, accessTokenCookieOptions);
+  res.cookie("refreshToken", result.refreshToken, refreshTokenCookieOptions);
   }
 
   return res.redirect("/dashboard");
 });
 
 // -----------------------------LOGOUT-----------------------------
-const handleUserLogout = (req: Request, res: Response) => {
-  res.clearCookie("token", cookieOptions);
+const handleUserLogout = asyncHandler(async (req: Request, res: Response) => {
+  const refreshCookie = req.cookies?.refreshToken;
+
+  if (refreshCookie) {
+    await revokeRefreshSession(refreshCookie);
+  }
+
+  res.clearCookie("accessToken", accessTokenCookieOptions);
+  res.clearCookie("refreshToken", refreshTokenCookieOptions);
 
   return res.redirect("/");
-};
+});
 
 // -----------------------------EMAIL VERIFICATION-------------------
 const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
@@ -157,4 +168,29 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-export { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail };
+// -----------------------------GOOGLE CALLBACK-----------------------------
+const handleGoogleCallback = asyncHandler(async (req: Request, res: Response) => {
+  const googleUser = req.user as UserDocument;
+
+  const userPayload: UserPayload = {
+    _id: googleUser._id,
+    email: googleUser.email,
+    name: googleUser.name,
+  };
+
+  const accessToken = createToken(userPayload);
+  const refreshToken = await createRefreshSession(userPayload);
+
+  res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+  res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+
+  return res.redirect("/dashboard");
+});
+
+export { 
+  handleUserSignup, 
+  handleUserLogin,
+  handleUserLogout, 
+  verifyEmail,  
+  handleGoogleCallback 
+  };

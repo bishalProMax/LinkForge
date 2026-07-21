@@ -15,7 +15,7 @@ export interface IURL {
 export type URLDocument = HydratedDocument<IURL>;
 
 // -----------------------------URL MODEL-----------------------------
-export type URLModel = mongoose.Model<IURL>;
+type URLModel = mongoose.Model<IURL>;
 
 // -----------------------------SCHEMA-----------------------------
 

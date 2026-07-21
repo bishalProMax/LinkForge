@@ -1,8 +1,7 @@
 import crypto from "crypto";
-import bcrypt from "bcrypt";
 import redis from "../../infrastructure/configs/redis.config.js";
 import emailQueue from "../../infrastructure/queues/email.queue.js";
-import { createToken } from "../../shared/services/jwt.service.js";
+import { createToken, createRefreshSession } from "../../shared/services/jwt.service.js"
 import verifyTurnstile from "../../shared/services/turnstile.service.js";
 import { findUserByEmail, createUser, findUserByVerificationToken, saveUser } from "../user/user.repository.js";
 import type { SignupUserProps, SignupResult, LoginUserProps, LoginResult, VerifyEmailResult } from "../user/user.types.js";
@@ -151,11 +150,12 @@ const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResu
 
   await redis.del(`login:${email}`);
 
-  const token = createToken(user);
-
+  const accessToken = createToken(user);
+  const refreshToken = await createRefreshSession(user);
   return {
     type: "SUCCESS",
-    token,
+    accessToken,
+    refreshToken
   };
 };
 

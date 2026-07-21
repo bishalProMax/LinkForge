@@ -1,14 +1,12 @@
 import { Router } from "express";
 import passport from "passport";
-import { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail } from "./auth.controller.js";
+import { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail, handleGoogleCallback } from "./auth.controller.js";
 import { validateRender } from "../../shared/middlewares/validation.middleware.js";
 import { signupSchema, loginSchema, forgotPasswordSchema, verifyOtpSchema, resetPasswordSchema } from "./auth.schemas.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
 import { signupLimiter, loginLimiter } from "../../shared/middlewares/authRateLimit.middleware.js";
 import { handleForgotPassword, handleVerifyResetOTP, handleResetPassword } from "./password.controller.js";
 import OTPLimiter from "../../shared/middlewares/otpLimiter.middleware.js";
-import { createToken } from "../../shared/services/jwt.service.js";
-import cookieOptions from "../../shared/utils/cookieOptions.js";
 
 const router = Router();
 
@@ -37,12 +35,6 @@ router.post("/reset-password", validateRender(resetPasswordSchema, { view: "rese
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 // GOOGLE CALLBACK
-router.get("/google/callback", passport.authenticate("google", { session: false, failureRedirect: "/login" }), async (req, res) => {
-  const user = req.user as any;
-
-  const token = createToken(user);
-  res.cookie("token", token, cookieOptions);
-  res.redirect("/dashboard");
-});
+router.get("/google/callback", passport.authenticate("google", { session: false, failureRedirect: "/login" }), handleGoogleCallback);
 
 export default router;

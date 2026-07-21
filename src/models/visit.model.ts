@@ -11,7 +11,7 @@ export interface IVisit {
 export type VisitDocument = HydratedDocument<IVisit>;
 
 // -----------------------------VISIT MODEL-----------------------------
-export type VisitModel = mongoose.Model<IVisit>;
+type VisitModel = mongoose.Model<IVisit>;
 
 // -----------------------------SCHEMA-----------------------------
 const visitSchema = new mongoose.Schema<IVisit, VisitModel>(

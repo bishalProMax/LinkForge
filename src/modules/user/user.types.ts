@@ -35,7 +35,8 @@ export type LoginResult = {
     }
   | {
       type: "SUCCESS";
-      token: string;
+      accessToken: string;
+      refreshToken: string;
     };
 
 export type VerifyEmailResult = {

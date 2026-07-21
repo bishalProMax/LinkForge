@@ -15,10 +15,8 @@ export interface IUser {
 }
 
 // -----------------------------USER METHODS-----------------------
-export interface IUserMethods {
-  comparePassword(
-    password: string
-  ): Promise<boolean>;
+interface IUserMethods {
+  comparePassword(password: string): Promise<boolean>;
 }
 
 // -----------------------------USER DOCUMENT----------------------
@@ -114,9 +112,6 @@ return bcrypt.compare(
 );
 };
 
-const User = mongoose.model<
-    IUser,
-    UserModel
-  >("User", userSchema);
+const User = mongoose.model<IUser,UserModel>("User", userSchema);
 
 export default User;

@@ -11,3 +11,10 @@ export type UserPayload = {
   email: string;
   name: string;
 };
+
+export interface RefreshSessionRecord {
+  userId: string;
+  email: string;
+  name: string;
+  secretHash: string;
+}
