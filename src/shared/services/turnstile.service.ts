@@ -1,5 +1,4 @@
-/*eslint-disable no-unused-vars */
-async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   try {
 
     if (!token) {
@@ -24,7 +23,7 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
     const data = await response.json();
     return data.success;
 
-  } catch (error) {
+  } catch {
     return false;
   }
 }

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import logger from "./logger.config.js";
 
 const DB_NAME = "url_shortner";
 
@@ -7,7 +8,7 @@ const connectToMongoDB = async (): Promise<void> => {
     `${process.env.MONGODB_URI}/${DB_NAME}`
   );
 
-  console.log(`\n MongoDB connected !! DB HOST: ${connectionInstance.connection.host}`);
+  logger.info({ host: connectionInstance.connection.host }, "MongoDB connected");
 };
 
 export default connectToMongoDB;

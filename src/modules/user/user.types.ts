@@ -22,6 +22,7 @@ export interface SignupResult {
 export interface LoginUserProps {
   email: string;
   password: string;
+  ip: string;
 };
 
 export type LoginResult = {
@@ -50,6 +51,7 @@ export type VerifyEmailResult = {
 // ----------------------------------Forgot Password---------------------------------
 export interface ForgotPasswordProps {
   email: string;
+  ip: string;
 };
 
 export interface ForgotPasswordResult {
@@ -64,6 +66,7 @@ export interface ForgotPasswordResult {
 export interface VerifyResetOTPProps {
   email: string;
   otp: string;
+  ip: string
 };
 
 export interface VerifyOTPResult {
@@ -77,6 +80,7 @@ export interface VerifyOTPResult {
 export interface ResetPasswordProps {
   email: string;
   password: string;
+  ip: string;
 };
 
 export interface ResetPasswordResult {

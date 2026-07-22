@@ -1,0 +1,29 @@
+export type SecurityEventType =
+  | "LOGIN_FAILED"
+  | "LOGIN_SUCCESS"
+  | "LOGIN_TOO_MANY_ATTEMPTS"
+  | "LOGIN_GOOGLE_REQUIRED"
+  | "SIGNUP_CAPTCHA_FAILED"
+  | "SIGNUP_EMAIL_EXISTS"
+  | "SIGNUP_RESEND_LIMIT_REACHED"
+  | "SIGNUP_COOLDOWN_ACTIVE"
+  | "SIGNUP_LOCAL_PROVIDER_LINKED"
+  | "OTP_REQUESTED"
+  | "OTP_COOLDOWN_ACTIVE"
+  | "OTP_LIMIT_REACHED"
+  | "OTP_GOOGLE_REQUIRED"
+  | "OTP_INVALID"
+  | "OTP_EXPIRED"
+  | "OTP_TOO_MANY_ATTEMPTS"
+  | "OTP_VERIFIED"
+  | "PASSWORD_RESET_SUCCESS"
+  | "PASSWORD_RESET_SESSION_EXPIRED"
+  | "PASSWORD_RESET_SAME_PASSWORD";
+
+export interface SecurityEventPayload {
+  event: SecurityEventType;
+  email?: string;
+  userId?: string;
+  ip?: string;
+  [key: string]: unknown;
+}

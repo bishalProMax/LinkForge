@@ -5,12 +5,14 @@ import { createToken, createRefreshSession } from "../../shared/services/jwt.ser
 import verifyTurnstile from "../../shared/services/turnstile.service.js";
 import { findUserByEmail, createUser, findUserByVerificationToken, saveUser } from "../user/user.repository.js";
 import type { SignupUserProps, SignupResult, LoginUserProps, LoginResult, VerifyEmailResult } from "../user/user.types.js";
+import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 
 //----------------------------SIGNUP SERVICE------------------------------------
 const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUserProps): Promise<SignupResult> => {
   const isHuman = await verifyTurnstile(captchaToken, ip);
 
   if (!isHuman) {
+    logSecurityEvent({ event: "SIGNUP_CAPTCHA_FAILED", email, ip });
     return {
       type: "CAPTCHA_FAILED",
     };
@@ -26,12 +28,14 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
 
       await saveUser(existedUser);
 
+      logSecurityEvent({ event: "SIGNUP_LOCAL_PROVIDER_LINKED", email, ip, userId: existedUser._id.toString() }, "info");
       return {
         type: "LOCAL_PROVIDER_LINKED",
       };
     }
 
     if (existedUser.isVerified) {
+      logSecurityEvent({ event: "SIGNUP_EMAIL_EXISTS", email, ip });
       return {
         type: "EMAIL_EXISTS",
       };
@@ -40,6 +44,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     // EMAIL RESEND COOLDOWN
     const cooldown = await redis.ttl(`signup-resend-cooldown:${email}`);
     if (cooldown > 0) {
+      logSecurityEvent({ event: "SIGNUP_COOLDOWN_ACTIVE", email, ip, cooldown });
       return {
         type: "COOLDOWN_ACTIVE",
         cooldown,
@@ -48,6 +53,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
 
     const sendCount = Number(await redis.get(`signup-resend-count:${email}`)) || 0;
     if (sendCount >= 2) {
+      logSecurityEvent({ event: "SIGNUP_RESEND_LIMIT_REACHED", email, ip });
       return {
         type: "RESEND_LIMIT_REACHED",
       };
@@ -104,11 +110,12 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
 };
 
 //----------------------------LOGIN SERVICE------------------------------------
-const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResult> => {
+const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<LoginResult> => {
   const attempts = Number(await redis.get(`login:${email}`)) || 0;
 
   if (attempts >= 5) {
     const ttl = await redis.ttl(`login:${email}`);
+    logSecurityEvent({ event: "LOGIN_TOO_MANY_ATTEMPTS", email, ip, attempts });
     return {
       type: "TOO_MANY_ATTEMPTS",
       retryAfter: ttl,
@@ -118,12 +125,14 @@ const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResu
   const user = await findUserByEmail(email);
 
   if (!user) {
+    logSecurityEvent({ event: "LOGIN_FAILED", email, ip, reason: "EMAIL_NOT_FOUND" });
     return {
       type: "EMAIL_NOT_FOUND",
     };
   }
 
   if (!user.authProviders.includes("local")) {
+    logSecurityEvent({ event: "LOGIN_GOOGLE_REQUIRED", email, ip, userId: user._id.toString() });
     return {
       type: "GOOGLE_LOGIN_REQUIRED",
     };
@@ -143,6 +152,7 @@ const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResu
       await redis.expire(`login:${email}`, 300);
     }
 
+    logSecurityEvent({ event: "LOGIN_FAILED", email, ip, userId: user._id.toString(), reason: "INVALID_PASSWORD", attempts });
     return {
       type: "INVALID_PASSWORD",
     };
@@ -150,6 +160,7 @@ const loginUser = async ({ email, password }: LoginUserProps): Promise<LoginResu
 
   await redis.del(`login:${email}`);
 
+  logSecurityEvent({ event: "LOGIN_SUCCESS", email, ip, userId: user._id.toString() }, "info");
   const accessToken = createToken(user);
   const refreshToken = await createRefreshSession(user);
   return {

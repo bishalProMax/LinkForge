@@ -31,7 +31,7 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
 
   const newAccessToken = createToken(rotated.user);
 
-  res.cookie("token", newAccessToken, accessTokenCookieOptions);
+  res.cookie("accessToken", newAccessToken, accessTokenCookieOptions);
   res.cookie("refreshToken", rotated.cookieValue, refreshTokenCookieOptions);
 
   req.user = {
@@ -69,7 +69,7 @@ const redirectIfAuthenticated = asyncHandler(async (req: Request, res: Response,
   }
 
   const newAccessToken = createToken(rotated.user);
-  res.cookie("token", newAccessToken, accessTokenCookieOptions);
+  res.cookie("accessToken", newAccessToken, accessTokenCookieOptions);
   res.cookie("refreshToken", rotated.cookieValue, refreshTokenCookieOptions);
 
   return res.redirect("/dashboard");

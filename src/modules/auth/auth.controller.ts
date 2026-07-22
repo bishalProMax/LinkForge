@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import asyncHandler from "../../shared/utils/asyncHandler.js";
+ import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { UserDocument } from "../../models/user.model.js";
 import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../../shared/utils/cookieOptions.js";
 import { createToken, revokeRefreshSession, createRefreshSession } from "../../shared/services/jwt.service.js";
@@ -41,7 +40,7 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-     if (result.type === "COOLDOWN_ACTIVE") {
+    if (result.type === "COOLDOWN_ACTIVE") {
       return res.status(429).render("signup", {
         error: `Please wait ${result.cooldown}s before requesting another verification email.`,
         old,
@@ -84,6 +83,7 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
   const result = await loginUser({
     email,
     password,
+    ip: req.ip ?? "",
   });
 
   if (result.type === "EMAIL_NOT_FOUND") {

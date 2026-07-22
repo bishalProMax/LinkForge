@@ -36,9 +36,9 @@ const urlSchema = new mongoose.Schema<IURL, URLModel>(
       ref: "User",
     },
     expiresAt: {
-     type: Date,
-     default: null,
-     index: true,
+      type: Date,
+      default: null,
+      index: true,
     },
     isDisabled: {
       type: Boolean,

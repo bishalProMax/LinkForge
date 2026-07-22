@@ -2,6 +2,7 @@ import { Worker, Job } from "bullmq";
 import redis from "../infrastructure/configs/redis.config.js";
 import {sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail } from "../shared/services/email.service.js";
 import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob } from "../shared/types/queue.types.js";
+import logger from "../infrastructure/configs/logger.config.js";
 
 type EmailJobData = SendVerificationEmailJob | SendWelcomeEmailJob | SendPasswordResetOTPJob | SendPasswordChangedEmailJob;
 
@@ -29,10 +30,7 @@ type EmailJobData = SendVerificationEmailJob | SendWelcomeEmailJob | SendPasswor
   );
 
   emailWorker.on("failed", (job, error) => {
-  console.error(
-    `Email job permanently failed after all retries — job: ${job?.name}, id: ${job?.id}, recipient: ${job?.data?.email}`,
-    error
-  );
+  logger.error({ jobName: job?.name, jobId: job?.id, recipient: job?.data?.email, err: error },"Email job permanently failed after all retries");
 });
 
 

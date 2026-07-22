@@ -1,3 +1,5 @@
+import type { SecurityEventType } from "./securityEvent.types.js";
+
 export type SendVerificationEmailJob = {
   email: string;
   name: string;
@@ -19,7 +21,16 @@ export type SendPasswordResetOTPJob = {
   name: string;
   otp: string;
 };
+
 export type SendPasswordChangedEmailJob = {
   email: string;
   name: string;
+};
+
+export type SecurityEventJob = {
+  event: SecurityEventType;
+  email?: string;
+  userId?: string;
+  ip?: string;
+  metadata?: Record<string, unknown>;
 };

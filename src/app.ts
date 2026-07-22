@@ -10,12 +10,14 @@ import { fileURLToPath } from "url";
 import oauthRoutes from "./modules/auth/auth.route.js";
 import passport from "passport";
 import "./infrastructure/configs/passport.config.js";
+import requestLogger from "./shared/middlewares/requestLogger.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express()
 
+app.use(requestLogger); 
 
 app.use(helmet({
   contentSecurityPolicy: {

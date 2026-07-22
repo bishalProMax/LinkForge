@@ -10,6 +10,7 @@ const handleForgotPassword = asyncHandler(async (req: Request, res: Response) =>
 
   const result = await forgotPassword({
     email: req.body.email,
+    ip: req.ip ?? "",
   });
 
   //COOLDOWN
@@ -58,6 +59,7 @@ const handleVerifyResetOTP = asyncHandler(async (req: Request, res: Response) =>
   const result = await verifyResetOTP({
     email: req.body.email,
     otp: req.body.otp,
+    ip: req.ip ?? "",
   });
 
   if (result.type === "INVALID_OTP") {
@@ -102,6 +104,7 @@ const handleResetPassword = asyncHandler(async (req: Request, res: Response) => 
   const result = await resetPassword({
     email: req.body.email,
     password: req.body.password,
+    ip: req.ip ?? "",
   });
 
   if (result.type === "SESSION_EXPIRED") {

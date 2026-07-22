@@ -4,10 +4,13 @@ import app from "./app.js";
 import { Socket } from "net";
 import emailWorker from "./workers/email.worker.js";
 import cleanupWorker from "./workers/cleanup.worker.js";
+import securityEventWorker from "./workers/securityEvent.worker.js";
 import cleanupQueue from "./infrastructure/queues/cleanup.queue.js";
 import emailQueue from "./infrastructure/queues/email.queue.js";
+import securityEventQueue from "./infrastructure/queues/securityEvent.queue.js";
 import redis from "./infrastructure/configs/redis.config.js";
 import connectToMongoDB from "./infrastructure/configs/db.config.js";
+import logger from "./infrastructure/configs/logger.config.js";
 
 let server: ReturnType<typeof app.listen>;
 const sockets = new Set<Socket>();
@@ -19,7 +22,7 @@ const sockets = new Set<Socket>();
 connectToMongoDB()
   .then(() => {
     const PORT = process.env.PORT || 8000;
-    server = app.listen(PORT, () => console.log(`server is running at port: ${PORT}`));
+    server = app.listen(PORT, () => logger.info({ port: PORT }, "Server started "));
     
     server.on("connection", (socket: Socket) => {
       sockets.add(socket);
@@ -27,60 +30,54 @@ connectToMongoDB()
     });
 
     server.on("error", (error: Error) => {
-      console.error("ERROR: ", "our application not able to talk ", error);
+      logger.error({ err: error }, "Server failed to handle a connection");
     });
   })
 
   .catch((error: unknown) => {
-    console.error("MONGODB connection failed !!! ", error);
+    logger.error({ err: error }, "MongoDB connection failed");
     process.exit(1);
   });
 
 const gracefulShutdown = async (signal: string): Promise<void> => {
-  console.log(`\n${signal} received. Starting graceful shutdown...`);
+  logger.info({ signal }, "Graceful shutdown initiated");
 
   const forceExitTimer = setTimeout(() => {
-    console.error("Graceful shutdown timed out. Forcing exit.");
+    logger.error("Graceful shutdown timed out. Forcing exit.");
     process.exit(1);
   }, 10_000);
 
-  try {
-    console.log("Step 1: closing sockets...");
+   try {
     if (server) {
       for (const socket of sockets) {
         socket.destroy();
       }
-      console.log(`Destroyed ${sockets.size} sockets.`);
+      logger.info({ count: sockets.size }, "Sockets destroyed");
 
-      console.log("Step 2: closing HTTP server...");
       await new Promise<void>((resolve, reject) => {
         server.close((err) => (err ? reject(err) : resolve()));
       });
-      console.log("HTTP server closed.");
+      logger.info("HTTP server closed");
     }
 
-    console.log("Step 3: closing BullMQ workers...");
-    await Promise.all([emailWorker.close(), cleanupWorker.close()]);
-    console.log("BullMQ workers drained and closed.");
+     await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close()]); 
+    logger.info("BullMQ workers closed");
 
-    console.log("Step 4: closing BullMQ queues...");
-    await Promise.all([emailQueue.close(), cleanupQueue.close()]);
-    console.log("BullMQ queues closed.");
+    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close()]); 
+    logger.info("BullMQ queues closed");
 
-    console.log("Step 5: quitting Redis...");
     await redis.quit();
-    console.log("Redis disconnected.");
+    logger.info("Redis disconnected");
 
-    console.log("Step 6: closing MongoDB...");
     await mongoose.connection.close();
-    console.log("MongoDB connection closed.");
+    logger.info("MongoDB connection closed");
 
     clearTimeout(forceExitTimer);
-    console.log("Graceful shutdown complete.");
+    logger.info("Graceful shutdown complete");
     process.exit(0);
   } catch (error) {
     clearTimeout(forceExitTimer);
-    console.error("Error during graceful shutdown:", error);
+    logger.error({ err: error }, "Error during graceful shutdown");
     process.exit(1);
   }
 };

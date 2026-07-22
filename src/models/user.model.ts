@@ -30,7 +30,7 @@ export type UserDocument =
 type UserModel =
   mongoose.Model<
     IUser,
-    {},
+    Record<string, never>,
     IUserMethods
   >;
 
