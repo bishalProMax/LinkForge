@@ -69,12 +69,13 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
   const shortId = typeof req.query.id === "string" ? req.query.id : null;
 
   const name = req.user!.name;
+  const role = req.user!.role;
   const formattedUrls: DashboardURL[] = allUrls.map((url) => ({
     ...url,
     expiryDisplay: getExpiryDisplay(url.expiresAt),
   }));
 
-  return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, name, filters });
+  return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, name, role, filters });
 });
 
 // toggle disable a short URL

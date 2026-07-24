@@ -36,6 +36,8 @@ const roleInviteSchema = new mongoose.Schema<IRoleInvite, RoleInviteModel>(
   }
 );
 
+roleInviteSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 });
+
 const RoleInvite = mongoose.model<IRoleInvite, RoleInviteModel>("RoleInvite", roleInviteSchema);
 
 export default RoleInvite;

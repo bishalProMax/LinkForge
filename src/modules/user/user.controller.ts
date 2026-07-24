@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import { createInvite } from "./user.service.js";
+import { createInvite, banUser, unbanUser, promoteToSuperAdmin, demoteToAdmin, getAllUsers } from "./user.service.js";
+
 
 const handleCreateRoleInvite = asyncHandler(async (req: Request, res: Response) => {
   const { email, role } = req.body;
@@ -23,4 +24,112 @@ const handleCreateRoleInvite = asyncHandler(async (req: Request, res: Response) 
   return res.redirect("/admin/invites?success=true");
 });
 
-export { handleCreateRoleInvite };
+const handleBanUser = asyncHandler(async (req: Request, res: Response) => {
+  const result = await banUser({
+    targetUserId: req.params.userId as string,
+    actingUser: { id: req.user!.id, role: req.user!.role },
+  });
+
+  if (result.type !== "SUCCESS") {
+    const messages: Record<string, string> = {
+      NOT_FOUND: "User not found.",
+      SELF_BAN_FORBIDDEN: "You cannot ban your own account.",
+      INSUFFICIENT_AUTHORITY: "You don't have permission to ban this account.",
+      ALREADY_IN_STATE: "This account is already banned.",
+    };
+    return res.redirect("/admin/users?error=" + encodeURIComponent(messages[result.type]));
+  }
+
+  return res.redirect("/admin/users?success=" + encodeURIComponent("User banned successfully."));
+});
+
+const handleUnbanUser = asyncHandler(async (req: Request, res: Response) => {
+  const result = await unbanUser({
+    targetUserId: req.params.userId as string,
+    actingUser: { id: req.user!.id, role: req.user!.role },
+  });
+
+  if (result.type !== "SUCCESS") {
+    const messages: Record<string, string> = {
+      NOT_FOUND: "User not found.",
+      SELF_BAN_FORBIDDEN: "Invalid action.",
+      INSUFFICIENT_AUTHORITY: "You don't have permission to unban this account.",
+      ALREADY_IN_STATE: "This account is not banned.",
+    };
+    return res.redirect("/admin/users?error=" + encodeURIComponent(messages[result.type]));
+  }
+
+  return res.redirect("/admin/users?success=" + encodeURIComponent("User unbanned successfully."));
+});
+
+const handlePromoteUser = asyncHandler(async (req: Request, res: Response) => {
+  const result = await promoteToSuperAdmin({
+    targetUserId: req.params.userId as string,
+    actingUser: { id: req.user!.id, role: req.user!.role },
+  });
+
+  if (result.type !== "SUCCESS") {
+    const messages: Record<string, string> = {
+      NOT_FOUND: "User not found.",
+      INVALID_TARGET_ROLE: "Only an Admin can be promoted to Super Admin.",
+      INSUFFICIENT_AUTHORITY: "You don't have permission to promote this account.",
+    };
+    return res.redirect("/admin/users?error=" + encodeURIComponent(messages[result.type]));
+  }
+
+  return res.redirect("/admin/users?success=" + encodeURIComponent("User promoted to Super Admin."));
+});
+
+const handleDemoteUser = asyncHandler(async (req: Request, res: Response) => {
+  const result = await demoteToAdmin({
+    targetUserId: req.params.userId as string,
+    actingUser: { id: req.user!.id, role: req.user!.role },
+  });
+
+  if (result.type !== "SUCCESS") {
+    const messages: Record<string, string> = {
+      NOT_FOUND: "User not found.",
+      INVALID_TARGET_ROLE: "Only a Super Admin can be demoted to Admin.",
+      INSUFFICIENT_AUTHORITY: "You don't have permission to demote this account.",
+    };
+    return res.redirect("/admin/users?error=" + encodeURIComponent(messages[result.type]));
+  }
+
+  return res.redirect("/admin/users?success=" + encodeURIComponent("User demoted to Admin."));
+});
+
+const handleGetAllUsers = asyncHandler(async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = 10;
+
+  const { data: users, total } = await getAllUsers({
+    actingUserRole: req.user!.role as "ADMIN" | "SUPER_ADMIN",
+    page,
+    limit,
+  });
+
+  const totalPages = Math.ceil(total / limit);
+  const error = typeof req.query.error === "string" ? req.query.error : null;
+  const success = typeof req.query.success === "string" ? req.query.success : null;
+
+  return res.render("adminUsers", {
+    users,
+    currentPage: page,
+    totalPages,
+    total,
+    error,
+    success,
+    actingUserId: req.user!.id,
+    actingUserRole: req.user!.role,
+  });
+});
+
+export { 
+  handleCreateRoleInvite, 
+  handleBanUser, 
+  handleUnbanUser, 
+  handlePromoteUser, 
+  handleDemoteUser, 
+  handleGetAllUsers 
+  };
+

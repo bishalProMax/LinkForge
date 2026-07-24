@@ -17,6 +17,10 @@ const handleShowLoginPage = (req: Request, res: Response): void => {
     message = "Verification email resent successfully.";
   }
 
+  if (verification === "accepted") {
+    message = "Account created successfully. You can now log in.";
+  }
+
   res.render("login", {
     error: req.query.error || null,
     old: {},

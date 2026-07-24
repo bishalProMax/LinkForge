@@ -15,7 +15,8 @@ export interface SignupResult {
         | "PENDING"
         | "LOCAL_PROVIDER_LINKED"
         | "COOLDOWN_ACTIVE"
-        | "RESEND_LIMIT_REACHED";
+        | "RESEND_LIMIT_REACHED"
+        | "INVITE_ACCEPTED"
       cooldown?: number;
     };
 
@@ -31,7 +32,8 @@ export type LoginResult = {
         | "NOT_VERIFIED"
         | "INVALID_PASSWORD"
         | "TOO_MANY_ATTEMPTS"
-        | "GOOGLE_LOGIN_REQUIRED";
+        | "GOOGLE_LOGIN_REQUIRED"
+        | "ACCOUNT_BANNED";
       retryAfter?: number;
     }
   | {
@@ -109,4 +111,46 @@ export interface CreateInviteProps {
 
 export interface CreateInviteResult {
   type: "SUCCESS" | "EMAIL_ALREADY_REGISTERED" | "INVITE_ALREADY_EXISTS";
+}
+
+export interface BanActionProps {
+  targetUserId: string;
+  actingUser: { id: string; role: "USER" | "ADMIN" | "SUPER_ADMIN" };
+}
+
+export interface BanActionResult {
+  type:
+    | "SUCCESS"
+    | "NOT_FOUND"
+    | "SELF_BAN_FORBIDDEN"
+    | "INSUFFICIENT_AUTHORITY"
+    | "ALREADY_IN_STATE"; 
+}
+
+export interface RoleChangeActionProps {
+  targetUserId: string;
+  actingUser: { id: string; role: "USER" | "ADMIN" | "SUPER_ADMIN" };
+}
+
+export interface RoleChangeActionResult {
+  type:
+    | "SUCCESS"
+    | "NOT_FOUND"
+    | "INVALID_TARGET_ROLE" 
+    | "INSUFFICIENT_AUTHORITY";
+}
+
+export interface GetAllUsersProps {
+  actingUserRole: "ADMIN" | "SUPER_ADMIN";
+  page: number;
+  limit: number;
+}
+
+export interface AdminUserListItem {
+  _id: string;
+  name: string;
+  email: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
+  isBanned: boolean;
+  createdAt: Date;
 }

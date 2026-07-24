@@ -1,6 +1,6 @@
 import User, { UserDocument } from "../../models/user.model.js";
 import RoleInvite from "../../models/roleInvite.model.js";
-import type { CreateUserData } from "./user.types.js";
+import type { CreateUserData, AdminUserListItem } from "./user.types.js";
 
 
 const findUserByEmail = (email: string) => {
@@ -40,6 +40,34 @@ const deleteRoleInviteByEmail = (email: string) => {
   return RoleInvite.deleteOne({ email });
 };
 
+const setUserBannedStatus = (userId: string, isBanned: boolean) => {
+  return User.findByIdAndUpdate(userId, { isBanned }, { returnDocument: "after" });
+};
+
+const updateUserRole = (userId: string, role: "ADMIN" | "SUPER_ADMIN") => {
+  return User.findByIdAndUpdate(userId, { role }, { returnDocument: "after" });
+};
+
+const getAllUsers = async (
+  actingUserRole: "ADMIN" | "SUPER_ADMIN",
+  page: number,
+  limit: number
+): Promise<{ data: AdminUserListItem[]; total: number }> => {
+  const filter = actingUserRole === "ADMIN" ? { role: "USER" } : {};
+
+  const [data, total] = await Promise.all([
+    User.find(filter)
+      .select("name email role isBanned createdAt")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+    User.countDocuments(filter),
+  ]);
+
+  return { data: data as unknown as AdminUserListItem[], total };
+};
+
 export { 
   findUserByEmail, 
   createUser, 
@@ -48,5 +76,9 @@ export {
   findUserById,
   findRoleInviteByEmail,
   createRoleInvite,
-  deleteRoleInviteByEmail
+  deleteRoleInviteByEmail,
+  setUserBannedStatus,
+  updateUserRole,
+  getAllUsers,
+
 };

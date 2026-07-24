@@ -1,6 +1,7 @@
 import asyncHandler from "../utils/asyncHandler.js";
-import { verifyToken, createToken, rotateRefreshSession } from "../services/jwt.service.js";
+import { verifyToken, createToken, rotateRefreshSession, revokeAllUserSessions } from "../services/jwt.service.js";
 import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../utils/cookieOptions.js";
+import { findUserById } from "../../modules/user/user.repository.js";
 import type { Request, Response, NextFunction } from "express";
 
 const authenticateUser = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -13,6 +14,17 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
   if (accessToken) {
     const user = verifyToken(accessToken);
     if (user) {
+      const currentUser = await findUserById(user.id);
+
+      if (!currentUser || currentUser.isBanned) {
+        if (currentUser?.isBanned) {
+          await revokeAllUserSessions(user.id);
+        }
+        res.clearCookie("accessToken", accessTokenCookieOptions);
+        res.clearCookie("refreshToken", refreshTokenCookieOptions);
+        return res.redirect("/login");
+      }
+
       req.user = user;
       return next();
     }
@@ -21,9 +33,18 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
   const refreshCookie = req.cookies?.refreshToken;
   if (!refreshCookie) return res.redirect("/login");
 
-  const rotated = await rotateRefreshSession(refreshCookie);
+const rotated = await rotateRefreshSession(refreshCookie);
 
   if (!rotated) {
+    res.clearCookie("accessToken", accessTokenCookieOptions);
+    res.clearCookie("refreshToken", refreshTokenCookieOptions);
+    return res.redirect("/login");
+  }
+
+  const currentUser = await findUserById(rotated.user._id.toString());
+
+  if (!currentUser || currentUser.isBanned) {
+    await revokeAllUserSessions(rotated.user._id.toString());
     res.clearCookie("accessToken", accessTokenCookieOptions);
     res.clearCookie("refreshToken", refreshTokenCookieOptions);
     return res.redirect("/login");
@@ -66,7 +87,7 @@ const redirectIfAuthenticated = asyncHandler(async (req: Request, res: Response,
   if (!rotated) {
     res.clearCookie("accessToken", accessTokenCookieOptions);
     res.clearCookie("refreshToken", refreshTokenCookieOptions);
-    return next(); 
+    return next();
   }
 
   const newAccessToken = createToken(rotated.user);
@@ -76,7 +97,7 @@ const redirectIfAuthenticated = asyncHandler(async (req: Request, res: Response,
   return res.redirect("/dashboard");
 });
 
-export { 
-  authenticateUser, 
-  redirectIfAuthenticated 
-  };
+export {
+  authenticateUser,
+  redirectIfAuthenticated
+};

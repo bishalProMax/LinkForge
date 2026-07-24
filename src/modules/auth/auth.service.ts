@@ -99,22 +99,28 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     emailVerificationExpires: new Date(Date.now() + 1000 * 60 * 30),
     role: assignedRole,
   });
-  
+
   if (pendingInvite) {
+    user.isVerified = true;
+    await saveUser(user);
     await deleteRoleInviteByEmail(email);
+    return {
+      type: "INVITE_ACCEPTED",
+    }
   }
+  else {
+    const verificationLink = `${process.env.BASE_URL}/user/verify-email/${token}`;
 
-  const verificationLink = `${process.env.BASE_URL}/user/verify-email/${token}`;
+    await emailQueue.add("sendVerificationEmail", {
+      email: user.email,
+      name: user.name,
+      verificationLink,
+    });
 
-  await emailQueue.add("sendVerificationEmail", {
-    email: user.email,
-    name: user.name,
-    verificationLink,
-  });
-
-  return {
-    type: "PENDING",
-  };
+    return {
+      type: "PENDING",
+    };
+  }
 };
 
 //----------------------------LOGIN SERVICE------------------------------------
@@ -147,6 +153,7 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
   }
 
   if (!user.isVerified) {
+    logSecurityEvent({ event: "LOGIN_BLOCKED_BANNED", email, ip, userId: user._id.toString() });
     return {
       type: "NOT_VERIFIED",
     };

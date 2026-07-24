@@ -50,6 +50,8 @@ const parseRefreshCookieValue = (cookieValue: string): { sessionId: string; secr
   return { sessionId, secret };
 };
 
+const userSessionsKey = (userId: string): string => `user-sessions:${userId}`;
+
 async function createRefreshSession(user: UserPayload): Promise<string> {
   const sessionId = crypto.randomBytes(16).toString("hex");
   const secret = crypto.randomBytes(32).toString("hex");
@@ -63,6 +65,10 @@ async function createRefreshSession(user: UserPayload): Promise<string> {
   };
 
   await redis.set(`refresh-session:${sessionId}`, JSON.stringify(record), "EX", REFRESH_TOKEN_TTL_SECONDS);
+
+  const sessionsKey = userSessionsKey(record.userId);
+  await redis.sadd(sessionsKey, sessionId);
+  await redis.expire(sessionsKey, REFRESH_TOKEN_TTL_SECONDS);
 
   return buildRefreshCookieValue(sessionId, secret);
 }
@@ -80,11 +86,13 @@ async function rotateRefreshSession(cookieValue: string): Promise<{ user: UserPa
   if (record.secretHash !== hashRefreshSecret(secret)) {
 
     await redis.del(`refresh-session:${sessionId}`);
+    await redis.srem(userSessionsKey(record.userId), sessionId);
     return null;
   }
 
 
   await redis.del(`refresh-session:${sessionId}`);
+  await redis.srem(userSessionsKey(record.userId), sessionId);
 
   const user: UserPayload = {
     _id: new mongoose.Types.ObjectId(record.userId),
@@ -102,7 +110,26 @@ async function revokeRefreshSession(cookieValue: string): Promise<void> {
   const parsed = parseRefreshCookieValue(cookieValue);
   if (!parsed) return;
 
+  const raw = await redis.get(`refresh-session:${parsed.sessionId}`);
+
   await redis.del(`refresh-session:${parsed.sessionId}`);
+
+  if (raw) {
+    const record = JSON.parse(raw) as RefreshSessionRecord;
+    await redis.srem(userSessionsKey(record.userId), parsed.sessionId);
+  }
+}
+
+async function revokeAllUserSessions(userId: string): Promise<void> {
+  const sessionsKey = userSessionsKey(userId);
+  const sessionIds = await redis.smembers(sessionsKey);
+
+  if (sessionIds.length > 0) {
+    const sessionKeys = sessionIds.map((id) => `refresh-session:${id}`);
+    await redis.del(...sessionKeys);
+  }
+
+  await redis.del(sessionsKey);
 }
 
 export {
@@ -111,5 +138,5 @@ export {
   createRefreshSession,
   rotateRefreshSession,
   revokeRefreshSession,
+  revokeAllUserSessions,
 };
-

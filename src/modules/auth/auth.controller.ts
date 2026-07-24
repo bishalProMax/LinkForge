@@ -64,6 +64,9 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
     if (result.type === "PENDING") {
       return res.redirect("/login?verification=pending");
     }
+    if (result.type === "INVITE_ACCEPTED") {
+      return res.redirect("/login?verification=accepted");
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).render("signup", {
@@ -102,6 +105,14 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
+  if (result.type === "ACCOUNT_BANNED") {
+    return res.status(403).render("login", {
+      error: "Your account has been suspended. Contact support if you believe this is a mistake.",
+      old,
+      verificationMessage: null,
+    });
+  }
+
   if (result.type === "TOO_MANY_ATTEMPTS") {
     return res.status(429).render("login", {
       error: `Too many failed login attempts. Try again in ${result.retryAfter} seconds.`,
@@ -127,8 +138,8 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (result.type === "SUCCESS") {
-  res.cookie("accessToken", result.accessToken, accessTokenCookieOptions);
-  res.cookie("refreshToken", result.refreshToken, refreshTokenCookieOptions);
+    res.cookie("accessToken", result.accessToken, accessTokenCookieOptions);
+    res.cookie("refreshToken", result.refreshToken, refreshTokenCookieOptions);
   }
 
   return res.redirect("/dashboard");
@@ -188,10 +199,10 @@ const handleGoogleCallback = asyncHandler(async (req: Request, res: Response) =>
   return res.redirect("/dashboard");
 });
 
-export { 
-  handleUserSignup, 
+export {
+  handleUserSignup,
   handleUserLogin,
-  handleUserLogout, 
-  verifyEmail,  
-  handleGoogleCallback 
-  };
+  handleUserLogout,
+  verifyEmail,
+  handleGoogleCallback
+};
