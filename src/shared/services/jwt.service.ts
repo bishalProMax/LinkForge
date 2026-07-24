@@ -10,7 +10,8 @@ function createToken(user: UserPayload): string {
   const payload: TokenPayload = {
     id: user._id.toString(),
     email: user.email,
-    name: user.name
+    name: user.name,
+    role: user.role
   };
   const expiresIn = (process.env.ACCESS_TOKEN_EXPIRES || "15m") as jwt.SignOptions["expiresIn"];
 
@@ -26,7 +27,8 @@ function verifyToken(accessToken: string): TokenPayload | null {
     return {
       id: decoded.id,
       email: decoded.email,
-      name: decoded.name
+      name: decoded.name,
+      role: decoded.role
     };
   } catch  {
     return null;
@@ -56,6 +58,7 @@ async function createRefreshSession(user: UserPayload): Promise<string> {
     userId: user._id.toString(),
     email: user.email,
     name: user.name,
+    role: user.role,
     secretHash: hashRefreshSecret(secret),
   };
 
@@ -87,6 +90,7 @@ async function rotateRefreshSession(cookieValue: string): Promise<{ user: UserPa
     _id: new mongoose.Types.ObjectId(record.userId),
     email: record.email,
     name: record.name,
+    role: record.role
   };
 
   const newCookieValue = await createRefreshSession(user);

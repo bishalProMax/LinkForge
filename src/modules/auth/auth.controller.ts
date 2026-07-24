@@ -1,4 +1,4 @@
- import asyncHandler from "../../shared/utils/asyncHandler.js";
+import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { UserDocument } from "../../models/user.model.js";
 import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../../shared/utils/cookieOptions.js";
 import { createToken, revokeRefreshSession, createRefreshSession } from "../../shared/services/jwt.service.js";
@@ -176,6 +176,7 @@ const handleGoogleCallback = asyncHandler(async (req: Request, res: Response) =>
     _id: googleUser._id,
     email: googleUser.email,
     name: googleUser.name,
+    role: googleUser.role
   };
 
   const accessToken = createToken(userPayload);

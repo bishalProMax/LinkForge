@@ -12,6 +12,8 @@ export interface IUser {
   emailVerificationExpires?: Date;
   authProviders: ("local" | "google")[];
   googleId?: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN"; 
+  isBanned: boolean;
 }
 
 // -----------------------------USER METHODS-----------------------
@@ -86,6 +88,19 @@ const userSchema = new mongoose.Schema<
       type: String,
       unique: true,
       sparse: true,
+    },
+    
+    role: {
+      type: String,
+      enum: ["USER", "ADMIN", "SUPER_ADMIN"],
+      default: "USER",
+      index: true,
+    },
+
+    isBanned: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
   },
   {

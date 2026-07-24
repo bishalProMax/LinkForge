@@ -8,3 +8,4 @@ export type viewName =
 
 export type redirectPath =
   |"/dashboard"
+  |"/admin/invites"

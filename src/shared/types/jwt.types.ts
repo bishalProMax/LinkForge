@@ -1,15 +1,17 @@
 import mongoose from "mongoose";
 
-export type TokenPayload = {
+export interface TokenPayload {
   id: string;
   email: string;
   name: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
 };
 
-export type UserPayload = {
+export interface UserPayload {
   _id: mongoose.Types.ObjectId;
   email: string;
   name: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
 };
 
 export interface RefreshSessionRecord {
@@ -17,4 +19,5 @@ export interface RefreshSessionRecord {
   email: string;
   name: string;
   secretHash: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
 }

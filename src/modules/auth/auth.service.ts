@@ -3,7 +3,7 @@ import redis from "../../infrastructure/configs/redis.config.js";
 import emailQueue from "../../infrastructure/queues/email.queue.js";
 import { createToken, createRefreshSession } from "../../shared/services/jwt.service.js"
 import verifyTurnstile from "../../shared/services/turnstile.service.js";
-import { findUserByEmail, createUser, findUserByVerificationToken, saveUser } from "../user/user.repository.js";
+import { findUserByEmail, createUser, findUserByVerificationToken, saveUser, findRoleInviteByEmail, deleteRoleInviteByEmail } from "../user/user.repository.js";
 import type { SignupUserProps, SignupResult, LoginUserProps, LoginResult, VerifyEmailResult } from "../user/user.types.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 
@@ -86,6 +86,9 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     };
   }
 
+  const pendingInvite = await findRoleInviteByEmail(email);
+  const assignedRole = pendingInvite ? pendingInvite.role : "USER";
+
   const token = crypto.randomBytes(32).toString("hex");
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
   const user = await createUser({
@@ -94,7 +97,12 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     password,
     emailVerificationToken: hashedToken,
     emailVerificationExpires: new Date(Date.now() + 1000 * 60 * 30),
+    role: assignedRole,
   });
+  
+  if (pendingInvite) {
+    await deleteRoleInviteByEmail(email);
+  }
 
   const verificationLink = `${process.env.BASE_URL}/user/verify-email/${token}`;
 

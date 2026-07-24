@@ -97,4 +97,16 @@ export interface CreateUserData {
   password: string;
   emailVerificationToken: string;
   emailVerificationExpires: Date;
+  role?: "USER" | "ADMIN" | "SUPER_ADMIN";
 };
+
+export interface CreateInviteProps {
+  email: string;
+  role: "ADMIN" | "SUPER_ADMIN";
+  invitedById: string;
+  invitedByName: string;
+}
+
+export interface CreateInviteResult {
+  type: "SUCCESS" | "EMAIL_ALREADY_REGISTERED" | "INVITE_ALREADY_EXISTS";
+}

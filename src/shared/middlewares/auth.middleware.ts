@@ -24,7 +24,7 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
   const rotated = await rotateRefreshSession(refreshCookie);
 
   if (!rotated) {
-    res.clearCookie("token", accessTokenCookieOptions);
+    res.clearCookie("accessToken", accessTokenCookieOptions);
     res.clearCookie("refreshToken", refreshTokenCookieOptions);
     return res.redirect("/login");
   }
@@ -38,6 +38,7 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
     id: rotated.user._id.toString(),
     email: rotated.user.email,
     name: rotated.user.name,
+    role: rotated.user.role,
   };
 
   next();
@@ -63,7 +64,7 @@ const redirectIfAuthenticated = asyncHandler(async (req: Request, res: Response,
   const rotated = await rotateRefreshSession(refreshCookie);
 
   if (!rotated) {
-    res.clearCookie("token", accessTokenCookieOptions);
+    res.clearCookie("accessToken", accessTokenCookieOptions);
     res.clearCookie("refreshToken", refreshTokenCookieOptions);
     return next(); 
   }

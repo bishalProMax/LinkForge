@@ -3,7 +3,7 @@ import path from "path";
 import handlebars from "handlebars";
 import transporter from "../../infrastructure/configs/email.config.js";
 import { fileURLToPath } from "url";
-import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob } from "../types/queue.types.js";
+import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob } from "../types/queue.types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,4 +69,21 @@ const sendPasswordChangedEmail = async ({ email, name}: SendPasswordChangedEmail
   });
 };
 
-export { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetOTP, sendPasswordChangedEmail };
+//role invite email — sent when a SUPER_ADMIN invites someone to become ADMIN/SUPER_ADMIN
+const sendRoleInviteEmail = async ({ email, role, invitedByName, signupLink }: SendRoleInviteEmailJob): Promise<void> => {
+  const html = renderTemplate("roleInvite", { role, invitedByName, signupLink });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `You've been invited to join LinkForge as ${role === "SUPER_ADMIN" ? "a Super Admin" : "an Admin"}`,
+    html,
+  });
+};
+
+export { sendVerificationEmail, 
+  sendWelcomeEmail, 
+  sendPasswordResetOTP, 
+  sendPasswordChangedEmail, 
+  sendRoleInviteEmail 
+  };

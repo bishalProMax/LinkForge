@@ -1,36 +1,50 @@
 import type { SecurityEventType } from "./securityEvent.types.js";
 
-export type SendVerificationEmailJob = {
+export interface SendVerificationEmailJob {
   email: string;
   name: string;
   verificationLink: string;
 };
 
-export type SendWelcomeEmailJob = {
+export interface SendWelcomeEmailJob {
   email: string;
   name: string;
   loginLink: string;
 };
 
-export type CleanupJob = {
-  triggeredBy: "cron";
-};
-
-export type SendPasswordResetOTPJob = {
+export interface SendPasswordResetOTPJob {
   email: string;
   name: string;
   otp: string;
 };
 
-export type SendPasswordChangedEmailJob = {
+export interface SendPasswordChangedEmailJob {
   email: string;
   name: string;
 };
 
-export type SecurityEventJob = {
+export type EmailJobData = 
+| SendVerificationEmailJob 
+| SendWelcomeEmailJob 
+| SendPasswordResetOTPJob 
+| SendPasswordChangedEmailJob 
+| SendRoleInviteEmailJob;
+
+export interface CleanupJob {
+  triggeredBy: "cron";
+};
+
+export interface SecurityEventJob {
   event: SecurityEventType;
   email?: string;
   userId?: string;
   ip?: string;
   metadata?: Record<string, unknown>;
+};
+
+export interface SendRoleInviteEmailJob {
+  email: string;
+  role: "ADMIN" | "SUPER_ADMIN";
+  invitedByName: string;
+  signupLink: string;
 };

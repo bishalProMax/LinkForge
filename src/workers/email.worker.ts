@@ -1,10 +1,9 @@
 import { Worker, Job } from "bullmq";
 import redis from "../infrastructure/configs/redis.config.js";
-import {sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail } from "../shared/services/email.service.js";
-import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob } from "../shared/types/queue.types.js";
+import {sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail, sendRoleInviteEmail } from "../shared/services/email.service.js";
+import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob } from "../shared/types/queue.types.js";
 import logger from "../infrastructure/configs/logger.config.js";
-
-type EmailJobData = SendVerificationEmailJob | SendWelcomeEmailJob | SendPasswordResetOTPJob | SendPasswordChangedEmailJob;
+import type {EmailJobData} from "../shared/types/queue.types.js"
 
   const emailWorker = new Worker<EmailJobData>("emailQueue", async (job: Job<EmailJobData>): Promise<void> => {
       if (job.name ==="sendVerificationEmail") {
@@ -21,6 +20,10 @@ type EmailJobData = SendVerificationEmailJob | SendWelcomeEmailJob | SendPasswor
 
       if (job.name ==="sendPasswordChangedEmail") {
         await sendPasswordChangedEmail(job.data as SendPasswordChangedEmailJob);
+      }
+
+        if (job.name === "sendRoleInviteEmail") {
+        await sendRoleInviteEmail(job.data as SendRoleInviteEmailJob);
       }
     },
 

@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import helmet from "helmet";
 import urlRoute from "./modules/url/url.route.js";
+import adminUserRoute from "./modules/user/user.route.js";
 import pageRouter from "./modules/page/page.route.js";
 import userRoute from "./modules/auth/auth.route.js";
 import { fileURLToPath } from "url";
@@ -80,6 +81,7 @@ app.set("views", path.join(__dirname, "views"))
 // routes
 app.use("/url", urlRoute)
 app.use("/user", userRoute)
+app.use("/admin", adminUserRoute)
 app.use("/", pageRouter)
 app.use("/auth", oauthRoutes)
 app.use(notFound)
