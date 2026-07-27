@@ -14,7 +14,7 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
     ...req.body,
   };
 
-  delete old.password
+  delete old.password;
 
   try {
     const result = await signupUser({
@@ -54,7 +54,7 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    if (result.type === "LOCAL_PROVIDER_LINKED") {
+    if (result.type === "LOCAL_AUTH_LINKED") {
       return res.redirect("/login");
     }
 
@@ -106,14 +106,10 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (result.type === "ACCOUNT_BANNED") {
-    return res.status(403).render("login", {
-      error: "Your account has been suspended. Contact support if you believe this is a mistake.",
-      old,
-      verificationMessage: null,
-    });
+    return res.redirect("/account-banned");
   }
 
-  if (result.type === "TOO_MANY_ATTEMPTS") {
+  if (result.type === "LOGIN_TOO_MANY_ATTEMPTS") {
     return res.status(429).render("login", {
       error: `Too many failed login attempts. Try again in ${result.retryAfter} seconds.`,
       old,
@@ -187,7 +183,7 @@ const handleGoogleCallback = asyncHandler(async (req: Request, res: Response) =>
     _id: googleUser._id,
     email: googleUser.email,
     name: googleUser.name,
-    role: googleUser.role
+    role: googleUser.role,
   };
 
   const accessToken = createToken(userPayload);
@@ -199,10 +195,4 @@ const handleGoogleCallback = asyncHandler(async (req: Request, res: Response) =>
   return res.redirect("/dashboard");
 });
 
-export {
-  handleUserSignup,
-  handleUserLogin,
-  handleUserLogout,
-  verifyEmail,
-  handleGoogleCallback
-};
+export { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail, handleGoogleCallback };

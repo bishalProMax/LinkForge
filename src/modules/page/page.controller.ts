@@ -51,4 +51,8 @@ const handleShowAboutPage = (req: Request, res: Response): void => {
   res.render("about");
 };
 
-export { handleShowSignupPage, handleShowLoginPage, handleShowForgotPasswordPage, handleShowLandingPage, handleShowPrivacyPage, handleShowTermsPage, handleShowAboutPage };
+const handleShowAccountBannedPage = (req: Request, res: Response): void => {
+  res.render("accountBanned");
+};
+
+export { handleShowSignupPage, handleShowLoginPage, handleShowForgotPasswordPage, handleShowLandingPage, handleShowPrivacyPage, handleShowTermsPage, handleShowAboutPage, handleShowAccountBannedPage };

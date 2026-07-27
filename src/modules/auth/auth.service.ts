@@ -23,14 +23,12 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
   if (existedUser) {
     if (existedUser.authProviders.includes("google") && !existedUser.authProviders.includes("local")) {
       existedUser.password = password;
-
       existedUser.authProviders.push("local");
-
       await saveUser(existedUser);
 
-      logSecurityEvent({ event: "SIGNUP_LOCAL_PROVIDER_LINKED", email, ip, userId: existedUser._id.toString() }, "info");
+      logSecurityEvent({ event: "SIGNUP_LOCAL_AUTH_LINKED", email, ip, userId: existedUser._id.toString() }, "info");
       return {
-        type: "LOCAL_PROVIDER_LINKED",
+        type: "LOCAL_AUTH_LINKED",
       };
     }
 
@@ -66,7 +64,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     existedUser.emailVerificationExpires = new Date(Date.now() + 1000 * 60 * 30);
     await saveUser(existedUser);
 
-    const verificationLink = `${process.env.BASE_URL}/user/verify-email/${token}`;
+    const verificationLink = `${process.env.BASE_URL}/auth/verify-email/${token}`;
 
     await emailQueue.add("sendVerificationEmail", {
       email: existedUser.email,
@@ -109,7 +107,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     }
   }
   else {
-    const verificationLink = `${process.env.BASE_URL}/user/verify-email/${token}`;
+    const verificationLink = `${process.env.BASE_URL}/auth/verify-email/${token}`;
 
     await emailQueue.add("sendVerificationEmail", {
       email: user.email,
@@ -129,9 +127,9 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
 
   if (attempts >= 5) {
     const ttl = await redis.ttl(`login:${email}`);
-    logSecurityEvent({ event: "LOGIN_TOO_MANY_ATTEMPTS", email, ip, attempts });
+    logSecurityEvent({ event: "LOGIN_TOO_MANY_ATTEMPTS", email, ip, reason: "INVALID_PASSWORD", attempts });
     return {
-      type: "TOO_MANY_ATTEMPTS",
+      type: "LOGIN_TOO_MANY_ATTEMPTS",
       retryAfter: ttl,
     };
   }
@@ -145,15 +143,23 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
     };
   }
 
+  if (user.isBanned) {
+    logSecurityEvent({ event: "LOGIN_BLOCKED_BANNED", email, ip, userId: user._id.toString(), reason: "ACCOUNT_BANNED" });
+    return {
+      type: "ACCOUNT_BANNED",
+    };
+  }
+  
+  //if local account is not made but user trying to login with local account
   if (!user.authProviders.includes("local")) {
-    logSecurityEvent({ event: "LOGIN_GOOGLE_REQUIRED", email, ip, userId: user._id.toString() });
+    logSecurityEvent({ event: "GOOGLE_LOGIN_REQUIRED", email, ip, userId: user._id.toString(), reason:"LOCAL_AUTH_NOT_ENABLED" });
     return {
       type: "GOOGLE_LOGIN_REQUIRED",
     };
   }
 
   if (!user.isVerified) {
-    logSecurityEvent({ event: "LOGIN_BLOCKED_BANNED", email, ip, userId: user._id.toString() });
+    logSecurityEvent({ event: "LOGIN_BLOCKED_UNVERIFIED", email, ip,reason:"EMAIL_NOT VERIFIED", userId: user._id.toString() });
     return {
       type: "NOT_VERIFIED",
     };

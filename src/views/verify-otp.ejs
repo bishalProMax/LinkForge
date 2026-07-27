@@ -28,7 +28,7 @@
       <p class="auth-message"><%= message %></p>
       <% } %>
 
-      <form action="/user/verify-reset-otp" method="POST">
+      <form action="/auth/verify-reset-otp" method="POST">
         <input type="hidden" name="email" value="<%= old.email %>" />
         <div class="otp-wrapper">
           <!-- Real OTP input for autofill -->

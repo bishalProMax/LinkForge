@@ -24,7 +24,7 @@
         <p class="error"><%= error %></p>
         <% } %>
       <!-- Signup Form -->
-      <form action="/user/signup" method="POST">
+      <form action="/auth/signup" method="POST">
         <div class="form-group">
           <label>Username</label>
           <input type="text" name="name" required value="<%= old?.name || '' %>" />

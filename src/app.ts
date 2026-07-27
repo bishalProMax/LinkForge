@@ -1,17 +1,16 @@
 import express from "express";
-import { errorHandler, notFound } from "./shared/middlewares/error.middleware.js";
-import cookieParser from "cookie-parser";
 import path from "path";
 import helmet from "helmet";
-import urlRoute from "./modules/url/url.route.js";
-import adminUserRoute from "./modules/user/user.route.js";
-import pageRouter from "./modules/page/page.route.js";
-import userRoute from "./modules/auth/auth.route.js";
+import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
-import oauthRoutes from "./modules/auth/auth.route.js";
 import passport from "passport";
-import "./infrastructure/configs/passport.config.js";
+import { errorHandler, notFound } from "./shared/middlewares/error.middleware.js";
 import requestLogger from "./shared/middlewares/requestLogger.middleware.js";
+import "./infrastructure/configs/passport.config.js";
+import urlRoute from "./modules/url/url.route.js";
+import userRoute from "./modules/user/user.route.js";
+import pageRouter from "./modules/page/page.route.js";
+import authRoute from "./modules/auth/auth.route.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,10 +79,9 @@ app.set("views", path.join(__dirname, "views"))
 
 // routes
 app.use("/url", urlRoute)
-app.use("/user", userRoute)
-app.use("/admin", adminUserRoute)
+app.use("/admin", userRoute)
 app.use("/", pageRouter)
-app.use("/auth", oauthRoutes)
+app.use("/auth", authRoute)
 app.use(notFound)
 
 app.use(errorHandler)

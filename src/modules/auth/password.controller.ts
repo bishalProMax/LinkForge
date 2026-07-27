@@ -15,7 +15,7 @@ const handleForgotPassword = asyncHandler(async (req: Request, res: Response) =>
 
   //COOLDOWN
   //this part only runs when attacker tries to bypass frontend, by calling api directly. For normal users, frontend will prevent them from making requests until cooldown expires.
-  if (result.type === "COOLDOWN_ACTIVE") {
+  if (result.type === "OTP_COOLDOWN_ACTIVE") {
     return res.status(429).render("verify-otp", {
       error: "Please wait before requesting another OTP.",
       message: null,
@@ -33,11 +33,18 @@ const handleForgotPassword = asyncHandler(async (req: Request, res: Response) =>
     });
   }
 
-  if (result.type === "GOOGLE_LOGIN_REQUIRED") {
+  if (result.type === "LOCAL_AUTH_REQUIRED") {
     return res.status(400).render("forgot-password", {
       error: "Please continue with Google or create a local signup first.",
       message: null,
     });
+  }
+
+  if (result.type === "ACCOUNT_BANNED") {
+  return res.status(403).render("forgot-password", {
+    error: "Your account has been suspended. Contact support if you believe this is a mistake.",
+    message: null,
+  });
   }
 
   if (result.type === "USER_NOT_FOUND" || result.type === "SUCCESS") {
@@ -80,7 +87,7 @@ const handleVerifyResetOTP = asyncHandler(async (req: Request, res: Response) =>
     });
   }
 
-  if (result.type === "TOO_MANY_ATTEMPTS") {
+  if (result.type === "OTP_TOO_MANY_ATTEMPTS") {
     return res.status(429).render("verify-otp", {
       error: "Too many attempts",
       message: null,
@@ -107,14 +114,14 @@ const handleResetPassword = asyncHandler(async (req: Request, res: Response) => 
     ip: req.ip ?? "",
   });
 
-  if (result.type === "SESSION_EXPIRED") {
+  if (result.type === "PASSWORD_RESET_SESSION_EXPIRED") {
     return res.status(401).render("reset-password", {
       error: "Reset session expired",
       old,
     });
   }
 
-  if (result.type === "SAME_PASSWORD") {
+  if (result.type === "PASSWORD_RESET_SAME_PASSWORD") {
     return res.status(400).render("reset-password", {
       error: "New password must be different from old password",
       old,

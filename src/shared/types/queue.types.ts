@@ -23,12 +23,26 @@ export interface SendPasswordChangedEmailJob {
   name: string;
 };
 
+export interface SendAccountBannedEmailJob {
+  email: string;
+  name: string;
+  termsLink: string;
+};
+
+export interface SendAccountReinstatedEmailJob {
+  email: string;
+  name: string;
+  loginLink: string;
+};
+
 export type EmailJobData = 
 | SendVerificationEmailJob 
 | SendWelcomeEmailJob 
 | SendPasswordResetOTPJob 
 | SendPasswordChangedEmailJob 
-| SendRoleInviteEmailJob;
+| SendRoleInviteEmailJob
+| SendAccountBannedEmailJob
+| SendAccountReinstatedEmailJob;
 
 export interface CleanupJob {
   triggeredBy: "cron";

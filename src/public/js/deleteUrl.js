@@ -24,7 +24,7 @@ document.querySelectorAll(".delete-btn").forEach((button) => {
     selectedShortId = button.dataset.shortid;
 
     const originalUrl = button.dataset.url;
-    const displayUrl = originalUrl.length > 200 ? `${originalUrl.slice(0, 200)}…` : originalUrl;
+    const displayUrl = originalUrl.length > 70 ? `${originalUrl.slice(0, 70)}…` : originalUrl;
     const safeUrl = escapeHtml(displayUrl);
 
     if (deleteTitle) {

@@ -28,6 +28,14 @@ const findUserById = (id: string) => {
   return User.findById(id);
 };
 
+const setUserBannedStatus = (userId: string, isBanned: boolean) => {
+  return User.findByIdAndUpdate(userId, { isBanned }, { returnDocument: "after" });
+};
+
+const updateUserRole = (userId: string, role: "ADMIN" | "SUPER_ADMIN") => {
+  return User.findByIdAndUpdate(userId, { role }, { returnDocument: "after" });
+};
+
 const findRoleInviteByEmail = (email: string) => {
   return RoleInvite.findOne({ email });
 };
@@ -40,19 +48,8 @@ const deleteRoleInviteByEmail = (email: string) => {
   return RoleInvite.deleteOne({ email });
 };
 
-const setUserBannedStatus = (userId: string, isBanned: boolean) => {
-  return User.findByIdAndUpdate(userId, { isBanned }, { returnDocument: "after" });
-};
 
-const updateUserRole = (userId: string, role: "ADMIN" | "SUPER_ADMIN") => {
-  return User.findByIdAndUpdate(userId, { role }, { returnDocument: "after" });
-};
-
-const getAllUsers = async (
-  actingUserRole: "ADMIN" | "SUPER_ADMIN",
-  page: number,
-  limit: number
-): Promise<{ data: AdminUserListItem[]; total: number }> => {
+const getAllUsers = async (actingUserRole: "ADMIN" | "SUPER_ADMIN",page: number,limit: number): Promise<{ data: AdminUserListItem[]; total: number }> => {
   const filter = actingUserRole === "ADMIN" ? { role: "USER" } : {};
 
   const [data, total] = await Promise.all([

@@ -16,10 +16,15 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
     };
   }
 
+  if (user.isBanned) {
+  logSecurityEvent({ event: "PASSWORD_RESET_BLOCKED_BANNED", email, ip, userId: user._id.toString(), reason: "ACCOUNT_BANNED" });
+  return { type: "ACCOUNT_BANNED" }; 
+  }
+
   if (!user.authProviders.includes("local")) {
-    logSecurityEvent({ event: "OTP_GOOGLE_REQUIRED", email, ip, userId: user._id.toString() });
+    logSecurityEvent({ event: "LOCAL_AUTH_REQUIRED", email, ip, userId: user._id.toString() });
     return {
-      type: "GOOGLE_LOGIN_REQUIRED",
+      type: "LOCAL_AUTH_REQUIRED",
     };
   }
 
@@ -39,7 +44,7 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
   if (cooldown > 0) {
     logSecurityEvent({ event: "OTP_COOLDOWN_ACTIVE", email, ip, cooldown });
     return {
-      type: "COOLDOWN_ACTIVE",
+      type: "OTP_COOLDOWN_ACTIVE",
       cooldown,
     };
   }
@@ -90,7 +95,7 @@ const verifyResetOTP = async ({ email, otp, ip }: VerifyResetOTPProps): Promise<
   if (attempts >= 5) {
     logSecurityEvent({ event: "OTP_TOO_MANY_ATTEMPTS", email, ip, attempts });
     return {
-      type: "TOO_MANY_ATTEMPTS",
+      type: "OTP_TOO_MANY_ATTEMPTS",
     };
   }
 
@@ -102,7 +107,7 @@ const verifyResetOTP = async ({ email, otp, ip }: VerifyResetOTPProps): Promise<
     if (attempts === 1) {
       await redis.expire(`password-reset-otp-attempts:${email}`, 600);
     }
-    logSecurityEvent({ event: "OTP_INVALID", email, ip, attempts });
+    logSecurityEvent({ event: "INVALID_OTP", email, ip, attempts });
     return {
       type: "INVALID_OTP",
     };
@@ -127,7 +132,7 @@ const resetPassword = async ({ email, password, ip }: ResetPasswordProps): Promi
   if (!session) {
     logSecurityEvent({ event: "PASSWORD_RESET_SESSION_EXPIRED", email, ip });
     return {
-      type: "SESSION_EXPIRED",
+      type: "PASSWORD_RESET_SESSION_EXPIRED",
     };
   }
 
@@ -135,7 +140,7 @@ const resetPassword = async ({ email, password, ip }: ResetPasswordProps): Promi
 
   if (!user) {
     return {
-      type: "SESSION_EXPIRED",
+      type: "PASSWORD_RESET_SESSION_EXPIRED",
     };
   }
 
@@ -144,7 +149,7 @@ const resetPassword = async ({ email, password, ip }: ResetPasswordProps): Promi
   if (isSamePassword) {
     logSecurityEvent({ event: "PASSWORD_RESET_SAME_PASSWORD", email, ip, userId: user._id.toString() });
     return {
-      type: "SAME_PASSWORD",
+      type: "PASSWORD_RESET_SAME_PASSWORD",
     };
   }
   user.password = password;

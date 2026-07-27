@@ -1,9 +1,9 @@
 import { Worker, Job } from "bullmq";
 import redis from "../infrastructure/configs/redis.config.js";
-import {sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail, sendRoleInviteEmail } from "../shared/services/email.service.js";
-import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob } from "../shared/types/queue.types.js";
+import { sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail, sendRoleInviteEmail, sendAccountBannedEmail, sendAccountReinstatedEmail } from "../shared/services/email.service.js";
+import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob, SendAccountBannedEmailJob, SendAccountReinstatedEmailJob } from "../shared/types/queue.types.js";
 import logger from "../infrastructure/configs/logger.config.js";
-import type {EmailJobData} from "../shared/types/queue.types.js"
+import type { EmailJobData } from "../shared/types/queue.types.js"
 
   const emailWorker = new Worker<EmailJobData>("emailQueue", async (job: Job<EmailJobData>): Promise<void> => {
       if (job.name ==="sendVerificationEmail") {
@@ -24,6 +24,14 @@ import type {EmailJobData} from "../shared/types/queue.types.js"
 
         if (job.name === "sendRoleInviteEmail") {
         await sendRoleInviteEmail(job.data as SendRoleInviteEmailJob);
+      }
+
+      if (job.name === "sendAccountBannedEmail") { 
+        await sendAccountBannedEmail(job.data as SendAccountBannedEmailJob); 
+      }
+
+      if (job.name === "sendAccountReinstatedEmail") { 
+        await sendAccountReinstatedEmail(job.data as SendAccountReinstatedEmailJob); 
       }
     },
 

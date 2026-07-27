@@ -3,7 +3,7 @@ import path from "path";
 import handlebars from "handlebars";
 import transporter from "../../infrastructure/configs/email.config.js";
 import { fileURLToPath } from "url";
-import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob } from "../types/queue.types.js";
+import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob, SendAccountBannedEmailJob, SendAccountReinstatedEmailJob } from "../types/queue.types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,9 +81,35 @@ const sendRoleInviteEmail = async ({ email, role, invitedByName, signupLink }: S
   });
 };
 
+//Account Ban Email
+const sendAccountBannedEmail = async ({ email, name, termsLink }: SendAccountBannedEmailJob): Promise<void> => {
+  const html = renderTemplate("accountBan", { name, termsLink });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your LinkForge Account Has Been Suspended",
+    html,
+  });
+};
+
+//Account Reinstated Email
+const sendAccountReinstatedEmail = async ({ email, name, loginLink }: SendAccountReinstatedEmailJob): Promise<void> => {
+  const html = renderTemplate("accountReinstated", { name, loginLink });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your LinkForge Account Has Been Reinstated",
+    html,
+  });
+};
+
 export { sendVerificationEmail, 
   sendWelcomeEmail, 
   sendPasswordResetOTP, 
   sendPasswordChangedEmail, 
-  sendRoleInviteEmail 
+  sendRoleInviteEmail,
+  sendAccountBannedEmail,
+  sendAccountReinstatedEmail
   };

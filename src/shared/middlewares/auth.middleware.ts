@@ -17,11 +17,11 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
       const currentUser = await findUserById(user.id);
 
       if (!currentUser || currentUser.isBanned) {
-        if (currentUser?.isBanned) {
-          await revokeAllUserSessions(user.id);
-        }
         res.clearCookie("accessToken", accessTokenCookieOptions);
         res.clearCookie("refreshToken", refreshTokenCookieOptions);
+        if (currentUser?.isBanned) {
+          return res.redirect("/account-banned");
+        }
         return res.redirect("/login");
       }
 

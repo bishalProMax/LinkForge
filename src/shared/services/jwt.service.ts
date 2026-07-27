@@ -52,6 +52,7 @@ const parseRefreshCookieValue = (cookieValue: string): { sessionId: string; secr
 
 const userSessionsKey = (userId: string): string => `user-sessions:${userId}`;
 
+//CREATE REFRESH TOKEN
 async function createRefreshSession(user: UserPayload): Promise<string> {
   const sessionId = crypto.randomBytes(16).toString("hex");
   const secret = crypto.randomBytes(32).toString("hex");
@@ -73,6 +74,7 @@ async function createRefreshSession(user: UserPayload): Promise<string> {
   return buildRefreshCookieValue(sessionId, secret);
 }
 
+//ROTATE REFRESH TOKEN
 async function rotateRefreshSession(cookieValue: string): Promise<{ user: UserPayload; cookieValue: string } | null> {
   const parsed = parseRefreshCookieValue(cookieValue);
   if (!parsed) return null;
@@ -106,6 +108,7 @@ async function rotateRefreshSession(cookieValue: string): Promise<{ user: UserPa
   return { user, cookieValue: newCookieValue };
 }
 
+//REVOKE REFRESH TOKEN
 async function revokeRefreshSession(cookieValue: string): Promise<void> {
   const parsed = parseRefreshCookieValue(cookieValue);
   if (!parsed) return;

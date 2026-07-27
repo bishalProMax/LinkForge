@@ -2,8 +2,9 @@ import { nanoid } from "nanoid";
 import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus } from "./url.repository.js";
 import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
-import { RESERVED_ALIASES } from "../../shared/utils/reservedAliases.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
+
+const RESERVED_ALIASES = ["generate","analytics"]
 
 // Generate a short URL with optional custom alias and expiration
 const generateShortURL = async ({ originalURL, userId, customAlias, expiration, customExpiry }: GenerateShortURLProps): Promise<string> => {

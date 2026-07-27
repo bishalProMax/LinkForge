@@ -13,7 +13,7 @@ export interface SignupResult {
         | "EMAIL_EXISTS"
         | "RESENT"
         | "PENDING"
-        | "LOCAL_PROVIDER_LINKED"
+        | "LOCAL_AUTH_LINKED"
         | "COOLDOWN_ACTIVE"
         | "RESEND_LIMIT_REACHED"
         | "INVITE_ACCEPTED"
@@ -31,7 +31,7 @@ export type LoginResult = {
           "EMAIL_NOT_FOUND"
         | "NOT_VERIFIED"
         | "INVALID_PASSWORD"
-        | "TOO_MANY_ATTEMPTS"
+        | "LOGIN_TOO_MANY_ATTEMPTS"
         | "GOOGLE_LOGIN_REQUIRED"
         | "ACCOUNT_BANNED";
       retryAfter?: number;
@@ -58,10 +58,11 @@ export interface ForgotPasswordProps {
 
 export interface ForgotPasswordResult {
   type: "SUCCESS"
-    | "COOLDOWN_ACTIVE"
+    | "OTP_COOLDOWN_ACTIVE"
     | "USER_NOT_FOUND"
     | "OTP_LIMIT_REACHED"
-    | "GOOGLE_LOGIN_REQUIRED"
+    | "LOCAL_AUTH_REQUIRED"
+    | "ACCOUNT_BANNED"
   cooldown?: number;
 };
 
@@ -76,7 +77,7 @@ export interface VerifyOTPResult {
     | "SUCCESS"
     | "INVALID_OTP"
     | "OTP_EXPIRED"
-    | "TOO_MANY_ATTEMPTS";
+    | "OTP_TOO_MANY_ATTEMPTS";
 };
 
 export interface ResetPasswordProps {
@@ -88,8 +89,8 @@ export interface ResetPasswordProps {
 export interface ResetPasswordResult {
   type:
     | "SUCCESS"
-    | "SESSION_EXPIRED"
-    | "SAME_PASSWORD";
+    | "PASSWORD_RESET_SESSION_EXPIRED"
+    | "PASSWORD_RESET_SAME_PASSWORD";
 };
 
 // ----------------------------------SaveUser---------------------------------
