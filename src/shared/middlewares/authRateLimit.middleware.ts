@@ -3,7 +3,7 @@ import { RedisStore } from "rate-limit-redis";
 import redis from "../../infrastructure/configs/redis.config.js";
 import type { Request, Response } from "express";
 import getRateLimitRetryTime from "../utils/getRateLimitRetryTime.js";
-
+import { logSecurityEvent } from "../services/securityLogger.service.js";
 
 // SIGNUP RATE LIMITER
 const signupLimiter = rateLimit({
@@ -25,6 +25,8 @@ const signupLimiter = rateLimit({
     delete old.password;
 
     const retryAfter = getRateLimitRetryTime(req);
+  
+    logSecurityEvent({ event: "RATE_LIMIT_EXCEEDED", ip: req.ip ?? "", limiter: "signup" }, "warn");
 
     return res.status(429).render("signup", {
       error: `Too many signup attempts. Try again in ${retryAfter}s.`,
@@ -53,7 +55,9 @@ const loginLimiter = rateLimit({
     delete old.password;
 
     const retryAfter = getRateLimitRetryTime(req);
-
+    
+    logSecurityEvent({ event: "RATE_LIMIT_EXCEEDED", ip: req.ip ?? "", limiter: "login" }, "warn");
+    
     return res.status(429).render("login", {
       error: `Too many login attempts. Try again in ${retryAfter}s.`,
       old,

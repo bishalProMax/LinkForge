@@ -14,24 +14,12 @@
 
 .search-icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #9ca3af;
-  font-size: 16px;
+  font-size: 15px;
   pointer-events: none;
-}
-
-.search-input-wrap input {
-  width: 100%;
-  height: 44px;
-  padding: 0 40px 0 40px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  color: #111827;
-  font-size: 14px;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 
 .search-input-wrap input::placeholder {
@@ -143,6 +131,59 @@
 
 .clear-search-btn.is-hidden {
   display: none;
+}
+
+/* Audit report toolbar overrides */
+#reportToolbarForm select#eventSelect {
+  height: 44px;
+  min-width: 200px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #111827;
+  font-size: 14px;
+}
+
+#reportToolbarForm input[name="ip"] {
+  height: 44px;
+  padding: 0 16px; 
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  font-size: 14px;
+  text-overflow: ellipsis;
+}
+
+#reportToolbarForm input[name="ip"]:focus {
+  outline: none;
+  border-color: #667eea;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+}
+
+#reportToolbarForm .apply-filters-btn,
+#reportToolbarForm .pagination-btn.nav {
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-input-wrap input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 
 .modal-content--filter {

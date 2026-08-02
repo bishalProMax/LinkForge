@@ -3,6 +3,7 @@ import { verifyToken, createToken, rotateRefreshSession, revokeAllUserSessions }
 import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../utils/cookieOptions.js";
 import { findUserById } from "../../modules/user/user.repository.js";
 import type { Request, Response, NextFunction } from "express";
+import { logSecurityEvent } from "../services/securityLogger.service.js";
 
 const authenticateUser = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
@@ -20,6 +21,7 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
         res.clearCookie("accessToken", accessTokenCookieOptions);
         res.clearCookie("refreshToken", refreshTokenCookieOptions);
         if (currentUser?.isBanned) {
+          logSecurityEvent({ event: "SESSION_REVOKED_BANNED", userId: currentUser._id.toString(), email: currentUser.email, ip: req.ip ?? "" }, "warn");
           return res.redirect("/account-banned");
         }
         return res.redirect("/login");
@@ -47,6 +49,9 @@ const rotated = await rotateRefreshSession(refreshCookie);
     await revokeAllUserSessions(rotated.user._id.toString());
     res.clearCookie("accessToken", accessTokenCookieOptions);
     res.clearCookie("refreshToken", refreshTokenCookieOptions);
+    if (currentUser?.isBanned) {
+      logSecurityEvent({ event: "SESSION_REVOKED_BANNED", userId: currentUser._id.toString(), email: currentUser.email, ip: req.ip ?? "" }, "warn");
+    }
     return res.redirect("/login");
   }
 

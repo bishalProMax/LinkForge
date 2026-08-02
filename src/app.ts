@@ -8,7 +8,7 @@ import { errorHandler, notFound } from "./shared/middlewares/error.middleware.js
 import requestLogger from "./shared/middlewares/requestLogger.middleware.js";
 import "./infrastructure/configs/passport.config.js";
 import urlRoute from "./modules/url/url.route.js";
-import userRoute from "./modules/user/user.route.js";
+import adminRoute from "./modules/admin/admin.route.js";
 import pageRouter from "./modules/page/page.route.js";
 import authRoute from "./modules/auth/auth.route.js";
 
@@ -79,7 +79,7 @@ app.set("views", path.join(__dirname, "views"))
 
 // routes
 app.use("/url", urlRoute)
-app.use("/admin", userRoute)
+app.use("/admin", adminRoute)
 app.use("/", pageRouter)
 app.use("/auth", authRoute)
 app.use(notFound)

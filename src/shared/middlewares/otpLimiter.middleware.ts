@@ -3,6 +3,7 @@ import { RedisStore } from "rate-limit-redis";
 import redis from "../../infrastructure/configs/redis.config.js";
 import type { Request, Response } from "express";
 import getRateLimitRetryTime from "../utils/getRateLimitRetryTime.js";
+import { logSecurityEvent } from "../services/securityLogger.service.js";
 
 const OTPLimiter = rateLimit({
   store: new RedisStore({
@@ -21,6 +22,8 @@ const OTPLimiter = rateLimit({
   handler: (req: Request, res: Response) => {
 
     const retryAfter = getRateLimitRetryTime(req);
+
+    logSecurityEvent({ event: "RATE_LIMIT_EXCEEDED", ip: req.ip ?? "", limiter: "otp" }, "warn");
 
     return res.status(429).render("forgot-password", {
       error: `Too many OTP requests. Please try again in ${retryAfter}s.`,

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/pages/dashboard.css" />
+  <link rel="icon" type="image/png" href="/images/icon.png" />
+  <script type="module" src="/js/adminReport.js" defer></script>
+  <title>Audit Report</title>
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <div>
+        <h1>Audit Report</h1>
+        <small>Showing events visible to <strong>
+            <%= viewerRole %>
+          </strong></small>
+      </div>
+    </header>
+
+    <% const hasActiveFilters=(filters.event && filters.event !=="all" ) || filters.email || filters.ip || filters.from
+      || filters.to; %>
+
+      <% const eventClass=(event)=> {
+        const failure =
+        ["LOGIN_FAILED","LOGIN_TOO_MANY_ATTEMPTS","LOGIN_BLOCKED_UNVERIFIED","LOGIN_BLOCKED_BANNED","SIGNUP_CAPTCHA_FAILED","SIGNUP_EMAIL_EXISTS","INVALID_OTP","OTP_EXPIRED","OTP_TOO_MANY_ATTEMPTS","PASSWORD_RESET_SESSION_EXPIRED","PASSWORD_RESET_SAME_PASSWORD","PASSWORD_RESET_BLOCKED_BANNED"];
+        const warning =
+        ["RATE_LIMIT_EXCEEDED","SESSION_REVOKED_BANNED","USER_BANNED","SIGNUP_COOLDOWN_ACTIVE","OTP_COOLDOWN_ACTIVE","SIGNUP_RESEND_LIMIT_REACHED","OTP_LIMIT_REACHED","GOOGLE_LOGIN_REQUIRED","LOCAL_AUTH_REQUIRED"];
+        const neutral =
+        ["LOGOUT","ROLE_INVITE_CREATED","ROLE_PROMOTED","ROLE_DEMOTED","GOOGLE_ACCOUNT_CREATED","GOOGLE_ACCOUNT_LINKED","SIGNUP_LOCAL_AUTH_LINKED"];
+        if (failure.includes(event)) return "event-failure";
+        if (warning.includes(event)) return "event-warning";
+        if (neutral.includes(event)) return "event-neutral";
+        return "event-success";
+        }; %>
+
+        <!-- Filter Form -->
+        <form method="GET" action="/admin/reports" class="url-toolbar" id="reportToolbarForm">
+          <div class="search-input-wrap">
+            <input type="text" name="email" placeholder="Filter by email" value="<%= filters.email || '' %>"
+              autocomplete="off" />
+          </div>
+
+          <div class="search-input-wrap">
+          <input type="text" name="ip" placeholder="Filter by IP" value="<%= filters.ip || '' %>" />
+            </div>
+            
+          <select name="event" id="eventSelect" data-viewer-role="<%= viewerRole %>"
+            data-selected-event="<%= filters.event || 'all' %>">
+            <option value="all">All Events</option>
+          </select>
+
+          <input type="date" name="from" value="<%= filters.from || '' %>" />
+          <input type="date" name="to" value="<%= filters.to || '' %>" />
+
+          <button type="submit" class="apply-filters-btn" style="width:auto;padding:0 20px;">Apply</button>
+
+          <a href="/admin/reports" class="pagination-btn nav" style="text-decoration:none;">Clear</a>
+        </form>
+
+        <!-- TABLE -->
+        <section class="table-section">
+          <% if (events && events.length> 0) { %>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Email</th>
+                    <th>IP</th>
+                    <th>When</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% events.forEach((e)=> { %>
+                    <tr>
+                      <td><span class="status-badge <%= eventClass(e.event) %>">
+                          <%= e.event %>
+                        </span></td>
+                      <td>
+                        <%= e.email || '—' %>
+                      </td>
+                      <td>
+                        <%= e.ip || '—' %>
+                      </td>
+                      <td>
+                        <%= new Date(e.createdAt).toLocaleString('en-IN', { day: 'numeric' , month: 'short' ,
+                          year: 'numeric' , hour: 'numeric' , minute: '2-digit' , hour12: true }) %>
+                      </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-header">
+              <span>Showing <%= startIndex %>–<%= endIndex %> of <%= total %> events</span>
+            </div>
+
+            <!-- PAGINATION -->
+            <% const buildPageUrl=(pageNum)=> {
+              const params = new URLSearchParams();
+              if (filters.email) params.set('email', filters.email);
+              if (filters.ip) params.set('ip', filters.ip);
+              if (filters.event && filters.event !== 'all') params.set('event', filters.event);
+              if (filters.from) params.set('from', filters.from);
+              if (filters.to) params.set('to', filters.to);
+              params.set('page', pageNum);
+              return `/admin/reports?${params.toString()}`;
+              }; %>
+
+              <% if (totalPages> 1) { %>
+                <div class="pagination">
+                  <% if (currentPage> 1) { %>
+                    <a href="<%= buildPageUrl(currentPage - 1) %>" class="pagination-btn nav">← Prev</a>
+                    <% } else { %>
+                      <span class="pagination-btn nav disabled">← Prev</span>
+                      <% } %>
+
+                        <% const pages=new Set(); pages.add(1); pages.add(totalPages); for (let i=Math.max(1,
+                          currentPage - 1); i <=Math.min(totalPages, currentPage + 1); i++) { pages.add(i); } const
+                          sorted=[...pages].sort((a, b)=> a - b);
+                          let prev = 0;
+                          for (const p of sorted) {
+                          if (p - prev > 1) { %>
+                          <span class="pagination-dots">···</span>
+                          <% } %>
+                            <a href="<%= buildPageUrl(p) %>"
+                              class="pagination-btn <%= currentPage === p ? 'active' : '' %>">
+                              <%= p %>
+                            </a>
+                            <% prev=p; } %>
+
+                              <% if (currentPage < totalPages) { %>
+                                <a href="<%= buildPageUrl(currentPage + 1) %>" class="pagination-btn nav">Next →</a>
+                                <% } else { %>
+                                  <span class="pagination-btn nav disabled">Next →</span>
+                                  <% } %>
+                </div>
+                <% } %>
+
+                  <% } else { %>
+
+                    <div class="empty-state">
+                      <% if (hasActiveFilters) { %>
+                        <i class="ri-search-line"></i>
+                        <h3>No results found</h3>
+                        <p>No events match the selected filters. Try adjusting or clearing them.</p>
+                        <% } else { %>
+                          <i class="ri-file-list-3-line"></i>
+                          <h3>No audit events yet</h3>
+                          <p>Security-relevant events will appear here as they happen.</p>
+                          <% } %>
+                    </div>
+
+                    <% } %>
+        </section>
+  </div>
+</body>
+
+</html>

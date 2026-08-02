@@ -1,18 +1,11 @@
-import { findUserByEmail, findRoleInviteByEmail, createRoleInvite, findUserById, setUserBannedStatus, updateUserRole, getAllUsers as getAllUsersRepo } from "./user.repository.js";
+import { findUserByEmail, findUserById, setUserBannedStatus, updateUserRole } from "../user/user.repository.js";
+import { findRoleInviteByEmail, createRoleInvite, getAllUsers as getAllUsersRepo } from "./admin.repository.js";
 import { revokeAllUserSessions } from "../../shared/services/jwt.service.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
-import type {
-  CreateInviteProps,
-  CreateInviteResult,
-  BanActionProps,
-  BanActionResult,
-  RoleChangeActionProps,
-  RoleChangeActionResult,
-  GetAllUsersProps,
-  AdminUserListItem,
-} from "./user.types.js";
+import type { CreateInviteProps, CreateInviteResult, BanActionProps, BanActionResult, RoleChangeActionProps, RoleChangeActionResult, GetAllUsersProps, AdminUserListItem } from "../admin/admin.types.js";
 import emailQueue from "../../infrastructure/queues/email.queue.js";
 
+//CREATE INVITATION
 const createInvite = async ({ email, role, invitedById, invitedByName }: CreateInviteProps): Promise<CreateInviteResult> => {
   const existingUser = await findUserByEmail(email);
   if (existingUser) {
@@ -36,6 +29,7 @@ const createInvite = async ({ email, role, invitedById, invitedByName }: CreateI
   return { type: "SUCCESS" };
 };
 
+//BANNED USER/ADMIN
 const banUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<BanActionResult> => {
   if (targetUserId === actingUser.id) {
     return { type: "SELF_BAN_FORBIDDEN" };
@@ -46,7 +40,7 @@ const banUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<Ba
     return { type: "NOT_FOUND" };
   }
 
-  const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (actingUser.role === "SUPER_ADMIN" && (target.role === "ADMIN" || target.role === "SUPER_ADMIN"));
+const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (actingUser.role === "SUPER_ADMIN" && target.role === "ADMIN");
 
   if (!authorized) {
     return { type: "INSUFFICIENT_AUTHORITY" };
@@ -59,7 +53,7 @@ const banUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<Ba
   await setUserBannedStatus(targetUserId, true);
   await revokeAllUserSessions(targetUserId);
 
-  logSecurityEvent({ event: "USER_BANNED", userId: targetUserId, email: target.email, actingUserId: actingUser.id }, "info");
+  logSecurityEvent({ event: "USER_BANNED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, actingUserRole: actingUser.role, targetRole: target.role }, "info");
 
   await emailQueue.add("sendAccountBannedEmail", {
     email: target.email,
@@ -70,13 +64,14 @@ const banUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<Ba
   return { type: "SUCCESS" };
 };
 
+//UNBAN USER/ADMIN
 const unbanUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<BanActionResult> => {
   const target = await findUserById(targetUserId);
   if (!target) {
     return { type: "NOT_FOUND" };
   }
 
-  const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (actingUser.role === "SUPER_ADMIN" && (target.role === "ADMIN" || target.role === "SUPER_ADMIN"));
+  const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (actingUser.role === "SUPER_ADMIN" && target.role === "ADMIN");
 
   if (!authorized) {
     return { type: "INSUFFICIENT_AUTHORITY" };
@@ -88,7 +83,7 @@ const unbanUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<
 
   await setUserBannedStatus(targetUserId, false);
 
-  logSecurityEvent({ event: "USER_UNBANNED", userId: targetUserId, email: target.email, actingUserId: actingUser.id }, "info");
+  logSecurityEvent({ event: "USER_UNBANNED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, actingUserRole: actingUser.role, targetRole: target.role }, "info");
 
   await emailQueue.add("sendAccountReinstatedEmail", {
     email: target.email,
@@ -99,6 +94,7 @@ const unbanUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<
   return { type: "SUCCESS" };
 };
 
+//PROMOTE ADMIN
 const promoteToSuperAdmin = async ({ targetUserId, actingUser }: RoleChangeActionProps): Promise<RoleChangeActionResult> => {
   if (actingUser.role !== "SUPER_ADMIN") {
     return { type: "INSUFFICIENT_AUTHORITY" };
@@ -120,6 +116,7 @@ const promoteToSuperAdmin = async ({ targetUserId, actingUser }: RoleChangeActio
   return { type: "SUCCESS" };
 };
 
+//DEMOTE ADMIN
 const demoteToAdmin = async ({ targetUserId, actingUser }: RoleChangeActionProps): Promise<RoleChangeActionResult> => {
   if (actingUser.role !== "SUPER_ADMIN") {
     return { type: "INSUFFICIENT_AUTHORITY" };
@@ -141,6 +138,7 @@ const demoteToAdmin = async ({ targetUserId, actingUser }: RoleChangeActionProps
   return { type: "SUCCESS" };
 };
 
+//USERS LIST
 const getAllUsers = async ({ actingUserRole, page, limit }: GetAllUsersProps): Promise<{ data: AdminUserListItem[]; total: number }> => {
   return getAllUsersRepo(actingUserRole, page, limit);
 };

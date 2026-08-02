@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type { TokenPayload } from "../types/jwt.types.js";
 
-const requireRole = (...allowedRoles: TokenPayload["role"][]) => {
+const requireRole = (...allowedRoles: TokenPayload["role"][]) => {   //rest parameter to accept multiple roles and form an array.
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.redirect("/login");

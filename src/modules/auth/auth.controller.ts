@@ -1,8 +1,7 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { UserDocument } from "../../models/user.model.js";
 import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../../shared/utils/cookieOptions.js";
-import { createToken, revokeRefreshSession, createRefreshSession } from "../../shared/services/jwt.service.js";
-import { signupUser, loginUser, verifyUserEmail } from "./auth.service.js";
+import { signupUser, loginUser, logoutUser, handleGoogleLogin, verifyUserEmail } from "./auth.service.js";
 import type { Request, Response } from "express";
 import type { UserPayload } from "../../shared/types/jwt.types.js";
 
@@ -145,9 +144,7 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
 const handleUserLogout = asyncHandler(async (req: Request, res: Response) => {
   const refreshCookie = req.cookies?.refreshToken;
 
-  if (refreshCookie) {
-    await revokeRefreshSession(refreshCookie);
-  }
+  await logoutUser({refreshCookie,userId: req.user!.id,email: req.user!.email,ip: req.ip ?? ""});
 
   res.clearCookie("accessToken", accessTokenCookieOptions);
   res.clearCookie("refreshToken", refreshTokenCookieOptions);
@@ -186,8 +183,7 @@ const handleGoogleCallback = asyncHandler(async (req: Request, res: Response) =>
     role: googleUser.role,
   };
 
-  const accessToken = createToken(userPayload);
-  const refreshToken = await createRefreshSession(userPayload);
+  const { accessToken, refreshToken } = await handleGoogleLogin(userPayload, req.ip ?? "");
 
   res.cookie("accessToken", accessToken, accessTokenCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);

@@ -3,6 +3,7 @@ import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, 
 import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
+import logger from "../../infrastructure/configs/logger.config.js";
 
 const RESERVED_ALIASES = ["generate","analytics"]
 
@@ -39,6 +40,7 @@ const generateShortURL = async ({ originalURL, userId, customAlias, expiration, 
     expiresAt,
   });
 
+  logger.info({ shortId: shortid, userId, expiresAt }, "Short URL created");
   return shortid;
 };
 
@@ -106,6 +108,7 @@ const deleteURL = async (shortId: string, userId: string): Promise<boolean> => {
 
   await deleteVisitsByLinkId(deletedURL._id.toString());
 
+  logger.info({ shortId, userId }, "Short URL deleted");
   return true;
 };
 
@@ -127,6 +130,7 @@ const toggleDisableURL = async (shortId: string, userId: string): Promise<boolea
 
   await updateURLDisabledStatus(shortId, !url.isDisabled);
 
+  logger.info({ shortId, userId, isDisabled: !url.isDisabled }, "Short URL disabled status toggled");
   return true;
 };
 

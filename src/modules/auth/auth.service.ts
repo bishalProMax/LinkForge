@@ -1,11 +1,13 @@
 import crypto from "crypto";
 import redis from "../../infrastructure/configs/redis.config.js";
 import emailQueue from "../../infrastructure/queues/email.queue.js";
-import { createToken, createRefreshSession } from "../../shared/services/jwt.service.js"
+import { createToken, createRefreshSession, revokeRefreshSession } from "../../shared/services/jwt.service.js"
 import verifyTurnstile from "../../shared/services/turnstile.service.js";
-import { findUserByEmail, createUser, findUserByVerificationToken, saveUser, findRoleInviteByEmail, deleteRoleInviteByEmail } from "../user/user.repository.js";
-import type { SignupUserProps, SignupResult, LoginUserProps, LoginResult, VerifyEmailResult } from "../user/user.types.js";
+import { findUserByEmail, createUser, findUserByVerificationToken, saveUser } from "../user/user.repository.js";
+import { findRoleInviteByEmail, deleteRoleInviteByEmail } from "../admin/admin.repository.js";
+import type { SignupUserProps, SignupResult, LoginUserProps, LoginResult, VerifyEmailResult, LogoutUserProps } from "./auth.types.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
+import type { UserPayload } from "../../shared/types/jwt.types.js";
 
 //----------------------------SIGNUP SERVICE------------------------------------
 const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUserProps): Promise<SignupResult> => {
@@ -102,6 +104,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     user.isVerified = true;
     await saveUser(user);
     await deleteRoleInviteByEmail(email);
+    logSecurityEvent({ event: "INVITE_ACCEPTED", email, ip, userId: user._id.toString(), role: assignedRole }, "info");
     return {
       type: "INVITE_ACCEPTED",
     }
@@ -114,6 +117,8 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
       name: user.name,
       verificationLink,
     });
+
+    logSecurityEvent({ event: "SIGNUP_SUCCESS", email, ip, userId: user._id.toString() }, "info");
 
     return {
       type: "PENDING",
@@ -191,6 +196,25 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
   };
 };
 
+//----------------------------LOGOUT SERVICE------------------------------------
+const logoutUser = async ({ refreshCookie, userId, email, ip }: LogoutUserProps): Promise<void> => {
+  if (refreshCookie) {
+    await revokeRefreshSession(refreshCookie);
+  }
+
+  logSecurityEvent({ event: "LOGOUT", userId, email, ip }, "info");
+};
+
+//----------------------------GOOGLE LOGIN SERVICE------------------------------------
+const handleGoogleLogin = async (googleUser: UserPayload, ip: string): Promise<{ accessToken: string; refreshToken: string }> => {
+  const accessToken = createToken(googleUser);
+  const refreshToken = await createRefreshSession(googleUser);
+
+  logSecurityEvent({ event: "GOOGLE_LOGIN_SUCCESS", email: googleUser.email, userId: googleUser._id.toString(), ip }, "info");
+
+  return { accessToken, refreshToken };
+};
+
 //----------------------------VERIFY EMAIL SERVICE------------------------------------
 const verifyUserEmail = async (token: string): Promise<VerifyEmailResult> => {
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
@@ -220,4 +244,4 @@ const verifyUserEmail = async (token: string): Promise<VerifyEmailResult> => {
   };
 };
 
-export { signupUser, loginUser, verifyUserEmail };
+export { signupUser, loginUser, verifyUserEmail, logoutUser, handleGoogleLogin };

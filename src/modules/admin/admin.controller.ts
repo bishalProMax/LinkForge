@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import { createInvite, banUser, unbanUser, promoteToSuperAdmin, demoteToAdmin, getAllUsers } from "./user.service.js";
+import { createInvite, banUser, unbanUser, promoteToSuperAdmin, demoteToAdmin, getAllUsers } from "./admin.service.js";
 
 
 const handleCreateRoleInvite = asyncHandler(async (req: Request, res: Response) => {
@@ -52,7 +52,6 @@ const handleUnbanUser = asyncHandler(async (req: Request, res: Response) => {
   if (result.type !== "SUCCESS") {
     const messages: Record<string, string> = {
       NOT_FOUND: "User not found.",
-      SELF_BAN_FORBIDDEN: "Invalid action.",
       INSUFFICIENT_AUTHORITY: "You don't have permission to unban this account.",
       ALREADY_IN_STATE: "This account is not banned.",
     };
@@ -112,16 +111,7 @@ const handleGetAllUsers = asyncHandler(async (req: Request, res: Response) => {
   const error = typeof req.query.error === "string" ? req.query.error : null;
   const success = typeof req.query.success === "string" ? req.query.success : null;
 
-  return res.render("adminUsers", {
-    users,
-    currentPage: page,
-    totalPages,
-    total,
-    error,
-    success,
-    actingUserId: req.user!.id,
-    actingUserRole: req.user!.role,
-  });
+  return res.render("adminUsers", { users,currentPage: page,totalPages,total,error,success,actingUserId: req.user!.id,actingUserRole: req.user!.role });
 });
 
 export { 

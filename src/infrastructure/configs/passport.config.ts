@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, type Profile, type VerifyCallback } from "passport-google-oauth20";
 import User from "../../models/user.model.js";
+import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 
 passport.use(
   new GoogleStrategy(
@@ -34,15 +35,12 @@ passport.use(
           if (!user) {
             user = await User.create({
               name: profile.displayName,
-
               email,
-
               isVerified: true,
-
               authProviders: ["google"],
-
               googleId: profile.id,
             });
+            logSecurityEvent({ event: "GOOGLE_ACCOUNT_CREATED", email, userId: user._id.toString() }, "info");
           } else {
             // Existing local account
             // Link Google provider
@@ -53,6 +51,7 @@ passport.use(
             }
 
             await user.save();
+            logSecurityEvent({ event: "GOOGLE_ACCOUNT_LINKED", email, userId: user._id.toString() }, "info");
           }
         }
 

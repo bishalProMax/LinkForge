@@ -3,7 +3,7 @@ import crypto from "crypto";
 import redis from "../../infrastructure/configs/redis.config.js";
 import emailQueue from "../../infrastructure/queues/email.queue.js";
 import { findUserByEmail, saveUser } from "../user/user.repository.js";
-import type { ForgotPasswordProps, ForgotPasswordResult, VerifyResetOTPProps, VerifyOTPResult, ResetPasswordProps, ResetPasswordResult } from "../user/user.types.js";
+import type { ForgotPasswordProps, ForgotPasswordResult, VerifyResetOTPProps, VerifyOTPResult, ResetPasswordProps, ResetPasswordResult } from "./auth.types.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 
 // -----------------------------FORGOT PASSWORD-----------------------------
