@@ -28,14 +28,14 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
       existedUser.authProviders.push("local");
       await saveUser(existedUser);
 
-      logSecurityEvent({ event: "SIGNUP_LOCAL_AUTH_LINKED", email, ip, userId: existedUser._id.toString() }, "info");
+      logSecurityEvent({ event: "SIGNUP_LOCAL_AUTH_LINKED", email, ip, userId: existedUser._id.toString(), role: existedUser.role }, "info");
       return {
         type: "LOCAL_AUTH_LINKED",
       };
     }
 
     if (existedUser.isVerified) {
-      logSecurityEvent({ event: "SIGNUP_EMAIL_EXISTS", email, ip });
+      logSecurityEvent({ event: "SIGNUP_EMAIL_EXISTS", email, ip, role: existedUser.role });
       return {
         type: "EMAIL_EXISTS",
       };
@@ -44,7 +44,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     // EMAIL RESEND COOLDOWN
     const cooldown = await redis.ttl(`signup-resend-cooldown:${email}`);
     if (cooldown > 0) {
-      logSecurityEvent({ event: "SIGNUP_COOLDOWN_ACTIVE", email, ip, cooldown });
+      logSecurityEvent({ event: "SIGNUP_COOLDOWN_ACTIVE", email, ip, cooldown, role: existedUser.role });
       return {
         type: "COOLDOWN_ACTIVE",
         cooldown,
@@ -53,7 +53,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
 
     const sendCount = Number(await redis.get(`signup-resend-count:${email}`)) || 0;
     if (sendCount >= 2) {
-      logSecurityEvent({ event: "SIGNUP_RESEND_LIMIT_REACHED", email, ip });
+      logSecurityEvent({ event: "SIGNUP_RESEND_LIMIT_REACHED", email, ip, role: existedUser.role });
       return {
         type: "RESEND_LIMIT_REACHED",
       };
@@ -118,7 +118,7 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
       verificationLink,
     });
 
-    logSecurityEvent({ event: "SIGNUP_SUCCESS", email, ip, userId: user._id.toString() }, "info");
+    logSecurityEvent({ event: "SIGNUP_SUCCESS", email, ip, userId: user._id.toString(), role: assignedRole }, "info");
 
     return {
       type: "PENDING",
@@ -149,7 +149,7 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
   }
 
   if (user.isBanned) {
-    logSecurityEvent({ event: "LOGIN_BLOCKED_BANNED", email, ip, userId: user._id.toString(), reason: "ACCOUNT_BANNED" });
+    logSecurityEvent({ event: "LOGIN_BLOCKED_BANNED", email, ip, userId: user._id.toString(), reason: "ACCOUNT_BANNED", role: user.role });
     return {
       type: "ACCOUNT_BANNED",
     };
@@ -157,14 +157,14 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
   
   //if local account is not made but user trying to login with local account
   if (!user.authProviders.includes("local")) {
-    logSecurityEvent({ event: "GOOGLE_LOGIN_REQUIRED", email, ip, userId: user._id.toString(), reason:"LOCAL_AUTH_NOT_ENABLED" });
+    logSecurityEvent({ event: "GOOGLE_LOGIN_REQUIRED", email, ip, userId: user._id.toString(), reason:"LOCAL_AUTH_NOT_ENABLED", role: user.role });
     return {
       type: "GOOGLE_LOGIN_REQUIRED",
     };
   }
 
   if (!user.isVerified) {
-    logSecurityEvent({ event: "LOGIN_BLOCKED_UNVERIFIED", email, ip,reason:"EMAIL_NOT VERIFIED", userId: user._id.toString() });
+    logSecurityEvent({ event: "LOGIN_BLOCKED_UNVERIFIED", email, ip,reason:"EMAIL_NOT VERIFIED", userId: user._id.toString(), role: user.role });
     return {
       type: "NOT_VERIFIED",
     };
@@ -178,7 +178,7 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
       await redis.expire(`login:${email}`, 300);
     }
 
-    logSecurityEvent({ event: "LOGIN_FAILED", email, ip, userId: user._id.toString(), reason: "INVALID_PASSWORD", attempts });
+    logSecurityEvent({ event: "LOGIN_FAILED", email, ip, userId: user._id.toString(), reason: "INVALID_PASSWORD", attempts, role: user.role });
     return {
       type: "INVALID_PASSWORD",
     };
@@ -186,7 +186,7 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
 
   await redis.del(`login:${email}`);
 
-  logSecurityEvent({ event: "LOGIN_SUCCESS", email, ip, userId: user._id.toString() }, "info");
+  logSecurityEvent({ event: "LOGIN_SUCCESS", email, ip, userId: user._id.toString(), role: user.role }, "info");
   const accessToken = createToken(user);
   const refreshToken = await createRefreshSession(user);
   return {
@@ -197,12 +197,12 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
 };
 
 //----------------------------LOGOUT SERVICE------------------------------------
-const logoutUser = async ({ refreshCookie, userId, email, ip }: LogoutUserProps): Promise<void> => {
+const logoutUser = async ({ refreshCookie, userId, role, email, ip }: LogoutUserProps): Promise<void> => {
   if (refreshCookie) {
     await revokeRefreshSession(refreshCookie);
   }
 
-  logSecurityEvent({ event: "LOGOUT", userId, email, ip }, "info");
+  logSecurityEvent({ event: "LOGOUT", userId, email, role, ip }, "info");
 };
 
 //----------------------------GOOGLE LOGIN SERVICE------------------------------------
@@ -210,7 +210,7 @@ const handleGoogleLogin = async (googleUser: UserPayload, ip: string): Promise<{
   const accessToken = createToken(googleUser);
   const refreshToken = await createRefreshSession(googleUser);
 
-  logSecurityEvent({ event: "GOOGLE_LOGIN_SUCCESS", email: googleUser.email, userId: googleUser._id.toString(), ip }, "info");
+  logSecurityEvent({ event: "GOOGLE_LOGIN_SUCCESS", email: googleUser.email, userId: googleUser._id.toString(), ip, role: googleUser.role }, "info");
 
   return { accessToken, refreshToken };
 };
@@ -244,4 +244,10 @@ const verifyUserEmail = async (token: string): Promise<VerifyEmailResult> => {
   };
 };
 
-export { signupUser, loginUser, verifyUserEmail, logoutUser, handleGoogleLogin };
+export { 
+  signupUser, 
+  loginUser, 
+  verifyUserEmail, 
+  logoutUser, 
+  handleGoogleLogin 
+  };

@@ -4,6 +4,7 @@ export interface AuditQueryParams {
   event?: SecurityEventType | "all";
   email?: string;
   ip?: string;
+  role?: "USER" | "ADMIN" | "SUPER_ADMIN" | "all";
   from?: string;
   to?: string;
 }
@@ -14,6 +15,7 @@ export interface AuditListItem {
   email?: string;
   userId?: string;
   ip?: string;
+  role?: "USER" | "ADMIN" | "SUPER_ADMIN";
   metadata?: Record<string, unknown>;
   createdAt: Date;
 }

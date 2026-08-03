@@ -35,12 +35,13 @@ export type SecurityEventType =
   | "USER_UNBANNED"
   | "ROLE_PROMOTED"
   | "ROLE_DEMOTED"
-  | "AUDIT_EXPORTED";
+  | "AUDIT_REPORT_EXPORTED";
 
 export interface SecurityEventPayload {
   event: SecurityEventType;
   email?: string;
   userId?: string;
   ip?: string;
+  role?: "USER" | "ADMIN" | "SUPER_ADMIN";
   [key: string]: unknown;
 }

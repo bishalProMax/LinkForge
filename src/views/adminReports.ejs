@@ -27,7 +27,7 @@
       </div>
     </header>
 
-    <% const hasActiveFilters=(filters.event && filters.event !=="all" ) || filters.email || filters.ip || filters.from
+    <% const hasActiveFilters=(filters.event && filters.event !=="all" ) || (filters.role && filters.role !=="all" ) || filters.from
       || filters.to; %>
 
       <% const eventClass=(event)=> {
@@ -43,28 +43,40 @@
         return "event-success";
         }; %>
 
+      <% const roleLabel = (role) => {
+        if (!role) return "—";
+        if (role === "SUPER_ADMIN") return "Super Admin";
+        return role.charAt(0) + role.slice(1).toLowerCase();
+        }; %>
+
+        <!-- Filter Form -->
         <!-- Filter Form -->
         <form method="GET" action="/admin/reports" class="url-toolbar" id="reportToolbarForm">
           <div class="search-input-wrap">
-            <input type="text" name="email" placeholder="Filter by email" value="<%= filters.email || '' %>"
-              autocomplete="off" />
+            <i class="ri-search-line search-icon"></i>
+            <input type="text" name="email" id="emailInput" placeholder="Filter by email"
+              value="<%= filters.email || '' %>" autocomplete="off" />
+            <button type="button" class="clear-search-btn <%= filters.email ? '' : 'is-hidden' %>" id="clearEmailBtn">
+              <i class="ri-close-line"></i>
+            </button>
           </div>
 
           <div class="search-input-wrap">
-          <input type="text" name="ip" placeholder="Filter by IP" value="<%= filters.ip || '' %>" />
-            </div>
-            
-          <select name="event" id="eventSelect" data-viewer-role="<%= viewerRole %>"
-            data-selected-event="<%= filters.event || 'all' %>">
-            <option value="all">All Events</option>
-          </select>
+            <i class="ri-search-line search-icon"></i>
+            <input type="text" name="ip" id="ipInput" placeholder="Filter by IP"
+              value="<%= filters.ip || '' %>" autocomplete="off" />
+            <button type="button" class="clear-search-btn <%= filters.ip ? '' : 'is-hidden' %>" id="clearIpBtn">
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
 
-          <input type="date" name="from" value="<%= filters.from || '' %>" />
-          <input type="date" name="to" value="<%= filters.to || '' %>" />
+          <button type="button" class="filter-trigger-btn" id="filterTriggerBtn">
+            <i class="ri-equalizer-3-line"></i>
+            <% if (hasActiveFilters) { %>
+              <span class="filter-badge-dot" id="filterBadgeDot"></span>
+            <% } %>
+          </button>
 
-          <button type="submit" class="apply-filters-btn" style="width:auto;padding:0 20px;">Apply</button>
-
-          <a href="/admin/reports" class="pagination-btn nav" style="text-decoration:none;">Clear</a>
           <a href="#" id="exportCsvBtn" class="pagination-btn nav" style="text-decoration:none;">
             <i class="ri-download-2-line"></i> Export CSV
           </a>
@@ -79,6 +91,7 @@
                 <thead>
                   <tr>
                     <th>Event</th>
+                    <th>Role</th>
                     <th>Email</th>
                     <th>IP</th>
                     <th>When</th>
@@ -90,6 +103,13 @@
                       <td><span class="status-badge <%= eventClass(e.event) %>">
                           <%= e.event %>
                         </span></td>
+                      <td>
+                        <% if (e.role) { %>
+                          <span class="status-badge role-<%= e.role.toLowerCase() %>"><%= roleLabel(e.role) %></span>
+                        <% } else { %>
+                          —
+                        <% } %>
+                      </td>
                       <td>
                         <%= e.email || '—' %>
                       </td>
@@ -116,6 +136,7 @@
               if (filters.email) params.set('email', filters.email);
               if (filters.ip) params.set('ip', filters.ip);
               if (filters.event && filters.event !== 'all') params.set('event', filters.event);
+              if (filters.role && filters.role !== 'all') params.set('role', filters.role);
               if (filters.from) params.set('from', filters.from);
               if (filters.to) params.set('to', filters.to);
               params.set('page', pageNum);
@@ -168,6 +189,51 @@
 
                     <% } %>
         </section>
+        
+        <!-- FILTER MODAL -->
+  <div id="filterModal" class="modal">
+    <div class="modal-content modal-content--filter">
+      <span class="close" data-close-modal>&times;</span>
+
+      <div class="filter-content-header">
+        <h3>Filters</h3>
+      </div>
+
+      <% if (viewerRole === "SUPER_ADMIN") { %>
+        <div class="filter-group">
+          <label for="roleSelect">Role</label>
+          <select name="role" id="roleSelect" form="reportToolbarForm">
+            <option value="all" <%= (!filters.role || filters.role === "all") ? "selected" : "" %>>All Roles</option>
+            <option value="USER" <%= filters.role === "USER" ? "selected" : "" %>>User</option>
+            <option value="ADMIN" <%= filters.role === "ADMIN" ? "selected" : "" %>>Admin</option>
+            <option value="SUPER_ADMIN" <%= filters.role === "SUPER_ADMIN" ? "selected" : "" %>>Super Admin</option>
+          </select>
+        </div>
+      <% } %>
+
+      <div class="filter-group">
+        <label for="eventSelect">Event</label>
+        <select name="event" id="eventSelect" form="reportToolbarForm" data-viewer-role="<%= viewerRole %>"
+          data-selected-event="<%= filters.event || 'all' %>">
+          <option value="all">All Events</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Date Range</label>
+        <div class="date-range-row">
+          <input type="date" name="from" value="<%= filters.from || '' %>" form="reportToolbarForm" />
+          <span class="date-range-sep">to</span>
+          <input type="date" name="to" value="<%= filters.to || '' %>" form="reportToolbarForm" />
+        </div>
+      </div>
+
+      <div class="filter-content-footer">
+        <button type="button" class="clear-filters-btn" id="clearAllFiltersBtn">Clear all filters</button>
+        <button type="submit" class="apply-filters-btn" form="reportToolbarForm">Apply Filters</button>
+      </div>
+    </div>
+  </div>
   </div>
 </body>
 

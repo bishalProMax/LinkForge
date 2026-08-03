@@ -6,6 +6,7 @@ export interface ISecurityEvent {
   email?: string;
   userId?: mongoose.Types.ObjectId;
   ip?: string;
+  role?: "USER" | "ADMIN" | "SUPER_ADMIN";
   metadata?: Record<string, unknown>;
 }
 
@@ -34,6 +35,12 @@ const securityEventSchema = new mongoose.Schema<ISecurityEvent, SecurityEventMod
 
     ip: {
       type: String,
+      index: true,
+    },
+
+    role: {
+      type: String,
+      enum: ["USER", "ADMIN", "SUPER_ADMIN"],
       index: true,
     },
 

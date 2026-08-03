@@ -53,7 +53,7 @@ const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (a
   await setUserBannedStatus(targetUserId, true);
   await revokeAllUserSessions(targetUserId);
 
-  logSecurityEvent({ event: "USER_BANNED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, actingUserRole: actingUser.role, targetRole: target.role }, "info");
+  logSecurityEvent({ event: "USER_BANNED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, actingUserRole: actingUser.role, role: target.role }, "info");
 
   await emailQueue.add("sendAccountBannedEmail", {
     email: target.email,
@@ -83,7 +83,7 @@ const unbanUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<
 
   await setUserBannedStatus(targetUserId, false);
 
-  logSecurityEvent({ event: "USER_UNBANNED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, actingUserRole: actingUser.role, targetRole: target.role }, "info");
+  logSecurityEvent({ event: "USER_UNBANNED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, actingUserRole: actingUser.role, role: target.role }, "info");
 
   await emailQueue.add("sendAccountReinstatedEmail", {
     email: target.email,
@@ -111,7 +111,7 @@ const promoteToSuperAdmin = async ({ targetUserId, actingUser }: RoleChangeActio
 
   await updateUserRole(targetUserId, "SUPER_ADMIN");
 
-  logSecurityEvent({ event: "ROLE_PROMOTED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, from: "ADMIN", to: "SUPER_ADMIN" }, "info");
+  logSecurityEvent({ event: "ROLE_PROMOTED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, from: "ADMIN", to: "SUPER_ADMIN", role: "SUPER_ADMIN" }, "info");
 
   return { type: "SUCCESS" };
 };
@@ -133,7 +133,7 @@ const demoteToAdmin = async ({ targetUserId, actingUser }: RoleChangeActionProps
 
   await updateUserRole(targetUserId, "ADMIN");
 
-  logSecurityEvent({ event: "ROLE_DEMOTED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, from: "SUPER_ADMIN", to: "ADMIN" }, "info");
+  logSecurityEvent({ event: "ROLE_DEMOTED", userId: targetUserId, email: target.email, actingUserId: actingUser.id, from: "SUPER_ADMIN", to: "ADMIN", role: "ADMIN" }, "info");
 
   return { type: "SUCCESS" };
 };

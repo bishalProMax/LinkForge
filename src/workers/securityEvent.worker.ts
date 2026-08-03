@@ -10,6 +10,7 @@ const securityEventWorker = new Worker<SecurityEventJob>("securityEventQueue",as
       email: job.data.email,
       userId: job.data.userId,
       ip: job.data.ip,
+      role: job.data.role,
       metadata: job.data.metadata,
     });
   },

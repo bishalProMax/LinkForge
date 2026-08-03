@@ -144,7 +144,7 @@ const handleUserLogin = asyncHandler(async (req: Request, res: Response) => {
 const handleUserLogout = asyncHandler(async (req: Request, res: Response) => {
   const refreshCookie = req.cookies?.refreshToken;
 
-  await logoutUser({refreshCookie,userId: req.user!.id,email: req.user!.email,ip: req.ip ?? ""});
+  await logoutUser({refreshCookie,userId: req.user!.id,email: req.user!.email,role: req.user!.role,ip: req.ip ?? ""});
 
   res.clearCookie("accessToken", accessTokenCookieOptions);
   res.clearCookie("refreshToken", refreshTokenCookieOptions);

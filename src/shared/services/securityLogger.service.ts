@@ -13,6 +13,7 @@ const logSecurityEvent = (payload: SecurityEventPayload, level: "info" | "warn" 
       email: payload.email,
       userId: payload.userId,
       ip: payload.ip,
+      role: payload.role,
       metadata: payload,
     })
     .catch((error) => {

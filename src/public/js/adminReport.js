@@ -1,3 +1,5 @@
+import { openModal } from "./modal.js";
+
 const ALL_EVENTS = [
   "LOGIN_SUCCESS", "LOGIN_FAILED", "LOGIN_TOO_MANY_ATTEMPTS", "LOGIN_BLOCKED_UNVERIFIED", "LOGIN_BLOCKED_BANNED",
   "LOGOUT", "SESSION_REVOKED_BANNED",
@@ -14,6 +16,8 @@ const SUPER_ADMIN_ONLY_EVENTS = ["ROLE_INVITE_CREATED", "ROLE_PROMOTED", "ROLE_D
 
 const toLabel = (value) =>
   value.toLowerCase().split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+// ---------------- POPULATE EVENT DROPDOWN ----------------
 
 const select = document.getElementById("eventSelect");
 
@@ -32,6 +36,8 @@ if (select) {
   });
 }
 
+// ---------------- EXPORT CSV ----------------
+
 const exportBtn = document.getElementById("exportCsvBtn");
 
 if (exportBtn) {
@@ -44,3 +50,40 @@ if (exportBtn) {
     window.location.href = `/admin/reports/export?${params.toString()}`;
   });
 }
+
+// ---------------- FILTER MODAL ----------------
+
+const filterTriggerBtn = document.getElementById("filterTriggerBtn");
+const filterModal = document.getElementById("filterModal");
+
+filterTriggerBtn?.addEventListener("click", () => {
+  openModal(filterModal);
+});
+
+// ---------------- CLEARABLE SEARCH INPUTS ----------------
+
+function setupClearableInput(inputId, clearBtnId) {
+  const input = document.getElementById(inputId);
+  const clearBtn = document.getElementById(clearBtnId);
+
+  if (!input || !clearBtn) return;
+
+  input.addEventListener("input", () => {
+    clearBtn.classList.toggle("is-hidden", !input.value);
+  });
+
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    clearBtn.classList.add("is-hidden");
+    input.form.submit();
+  });
+}
+
+setupClearableInput("emailInput", "clearEmailBtn");
+setupClearableInput("ipInput", "clearIpBtn");
+
+// ---------------- CLEAR ALL FILTERS ----------------
+
+document.getElementById("clearAllFiltersBtn")?.addEventListener("click", () => {
+  window.location.href = "/admin/reports";
+});

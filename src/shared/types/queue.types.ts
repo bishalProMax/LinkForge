@@ -53,6 +53,7 @@ export interface SecurityEventJob {
   email?: string;
   userId?: string;
   ip?: string;
+  role?: "USER" | "ADMIN" | "SUPER_ADMIN";
   metadata?: Record<string, unknown>;
 };
 

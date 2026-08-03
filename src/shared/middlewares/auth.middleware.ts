@@ -21,7 +21,7 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
         res.clearCookie("accessToken", accessTokenCookieOptions);
         res.clearCookie("refreshToken", refreshTokenCookieOptions);
         if (currentUser?.isBanned) {
-          logSecurityEvent({ event: "SESSION_REVOKED_BANNED", userId: currentUser._id.toString(), email: currentUser.email, ip: req.ip ?? "" }, "warn");
+          logSecurityEvent({ event: "SESSION_REVOKED_BANNED", userId: currentUser._id.toString(), email: currentUser.email, ip: req.ip ?? "", role: currentUser.role }, "warn");
           return res.redirect("/account-banned");
         }
         return res.redirect("/login");
@@ -50,7 +50,7 @@ const rotated = await rotateRefreshSession(refreshCookie);
     res.clearCookie("accessToken", accessTokenCookieOptions);
     res.clearCookie("refreshToken", refreshTokenCookieOptions);
     if (currentUser?.isBanned) {
-      logSecurityEvent({ event: "SESSION_REVOKED_BANNED", userId: currentUser._id.toString(), email: currentUser.email, ip: req.ip ?? "" }, "warn");
+      logSecurityEvent({ event: "SESSION_REVOKED_BANNED", userId: currentUser._id.toString(), email: currentUser.email, ip: req.ip ?? "", role: currentUser.role }, "warn");
     }
     return res.redirect("/login");
   }

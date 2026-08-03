@@ -54,6 +54,7 @@ export interface LogoutUserProps {
   userId: string;
   email: string;
   ip: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
   }
 
   // ----------------------------------Forgot Password---------------------------------

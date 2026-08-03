@@ -134,43 +134,6 @@
 }
 
 /* Audit report toolbar overrides */
-#reportToolbarForm select#eventSelect {
-  height: 44px;
-  min-width: 200px;
-  padding: 0 14px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #111827;
-  font-size: 14px;
-}
-
-#reportToolbarForm input[name="ip"] {
-  height: 44px;
-  padding: 0 16px; 
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  color: #111827;
-  font-size: 14px;
-  text-overflow: ellipsis;
-}
-
-#reportToolbarForm input[name="ip"]:focus {
-  outline: none;
-  border-color: #667eea;
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
-}
-
-#reportToolbarForm .apply-filters-btn,
-#reportToolbarForm .pagination-btn.nav {
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .search-input-wrap input {
   box-sizing: border-box;
   width: 100%;
@@ -184,6 +147,10 @@
   font-size: 14px;
   text-overflow: ellipsis;
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.search-input-wrap .search-icon + input {
+  padding-left: 38px !important;
 }
 
 .modal-content--filter {

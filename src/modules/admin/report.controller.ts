@@ -9,6 +9,7 @@ const handleGetAuditReport = asyncHandler(async (req: Request, res: Response) =>
 
   const filters: AuditQueryParams = {
     event: typeof req.query.event === "string" ? (req.query.event as any) : "all",
+    role: typeof req.query.role === "string" ? (req.query.role as any) : "all",
     email: typeof req.query.email === "string" ? req.query.email.trim() : undefined,
     ip: typeof req.query.ip === "string" ? req.query.ip.trim() : undefined,
     from: typeof req.query.from === "string" ? req.query.from : undefined,
@@ -36,6 +37,7 @@ const csvEscape = (value: unknown): string => {
 const handleExportAuditCSV = asyncHandler(async (req: Request, res: Response) => {
   const filters: AuditQueryParams = {
     event: typeof req.query.event === "string" ? (req.query.event as any) : "all",
+    role: typeof req.query.role === "string" ? (req.query.role as any) : "all",
     email: typeof req.query.email === "string" ? req.query.email.trim() : undefined,
     ip: typeof req.query.ip === "string" ? req.query.ip.trim() : undefined,
     from: typeof req.query.from === "string" ? req.query.from : undefined,
@@ -45,8 +47,8 @@ const handleExportAuditCSV = asyncHandler(async (req: Request, res: Response) =>
   const viewerRole = req.user!.role as "ADMIN" | "SUPER_ADMIN";
   const events = await exportAuditReport(viewerRole, filters);
 
-  const header = ["Event", "Email", "UserId", "IP", "CreatedAt"];
-  const rows = events.map((e) => [csvEscape(e.event), csvEscape(e.email), csvEscape(e.userId), csvEscape(e.ip), csvEscape(new Date(e.createdAt).toISOString())].join(","));
+  const header = ["Event", "Role", "Email", "UserId", "IP", "CreatedAt"];
+  const rows = events.map((e) => [csvEscape(e.event), csvEscape(e.role), csvEscape(e.email), csvEscape(e.userId), csvEscape(e.ip), csvEscape(new Date(e.createdAt).toISOString())].join(","));
 
   const csv = [header.join(","), ...rows].join("\n");
   const filename = `audit-report-${new Date().toISOString().slice(0, 10)}.csv`;

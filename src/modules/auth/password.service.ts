@@ -17,12 +17,12 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
   }
 
   if (user.isBanned) {
-  logSecurityEvent({ event: "PASSWORD_RESET_BLOCKED_BANNED", email, ip, userId: user._id.toString(), reason: "ACCOUNT_BANNED" });
+  logSecurityEvent({ event: "PASSWORD_RESET_BLOCKED_BANNED", email, ip, userId: user._id.toString(), reason: "ACCOUNT_BANNED", role: user.role });
   return { type: "ACCOUNT_BANNED" }; 
   }
 
   if (!user.authProviders.includes("local")) {
-    logSecurityEvent({ event: "LOCAL_AUTH_REQUIRED", email, ip, userId: user._id.toString() });
+    logSecurityEvent({ event: "LOCAL_AUTH_REQUIRED", email, ip, userId: user._id.toString(), role: user.role });
     return {
       type: "LOCAL_AUTH_REQUIRED",
     };
@@ -32,7 +32,7 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
   const sendCount = Number(await redis.get(`password-resend-otp-count:${email}`)) || 0;
 
   if (sendCount >= 5) {
-    logSecurityEvent({ event: "OTP_LIMIT_REACHED", email, ip, userId: user._id.toString() });
+    logSecurityEvent({ event: "OTP_LIMIT_REACHED", email, ip, userId: user._id.toString(), role: user.role });
     return {
       type: "OTP_LIMIT_REACHED",
     };
@@ -42,7 +42,7 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
   //this part only runs when attacker tries to bypass frontend, by calling api directly. For normal users, frontend will prevent them from making requests until cooldown expires.
   const cooldown = await redis.ttl(`password-resend-otp-cooldown-timer:${email}`);
   if (cooldown > 0) {
-    logSecurityEvent({ event: "OTP_COOLDOWN_ACTIVE", email, ip, cooldown });
+    logSecurityEvent({ event: "OTP_COOLDOWN_ACTIVE", email, ip, cooldown, role: user.role });
     return {
       type: "OTP_COOLDOWN_ACTIVE",
       cooldown,
@@ -65,7 +65,7 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
     await redis.expire(`password-resend-otp-count:${email}`, 3600);
   }
 
-  logSecurityEvent({ event: "OTP_REQUESTED", email, ip, userId: user._id.toString() }, "info");
+  logSecurityEvent({ event: "OTP_REQUESTED", email, ip, userId: user._id.toString(), role: user.role }, "info");
 
   // SEND OTP EMAIL
   await emailQueue.add("sendPasswordResetOTP", {
@@ -147,7 +147,7 @@ const resetPassword = async ({ email, password, ip }: ResetPasswordProps): Promi
   const isSamePassword = await user.comparePassword(password);
 
   if (isSamePassword) {
-    logSecurityEvent({ event: "PASSWORD_RESET_SAME_PASSWORD", email, ip, userId: user._id.toString() });
+    logSecurityEvent({ event: "PASSWORD_RESET_SAME_PASSWORD", email, ip, userId: user._id.toString(), role: user.role });
     return {
       type: "PASSWORD_RESET_SAME_PASSWORD",
     };
@@ -157,7 +157,7 @@ const resetPassword = async ({ email, password, ip }: ResetPasswordProps): Promi
 
   await redis.del(`password-reset-session:${email}`);
 
-  logSecurityEvent({ event: "PASSWORD_RESET_SUCCESS", email, ip, userId: user._id.toString() }, "info");
+  logSecurityEvent({ event: "PASSWORD_RESET_SUCCESS", email, ip, userId: user._id.toString(), role: user.role }, "info");
 
   await emailQueue.add("sendPasswordChangedEmail", {
     email,

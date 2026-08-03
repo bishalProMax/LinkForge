@@ -40,7 +40,7 @@ passport.use(
               authProviders: ["google"],
               googleId: profile.id,
             });
-            logSecurityEvent({ event: "GOOGLE_ACCOUNT_CREATED", email, userId: user._id.toString() }, "info");
+            logSecurityEvent({ event: "GOOGLE_ACCOUNT_CREATED", email, userId: user._id.toString(), role: user.role }, "info");
           } else {
             // Existing local account
             // Link Google provider
@@ -51,7 +51,7 @@ passport.use(
             }
 
             await user.save();
-            logSecurityEvent({ event: "GOOGLE_ACCOUNT_LINKED", email, userId: user._id.toString() }, "info");
+            logSecurityEvent({ event: "GOOGLE_ACCOUNT_LINKED", email, userId: user._id.toString(), role: user.role }, "info");
           }
         }
 
