@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { handleCreateRoleInvite, handleBanUser, handleUnbanUser, handlePromoteUser, handleDemoteUser, handleGetAllUsers } from "./admin.controller.js";
-import { handleGetAuditReport } from "./report.controller.js";
+import { handleGetAuditReport, handleExportAuditCSV } from "./report.controller.js";
 import { createInviteSchema } from "./admin.schemas.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
 import { validateRedirect } from "../../shared/middlewares/validation.middleware.js";
@@ -25,4 +25,6 @@ router.route("/users/:userId/demote").post(authenticateUser, requireRole("SUPER_
 //reports route
 router.route("/reports").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN"), handleGetAuditReport);
 
+//export reports route
+router.route("/reports/export").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN"), handleExportAuditCSV);
 export default router;

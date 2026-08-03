@@ -31,3 +31,16 @@ if (select) {
     select.appendChild(option);
   });
 }
+
+const exportBtn = document.getElementById("exportCsvBtn");
+
+if (exportBtn) {
+  exportBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const params = new URLSearchParams(window.location.search);
+    params.delete("page");
+
+    window.location.href = `/admin/reports/export?${params.toString()}`;
+  });
+}

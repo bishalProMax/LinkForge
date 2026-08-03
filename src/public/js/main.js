@@ -8,3 +8,4 @@ import "./deleteUrl.js";
 import "./expiryDate.js";
 import "./disableUrl.js";
 import "./dashboard-filter.js"
+import "./adminReport.js"
