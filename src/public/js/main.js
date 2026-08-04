@@ -9,3 +9,4 @@ import "./expiryDate.js";
 import "./disableUrl.js";
 import "./dashboard-filter.js"
 import "./adminReport.js"
+import "./profile.js"

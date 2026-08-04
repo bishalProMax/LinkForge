@@ -11,6 +11,7 @@ import urlRoute from "./modules/url/url.route.js";
 import adminRoute from "./modules/admin/admin.route.js";
 import pageRouter from "./modules/page/page.route.js";
 import authRoute from "./modules/auth/auth.route.js";
+import userRoute from "./modules/user/user.route.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -82,6 +83,7 @@ app.use("/url", urlRoute)
 app.use("/admin", adminRoute)
 app.use("/", pageRouter)
 app.use("/auth", authRoute)
+app.use("/user", userRoute)
 app.use(notFound)
 
 app.use(errorHandler)

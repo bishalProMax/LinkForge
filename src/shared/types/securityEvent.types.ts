@@ -35,7 +35,9 @@ export type SecurityEventType =
   | "USER_UNBANNED"
   | "ROLE_PROMOTED"
   | "ROLE_DEMOTED"
-  | "AUDIT_REPORT_EXPORTED";
+  | "AUDIT_REPORT_EXPORTED"
+  | "PROFILE_USERNAME_CHANGED"
+  | "PROFILE_PASSWORD_CHANGED";
 
 export interface SecurityEventPayload {
   event: SecurityEventType;

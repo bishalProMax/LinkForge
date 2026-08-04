@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { handleGetAllURL } from "../url/url.controller.js";
+import { handleShowProfilePage } from "../user/user.controller.js";
 import { handleShowSignupPage, handleShowLoginPage,handleShowForgotPasswordPage, handleShowLandingPage, handleShowTermsPage, handleShowPrivacyPage, handleShowAboutPage, handleShowAccountBannedPage} from "./page.controller.js";
 import { authenticateUser, redirectIfAuthenticated } from "../../shared/middlewares/auth.middleware.js";
 
@@ -24,5 +25,7 @@ router.route("/terms").get(handleShowTermsPage);
 router.route("/about").get(handleShowAboutPage);
 
 router.route("/account-banned").get(handleShowAccountBannedPage);
+
+router.route("/profile").get(authenticateUser, handleShowProfilePage);
 
 export default router;

@@ -14,6 +14,8 @@ export interface IUser {
   googleId?: string;
   role: "USER" | "ADMIN" | "SUPER_ADMIN"; 
   isBanned: boolean;
+  organization?: string;
+  designation?: string;
 }
 
 // -----------------------------USER METHODS-----------------------
@@ -102,6 +104,18 @@ const userSchema = new mongoose.Schema<
       default: false,
       index: true,
     },
+
+    organization: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+    },
+
+    designation: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+    }
   },
   {
     timestamps: true,
