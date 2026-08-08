@@ -9,7 +9,7 @@ const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) 
   const body = req.body;
 
   try {
-    const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id, customAlias: body.customAlias, expiration: body.expiration, customExpiry: body.customExpiry });
+    const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id, customAlias: body.customAlias, expiration: body.expiration, customExpiry: body.customExpiry, title: body.title });
 
     //PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
     return res.redirect(`/dashboard/?id=${shortid}`);
@@ -134,4 +134,11 @@ const handleDeleteURL = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-export { handleGenerateShortURL, handleRedirectToURL, handleGetAnalytics, handleGetAllURL, handleDeleteURL, handleToggleDisableURL };
+export { 
+  handleGenerateShortURL, 
+  handleRedirectToURL, 
+  handleGetAnalytics, 
+  handleGetAllURL, 
+  handleDeleteURL, 
+  handleToggleDisableURL 
+  };

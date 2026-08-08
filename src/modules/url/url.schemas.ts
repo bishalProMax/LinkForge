@@ -19,6 +19,15 @@ export const createUrlSchema = z
       z.url({ message: "Please enter a valid URL." })
     ),
 
+    title: z.preprocess(
+      (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+      z
+      .string()
+      .trim()
+      .max(100, "Title must be 100 characters or fewer.")
+      .optional()
+    ),
+
     customAlias: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z
@@ -27,9 +36,11 @@ export const createUrlSchema = z
         .regex(/^(?=.*[a-zA-Z0-9])[a-zA-Z0-9_-]{3,50}$/, "Alias can only contain letters, numbers, hyphens and underscores.")
         .optional()
     ),
+
     expiration: z.enum(["never", "1d", "7d", "30d", "90d", "custom"]),
 
     customExpiry: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
+
   })
   .superRefine((data, ctx) => {
     if (data.expiration === "custom") {

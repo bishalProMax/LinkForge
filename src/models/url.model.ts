@@ -9,6 +9,7 @@ export interface IURL {
   createdBy: mongoose.Types.ObjectId;
   expiresAt: Date | null;
   isDisabled: boolean;
+  title: string; 
 }
 
 // -----------------------------URL DOCUMENT-----------------------------
@@ -30,6 +31,12 @@ const urlSchema = new mongoose.Schema<IURL, URLModel>(
       type: String,
       required: true,
       trim: true,
+    },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

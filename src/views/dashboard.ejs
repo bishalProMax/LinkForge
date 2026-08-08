@@ -41,8 +41,10 @@
       <label for="url">Destination URL</label>
       <input id="url" name="url" type="text" placeholder="example.com or https://example.com" required />
       <label for="customAlias">Custom Alias (Optional)</label>
-      <input id="customAlias" name="customAlias" minlength="3" maxlength="50" placeholder="e.g. portfolio" />
+      <input id="customAlias" name="customAlias" type="text" minlength="3" maxlength="50" placeholder="e.g. portfolio" />
       <small> Leave blank to auto-generate. </small>
+      <label for="title">Title (Optional)</label>
+      <input id="title" type="text" name="title" maxlength="100" placeholder="e.g. Portfolio Site" />
       <div class="form-group">
         <label for="expiration">Expiration</label>
 
@@ -114,6 +116,7 @@
                       <table>
                         <thead>
                           <tr>
+                            <th>Title</th>
                             <th>Short Link</th>
                             <th>Destination URL</th>
                             <th>Status</th>
@@ -128,6 +131,10 @@
                           <% urls.forEach((url)=> { %>
 
                             <tr>
+                              <!-- Title -->
+                              <td class="title-cell" title="<%= url.title %>">
+                                <%= url.title %>
+                              </td>
                               <!-- Short Link -->
 
                               <td class="short-link-cell">

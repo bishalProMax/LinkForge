@@ -2,6 +2,7 @@ export interface GenerateShortURLProps {
   originalURL: string;
   userId: string;
   customAlias?: string;
+  title?: string;
   expiration: "never" | "1d" | "7d" | "30d" | "90d" | "custom";
   customExpiry?: Date;
 };
@@ -9,6 +10,7 @@ export interface GenerateShortURLProps {
 export interface CreateShortURLData {
   shortId: string;
   redirectURL: string;
+  title: string;
   createdBy: string;
   expiresAt?: Date;
 }
@@ -22,6 +24,7 @@ export interface DashboardURL {
   _id: string;
   shortId: string;
   redirectURL: string;
+  title: string;
   createdAt: Date;
   expiresAt: Date | null;
   totalClicks: number;

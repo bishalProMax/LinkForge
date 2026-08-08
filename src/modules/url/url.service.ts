@@ -3,12 +3,13 @@ import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, 
 import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
+import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
 import logger from "../../infrastructure/configs/logger.config.js";
 
 const RESERVED_ALIASES = ["generate","analytics"]
 
 // Generate a short URL with optional custom alias and expiration
-const generateShortURL = async ({ originalURL, userId, customAlias, expiration, customExpiry }: GenerateShortURLProps): Promise<string> => {
+const generateShortURL = async ({ originalURL, userId, customAlias, expiration, customExpiry, title }: GenerateShortURLProps): Promise<string> => {
   let shortid: string;
 
   if (customAlias) {
@@ -32,15 +33,18 @@ const generateShortURL = async ({ originalURL, userId, customAlias, expiration, 
   }
 
   const expiresAt = getExpiryDate(expiration, customExpiry);
+  const resolvedTitle = normalizeTitle(title) ?? getDefaultTitle(originalURL);
 
+  // const title = title
   await createShortURL({
     shortId: shortid,
     redirectURL: originalURL,
+    title: resolvedTitle,
     createdBy: userId,
     expiresAt,
   });
 
-  logger.info({ shortId: shortid, userId, expiresAt }, "Short URL created");
+  logger.info({ shortId: shortid, title: resolvedTitle, userId, expiresAt }, "Short URL created");
   return shortid;
 };
 
