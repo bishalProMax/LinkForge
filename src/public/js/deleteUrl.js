@@ -1,4 +1,5 @@
 import { openModal, closeModal } from "./modal.js";
+import { showToast } from "./toast.js";
 
 const deleteModal = document.getElementById("deleteModal");
 const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
@@ -22,6 +23,7 @@ function escapeHtml(str) {
 document.querySelectorAll(".delete-btn").forEach((button) => {
   button.addEventListener("click", () => {
     selectedShortId = button.dataset.shortid;
+    const isLinked = button.dataset.linked === "true";
 
     const originalUrl = button.dataset.url;
     const displayUrl = originalUrl.length > 70 ? `${originalUrl.slice(0, 70)}…` : originalUrl;
@@ -32,7 +34,9 @@ document.querySelectorAll(".delete-btn").forEach((button) => {
     }
 
     if (deleteMessage) {
-      deleteMessage.innerHTML = `Are you sure you want to delete "<strong>${safeUrl}</strong>"? This action cannot be undone and all analytics associated with this link will be permanently deleted.`;
+      deleteMessage.innerHTML = isLinked
+        ? `Are you sure you want to delete "<strong>${safeUrl}</strong>"? This may also delete the connected QR code, since they're linked. This action cannot be undone.`
+        : `Are you sure you want to delete "<strong>${safeUrl}</strong>"? This action cannot be undone and all analytics associated with this link will be permanently deleted.`;
     }
 
     openModal(deleteModal);
@@ -68,7 +72,7 @@ confirmDeleteBtn?.addEventListener("click", async () => {
 
     window.location.reload();
   } catch (error) {
-    alert(error instanceof Error ? error.message : "Unable to delete the link.");
+    showToast(error instanceof Error ? error.message : "Unable to delete the link.");
 
     confirmDeleteBtn.disabled = false;
     confirmDeleteBtn.textContent = "Delete";

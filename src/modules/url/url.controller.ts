@@ -1,7 +1,8 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
-import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL } from "./url.service.js";
 import type { Request, Response } from "express";
+import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
+import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL, findURLDocByShortId, resolveFocusPage } from "./url.service.js";
+import { createLinkedQR } from "../qr/qr.service.js";
 import type { DashboardQueryParams, DashboardURL } from "./url.types.js";
 
 // Generate short URL
@@ -11,6 +12,13 @@ const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) 
   try {
     const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id, customAlias: body.customAlias, expiration: body.expiration, customExpiry: body.customExpiry, title: body.title });
 
+    if (body.createQr) {
+      const url = await findURLDocByShortId(shortid);
+      if (url) {
+        await createLinkedQR({ urlId: url._id.toString(), userId: req.user!.id });
+      }
+    }
+    
     //PRG(POST -> REDIRECT -> GET): pattern to avoid form resubmission on page refresh
     return res.redirect(`/dashboard/?id=${shortid}`);
   } catch (error) {
@@ -48,24 +56,40 @@ const handleGetAnalytics = asyncHandler(async (req: Request, res: Response) => {
 
 //get all URLs created by a user
 const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
-  const page = Number(req.query.page) || 1;
+  const focusShortId = typeof req.query.focus === "string" ? req.query.focus : null;
+
+  let page = Number(req.query.page) || 1;
   const limit = 6;
 
-  const filters: DashboardQueryParams = {
-    search: typeof req.query.search === "string" ? req.query.search.trim() : undefined,
-    status: typeof req.query.status === "string" ? (req.query.status as any) : "all",
-    createdFrom: typeof req.query.createdFrom === "string" ? req.query.createdFrom : undefined,
-    createdTo: typeof req.query.createdTo === "string" ? req.query.createdTo : undefined,
-    expiry: typeof req.query.expiry === "string" ? (req.query.expiry as any) : "all",
-    sortBy: typeof req.query.sortBy === "string" ? (req.query.sortBy as any) : "newest",
-  };
+  const filters: DashboardQueryParams = focusShortId
+    ? { status: "all", expiry: "all", sortBy: "newest" }   // force defaults so the target is guaranteed present
+    : {
+        search: typeof req.query.search === "string" ? req.query.search.trim() : undefined,
+        status: typeof req.query.status === "string" ? (req.query.status as any) : "all",
+        createdFrom: typeof req.query.createdFrom === "string" ? req.query.createdFrom : undefined,
+        createdTo: typeof req.query.createdTo === "string" ? req.query.createdTo : undefined,
+        expiry: typeof req.query.expiry === "string" ? (req.query.expiry as any) : "all",
+        sortBy: typeof req.query.sortBy === "string" ? (req.query.sortBy as any) : "newest",
+      };
+
+  let focusNotice: string | null = null;
+
+  if (focusShortId) {
+    const resolvedPage = await resolveFocusPage(req.user!.id, focusShortId);
+
+    if (resolvedPage) {
+      page = resolvedPage;
+    } else {
+      focusNotice = "This link no longer exists.";
+    }
+  }
 
   const { data: allUrls, total: totalUrls } = await getUserURLs(req.user!.id, page, limit, filters);
 
   const totalPages = Math.ceil(totalUrls / limit);
   const startIndex = totalUrls === 0 ? 0 : (page - 1) * limit + 1;
   const endIndex = Math.min(page * limit, totalUrls);
-  const error = typeof req.query.error === "string" ? req.query.error : null;
+  const error = typeof req.query.error === "string" ? req.query.error : focusNotice;
   const shortId = typeof req.query.id === "string" ? req.query.id : null;
 
   const name = req.user!.name;
@@ -75,7 +99,7 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
     expiryDisplay: getExpiryDisplay(url.expiresAt),
   }));
 
-  return res.render("dashboard", { shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, name, role, filters });
+  return res.render("dashboard", {shortId, urls: formattedUrls, error, currentPage: page, totalPages, baseUrl: process.env.BASE_URL, startIndex, endIndex, totalUrls, name, role, filters, focusId: focusShortId && !focusNotice ? focusShortId : null });
 });
 
 // toggle disable a short URL
@@ -134,11 +158,29 @@ const handleDeleteURL = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+const handleCreateQRForURL = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const shortId = req.params.shortId as string;
+    const url = await findURLDocByShortId(shortId);
+
+    if (!url) {
+      return res.status(404).json({ success: false, message: "URL not found" });
+    }
+
+    const qrId = await createLinkedQR({ urlId: url._id.toString(), userId: req.user!.id });
+    return res.status(201).json({ success: true, qrId });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong.";
+    return res.status(400).json({ success: false, message });
+  }
+});
+
 export { 
   handleGenerateShortURL, 
   handleRedirectToURL, 
   handleGetAnalytics, 
   handleGetAllURL, 
   handleDeleteURL, 
-  handleToggleDisableURL 
+  handleToggleDisableURL,
+  handleCreateQRForURL
   };

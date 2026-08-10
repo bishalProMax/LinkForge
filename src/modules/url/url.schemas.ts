@@ -41,6 +41,14 @@ export const createUrlSchema = z
 
     customExpiry: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
 
+    createQr: z.preprocess(
+      (value) => value === "on" || value === "true" || value === true,
+      z
+      .boolean()
+      .optional()
+      .default(false)
+    ),
+
   })
   .superRefine((data, ctx) => {
     if (data.expiration === "custom") {

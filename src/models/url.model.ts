@@ -10,6 +10,9 @@ export interface IURL {
   expiresAt: Date | null;
   isDisabled: boolean;
   title: string; 
+  linkedQRId: mongoose.Types.ObjectId | null;
+  createdAt: Date;    
+  updatedAt: Date;
 }
 
 // -----------------------------URL DOCUMENT-----------------------------
@@ -27,29 +30,40 @@ const urlSchema = new mongoose.Schema<IURL, URLModel>(
       required: true,
       unique: true,
     },
+    
     redirectURL: {
       type: String,
       required: true,
       trim: true,
     },
+
     title: {
       type: String,
       required: true,
       trim: true,
       maxlength: 100,
     },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+
     expiresAt: {
       type: Date,
       default: null,
       index: true,
     },
+
     isDisabled: {
       type: Boolean,
       default: false,
+    },
+
+    linkedQRId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "QRCode",
+      default: null,
     },
   },
   {

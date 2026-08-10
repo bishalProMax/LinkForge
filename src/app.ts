@@ -12,6 +12,7 @@ import adminRoute from "./modules/admin/admin.route.js";
 import pageRouter from "./modules/page/page.route.js";
 import authRoute from "./modules/auth/auth.route.js";
 import userRoute from "./modules/user/user.route.js";
+import qrRoute from "./modules/qr/qr.route.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,7 +29,6 @@ app.use(helmet({
       scriptSrc: [
         "'self'",
         "https://challenges.cloudflare.com",
-        "https://cdn.jsdelivr.net",
         "https://cdnjs.cloudflare.com",
         "https://fonts.googleapis.com",
       ],
@@ -60,6 +60,7 @@ app.use(helmet({
 
       connectSrc: [
         "'self'",
+        "https://res.cloudinary.com",
       ],
     },
   },
@@ -84,6 +85,7 @@ app.use("/admin", adminRoute)
 app.use("/", pageRouter)
 app.use("/auth", authRoute)
 app.use("/user", userRoute)
+app.use("/qr", qrRoute);
 app.use(notFound)
 
 app.use(errorHandler)

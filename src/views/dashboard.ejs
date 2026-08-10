@@ -11,7 +11,6 @@
     href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap"
     rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <link rel="icon" type="image/png" href="/images/icon.png" />
   <link rel="stylesheet" href="/css/pages/dashboard.css" />
   <script type="module" src="/js/main.js"></script>
@@ -30,21 +29,35 @@
           </strong> — here's your link overview</small>
       </div>
 
-      <!-- logout -->
-      <form action="/auth/logout" method="POST">
-        <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
-      </form>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <a href="/qr" class="pagination-btn nav" style="text-decoration: none;">
+          <i class="ri-qr-code-line"></i> QR Codes
+        </a>
+
+        <!-- logout -->
+        <form action="/auth/logout" method="POST">
+          <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
+        </form>
     </header>
 
     <!-- Create URL -->
     <form class="url-form" action="/url/generate" method="POST">
       <label for="url">Destination URL</label>
       <input id="url" name="url" type="text" placeholder="example.com or https://example.com" required />
+
       <label for="customAlias">Custom Alias (Optional)</label>
-      <input id="customAlias" name="customAlias" type="text" minlength="3" maxlength="50" placeholder="e.g. portfolio" />
+      <input id="customAlias" name="customAlias" type="text" minlength="3" maxlength="50"
+        placeholder="e.g. portfolio" />
       <small> Leave blank to auto-generate. </small>
+
       <label for="title">Title (Optional)</label>
       <input id="title" type="text" name="title" maxlength="100" placeholder="e.g. Portfolio Site" />
+
+      <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="createQr" name="createQr" style="width: auto; height: auto;" />
+        <label for="createQr" style="margin-bottom: 0; font-size: 15px;">Also create a QR code for this link</label>
+      </div>
+
       <div class="form-group">
         <label for="expiration">Expiration</label>
 
@@ -112,7 +125,7 @@
                 <section class="table-section">
                   <% if(urls && urls.length>0){ %>
 
-                    <div class="table-wrapper">
+                    <div class="table-wrapper" data-focus-id="<%= focusId || '' %>">
                       <table>
                         <thead>
                           <tr>
@@ -129,14 +142,13 @@
 
                         <tbody>
                           <% urls.forEach((url)=> { %>
-
                             <tr>
                               <!-- Title -->
                               <td class="title-cell" title="<%= url.title %>">
                                 <%= url.title %>
                               </td>
-                              <!-- Short Link -->
 
+                              <!-- Short Link -->
                               <td class="short-link-cell">
                                 <a href="/url/<%= url.shortId %>" target="_blank" class="short-link">
                                   <%= `${baseUrl}/url/${url.shortId}` %>
@@ -144,7 +156,6 @@
                               </td>
 
                               <!-- Destination -->
-
                               <td class="destination-cell">
                                 <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"
                                   title="<%= url.redirectURL %>">
@@ -153,7 +164,6 @@
                               </td>
 
                               <!-- Status -->
-
                               <td>
                                 <span class="status-badge status-<%= url.status %>">
                                   <%= url.status.charAt(0).toUpperCase() + url.status.slice(1) %>
@@ -161,27 +171,29 @@
                               </td>
 
                               <!-- Clicks -->
-
                               <td class="click-count">
                                 <%= url.totalClicks || 0 %>
                               </td>
 
                               <!-- Created -->
-
-                              <td
-                                title="<%= url.createdAt.toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) %>">
-                                <%= url.createdAt.toLocaleDateString( "en-IN" , { day:"numeric", month:"numeric",
-                                  year:"numeric" } ) %>
+                              <td title="<%= url.createdAt.toLocaleString('en-IN', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true,
+                                }) %>">
+                                <%= url.createdAt.toLocaleDateString('en-IN', { day: 'numeric' , month: 'numeric' ,
+                                  year: 'numeric' , }) %>
                               </td>
 
                               <!-- Expires -->
-
                               <td title="<%= url.expiryDisplay.title %>">
                                 <%= url.expiryDisplay.text %>
                               </td>
 
                               <!-- Actions -->
-
                               <td>
                                 <div class="action-dropdown">
                                   <button class="action-btn" type="button">
@@ -199,37 +211,39 @@
                                       Copy Link
                                     </button>
 
-                                    <button class="qr-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>"
-                                      data-id="<%= url.shortId %>">
-                                      <i class="ri-qr-code-line"></i>
-                                      Show QR
-                                    </button>
+                                    <% if (url.linkedQRId) { %>
+                                      <button class="show-qr-tab-btn" data-qrid="<%= url.linkedQrSlug %>">
+                                        <i class="ri-qr-code-line"></i>
+                                        Show QR
+                                      </button>
+                                      <% } else { %>
+                                        <button class="create-qr-btn" data-shortid="<%= url.shortId %>">
+                                          <i class="ri-qr-code-line"></i>
+                                          Create QR
+                                        </button>
+                                        <% } %>
 
-                                    <hr />
+                                          <hr />
 
-                                    <button class="edit-btn" data-shortid="<%= url.shortId %>">
-                                      <i class="ri-edit-line"></i>
-                                      Edit
-                                    </button>
+                                          <button class="disable-btn" data-shortid="<%= url.shortId %>"
+                                            data-disabled="<%= url.isDisabled %>"
+                                            data-linked="<%= Boolean(url.linkedQRId) %>">
+                                            <i class="ri-forbid-line"></i>
+                                            <%= url.isDisabled ? "Enable" : "Disable" %>
+                                          </button>
 
-                                    <button class="disable-btn" data-shortid="<%= url.shortId %>"
-                                      data-disabled="<%= url.isDisabled %>">
-                                      <i class="ri-forbid-line"></i>
-                                      <%= url.isDisabled ? "Enable" : "Disable" %>
-                                    </button>
+                                          <hr />
 
-                                    <hr />
-
-                                    <button class="delete-btn danger" data-shortid="<%= url.shortId %>"
-                                      data-url="<%= url.redirectURL %>">
-                                      <i class="ri-delete-bin-line"></i>
-                                      Delete
-                                    </button>
+                                          <button class="delete-btn danger" data-shortid="<%= url.shortId %>"
+                                            data-url="<%= url.redirectURL %>"
+                                            data-linked="<%= Boolean(url.linkedQRId) %>">
+                                            <i class="ri-delete-bin-line"></i>
+                                            Delete
+                                          </button>
                                   </div>
                                 </div>
                               </td>
                             </tr>
-
                             <% }) %>
                         </tbody>
                       </table>
@@ -412,6 +426,18 @@
         <button id="cancelDeleteBtn" data-close-modal type="button">Cancel</button>
 
         <button id="confirmDeleteBtn" type="button" class="danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISABLE MODAL -->
+  <div id="disableModal" class="modal">
+    <div class="modal-content modal-content--delete">
+      <h3 id="disableTitle">Disable Link?</h3>
+      <p id="disableMessage"></p>
+      <div class="delete-actions">
+        <button id="cancelDisableBtn" data-close-modal type="button">Cancel</button>
+        <button id="confirmDisableBtn" type="button">Confirm</button>
       </div>
     </div>
   </div>

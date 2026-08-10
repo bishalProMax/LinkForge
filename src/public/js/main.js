@@ -1,6 +1,5 @@
 import "./auth.js";
 import "./clipboard.js";
-import "./qrcode.js";
 import "./modal.js";
 import "./otp.js";
 import "./actionMenu.js";
@@ -10,3 +9,7 @@ import "./disableUrl.js";
 import "./dashboard-filter.js"
 import "./adminReport.js"
 import "./profile.js"
+import "./createQr.js"
+import "./qrAction.js"
+import "./focusHighlight.js"
+import "./showQr.js"

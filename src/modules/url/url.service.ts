@@ -1,12 +1,14 @@
 import { nanoid } from "nanoid";
-import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus } from "./url.repository.js";
-import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
+import { toggleDisableQR as toggleQRDisabledByMongoId, deleteQRByLinkedUrl } from "../qr/qr.service.js";
+import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus, countURLsNewerThan } from "./url.repository.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
 import logger from "../../infrastructure/configs/logger.config.js";
+import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
 
 const RESERVED_ALIASES = ["generate","analytics"]
+const DASHBOARD_LIMIT = 6;
 
 // Generate a short URL with optional custom alias and expiration
 const generateShortURL = async ({ originalURL, userId, customAlias, expiration, customExpiry, title }: GenerateShortURLProps): Promise<string> => {
@@ -95,47 +97,63 @@ const getUserURLs = async (userId: string, page: number, limit: number, filters:
 // Delete a short URL and its associated visits
 const deleteURL = async (shortId: string, userId: string): Promise<boolean> => {
   const url = await findURLByShortId(shortId);
+  if (!url) return false;
+  if (url.createdBy.toString() !== userId) throw new Error("Unauthorized to delete this URL.");
 
-  if (!url) {
-    return false;
-  }
-
-  if (url.createdBy.toString() !== userId) {
-    throw new Error("Unauthorized to delete this URL.");
+  if (url.linkedQRId) {
+    await deleteQRByLinkedUrl(url.linkedQRId.toString(), userId);
   }
 
   const deletedURL = await deleteURLByShortId(shortId);
-
-  if (!deletedURL) {
-    return false;
-  }
+  if (!deletedURL) return false;
 
   await deleteVisitsByLinkId(deletedURL._id.toString());
-
-  logger.info({ shortId, userId }, "Short URL deleted");
+  logger.info({ shortId, userId, cascaded: Boolean(url.linkedQRId) }, "Short URL deleted");
   return true;
 };
 
 // toggle disable a short URL
 const toggleDisableURL = async (shortId: string, userId: string): Promise<boolean> => {
   const url = await findURLByShortId(shortId);
+  if (!url) return false;
+  if (url.createdBy.toString() !== userId) throw new Error("Unauthorized to modify this URL.");
+  if (url.expiresAt && url.expiresAt <= new Date()) throw new Error("Cannot change status of an expired link.");
 
-  if (!url) {
-    return false;
+  const next = !url.isDisabled;
+  await updateURLDisabledStatus(shortId, next);
+
+  if (url.linkedQRId) {
+    await toggleQRDisabledByMongoId(url.linkedQRId.toString(), userId, next);
   }
 
-  if (url.createdBy.toString() !== userId) {
-    throw new Error("Unauthorized to modify this URL.");
-  }
-
-  if (url.expiresAt && url.expiresAt <= new Date()) {
-    throw new Error("Cannot change status of an expired link.");
-  }
-
-  await updateURLDisabledStatus(shortId, !url.isDisabled);
-
-  logger.info({ shortId, userId, isDisabled: !url.isDisabled }, "Short URL disabled status toggled");
+  logger.info({ shortId, userId, isDisabled: next, cascaded: Boolean(url.linkedQRId) }, "Short URL disabled status toggled");
   return true;
 };
 
-export { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL };
+const findURLDocByShortId = (shortId: string) => {
+  return findURLByShortId(shortId);
+}
+
+// Resolves which page a specific link falls on under default (newest-first) sort.
+const resolveFocusPage = async (userId: string, shortId: string): Promise<number | null> => {
+  const target = await findURLByShortId(shortId);
+
+  if (!target || target.createdBy.toString() !== userId) {
+    return null;
+  }
+
+  const rank = await countURLsNewerThan(userId, target.createdAt);
+  return Math.floor(rank / DASHBOARD_LIMIT) + 1;
+};
+
+
+export { 
+  generateShortURL, 
+  redirectToOriginalURL, 
+  getURLAnalytics, 
+  getUserURLs, 
+  deleteURL, 
+  toggleDisableURL, 
+  findURLDocByShortId,
+  resolveFocusPage
+  };

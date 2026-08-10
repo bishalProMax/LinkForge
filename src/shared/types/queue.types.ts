@@ -63,3 +63,11 @@ export interface SendRoleInviteEmailJob {
   invitedByName: string;
   signupLink: string;
 };
+
+export interface QRGenerationJob {
+  qrId: string;
+}
+
+export interface QRAssetCleanupJob {
+  cloudinaryPublicId: string;
+}

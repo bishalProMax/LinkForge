@@ -5,6 +5,10 @@ import { Socket } from "net";
 import emailWorker from "./workers/email.worker.js";
 import cleanupWorker from "./workers/cleanup.worker.js";
 import securityEventWorker from "./workers/securityEvent.worker.js";
+import qrGenerationWorker from "./workers/qrGeneration.worker.js";
+import qrAssetCleanupWorker from "./workers/qrAssetCleanup.worker.js";
+import qrGenerationQueue from "./infrastructure/queues/qrGeneration.queue.js";
+import qrAssetCleanupQueue from "./infrastructure/queues/qrAssetCleanup.queue.js";
 import cleanupQueue from "./infrastructure/queues/cleanup.queue.js";
 import emailQueue from "./infrastructure/queues/email.queue.js";
 import securityEventQueue from "./infrastructure/queues/securityEvent.queue.js";
@@ -47,7 +51,7 @@ const gracefulShutdown = async (signal: string): Promise<void> => {
     process.exit(1);
   }, 10_000);
 
-   try {
+  try {
     if (server) {
       for (const socket of sockets) {
         socket.destroy();
@@ -60,10 +64,10 @@ const gracefulShutdown = async (signal: string): Promise<void> => {
       logger.info("HTTP server closed");
     }
 
-     await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close()]); 
+    await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close(), qrGenerationWorker.close(), qrAssetCleanupWorker.close()]);
     logger.info("BullMQ workers closed");
 
-    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close()]); 
+    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close(), qrGenerationQueue.close(), qrAssetCleanupQueue.close()]);
     logger.info("BullMQ queues closed");
 
     await redis.quit();

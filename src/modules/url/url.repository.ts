@@ -62,6 +62,7 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
     {
       $addFields: {
         totalClicks: { $size: "$visits" },
+        linkedQrSlug: { $arrayElemAt: ["$linkedQR.qrId", 0] },
         status: {
           $switch: {
             branches: [
@@ -79,7 +80,7 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
       },
     },
     ...(filters.status && filters.status !== "all" ? [{ $match: { status: filters.status } }] : []),
-    { $project: { visits: 0 } },
+    { $project: { visits: 0, linkedQR: 0 } },
     {
       $facet: {
         data: [{ $sort: getSortStage(filters.sortBy) }, { $skip: (page - 1) * limit }, { $limit: limit }],
@@ -101,4 +102,26 @@ const updateURLDisabledStatus = (shortId: string, isDisabled: boolean) => {
   return URL.findOneAndUpdate({ shortId }, { isDisabled }, { returnDocument: "after" });
 };
 
-export { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus };
+const findURLById = (id: string) => {
+  return URL.findById(id);
+};
+
+const createURL = (data: { shortId: string, redirectURL: string, title: string, createdBy: string, expiresAt?: Date | null, linkedQRId?: string }) => {
+  return URL.create(data);
+};
+
+const countURLsNewerThan = (userId: string, createdAt: Date) => {
+  return URL.countDocuments({ createdBy: userId, createdAt: { $gt: createdAt } });
+};
+
+export { 
+  checkShortIdExists, 
+  createShortURL, 
+  findURLByShortId, 
+  getURLsByUserId, 
+  deleteURLByShortId,
+  updateURLDisabledStatus, 
+  findURLById,
+  createURL,
+  countURLsNewerThan
+  };

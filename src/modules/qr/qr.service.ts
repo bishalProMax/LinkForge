@@ -1,0 +1,292 @@
+import { nanoid } from "nanoid";
+import QRCode from "../../models/qrCode.model.js";
+import { rasterizeSvgToPng } from "../../shared/services/qrRenderer.service.js";
+import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, deleteQRByQrId, getQRsByUserId, countQRsNewerThan } from "./qr.repository.js";
+import { deleteQRScansByQrId, createQRScan, countQRScans, getQRScans } from "./qrScan.repository.js";
+import { findURLByShortId, updateURLDisabledStatus, deleteURLByShortId, findURLById, createURL } from "../url/url.repository.js";
+import qrGenerationQueue from "../../infrastructure/queues/qrGeneration.queue.js";
+import qrAssetCleanupQueue from "../../infrastructure/queues/qrAssetCleanup.queue.js";
+import { getExpiryDate } from "../../shared/utils/expiryDate.js";
+import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
+import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
+import logger from "../../infrastructure/configs/logger.config.js";
+import type { CreateStandaloneQRProps, CreateLinkedQRProps, DashboardQRQueryParams, ResolvedQRTarget } from "./qr.types.js";
+
+
+const DEFAULT_DESIGN = { fgColor: "#000000", bgColor: "#ffffff", dotStyle: "square" as const, frameShape: "sharp" as const };
+const QR_DASHBOARD_LIMIT = 9;
+
+const generateUniqueQrId = async (): Promise<string> => {
+  let qrId: string;
+  let exists;
+
+  do {
+    qrId = nanoid(8);
+    exists = await checkQrIdExists(qrId);
+  } while (exists);
+
+  return qrId;
+};
+
+// Creates a standalone QR (not linked to any URL)
+const createStandaloneQR = async ({ destinationURL, userId, title, expiration, customExpiry, design }: CreateStandaloneQRProps): Promise<string> => {
+  const qrId = await generateUniqueQrId();
+  const expiresAt = getExpiryDate(expiration, customExpiry);
+  const resolvedTitle = normalizeTitle(title) ?? getDefaultTitle(destinationURL);
+
+  await createQRCode({
+    qrId,
+    createdBy: userId,
+    destinationURL,
+    title: resolvedTitle,
+    expiresAt,
+    design: { ...DEFAULT_DESIGN, ...design },
+    status: "PENDING",
+  });
+
+  await qrGenerationQueue.add("generate-qr", { qrId });
+
+  logger.info({ qrId, userId }, "Standalone QR created, generation enqueued");
+  return qrId;
+};
+
+// Creates a QR linked to an existing URL (from the dashboard's "Create QR" action)
+const createLinkedQR = async ({ urlId, userId, design }: CreateLinkedQRProps): Promise<string> => {
+  const url = await findURLById(urlId);
+
+  if (!url) {
+    throw new Error("Link not found.");
+  }
+
+  if (url.createdBy.toString() !== userId) {
+    throw new Error("Unauthorized to create a QR for this link.");
+  }
+
+  if (url.linkedQRId) {
+    throw new Error("This link already has a connected QR code.");
+  }
+
+  if (url.expiresAt && url.expiresAt <= new Date()) {
+    throw new Error("Cannot create a QR code for an expired link.");
+  }
+
+  const qrId = await generateUniqueQrId();
+
+  const qr = await createQRCode({
+    qrId,
+    createdBy: userId,
+    linkedUrlId: url._id.toString(),
+    design: { ...DEFAULT_DESIGN, ...design },
+    status: "PENDING",
+  });
+
+  await updateURLLinkedQR(url._id.toString(), qr._id.toString());
+  await qrGenerationQueue.add("generate-qr", { qrId });
+
+  logger.info({ qrId, urlId, userId }, "Linked QR created, generation enqueued");
+  return qrId;
+};
+
+// Links an existing standalone QR to a brand-new short URL ("Create Short Link" action)
+const linkExistingQRToNewUrl = async (qrId: string, userId: string): Promise<string> => {
+  const qr = await findQRById(qrId);
+
+  if (!qr) {
+    throw new Error("QR code not found.");
+  }
+
+  if (qr.createdBy.toString() !== userId) {
+    throw new Error("Unauthorized to modify this QR code.");
+  }
+
+  if (qr.linkedUrlId) {
+    throw new Error("This QR code is already linked to a short link.");
+  }
+
+  if (!qr.destinationURL) {
+    throw new Error("This QR code has no destination URL set.");
+  }
+
+  let shortId: string;
+  let exists;
+
+  do {
+    shortId = nanoid(7);
+    exists = await findURLByShortId(shortId);
+  } while (exists);
+
+const newUrl = await createURL({
+  shortId,
+  redirectURL: qr.destinationURL,
+  title: qr.title ?? getDefaultTitle(qr.destinationURL),
+  createdBy: userId,
+  expiresAt: qr.expiresAt,
+  linkedQRId: qr._id.toString(),
+});
+
+  await linkQRToUrl(qrId, newUrl._id.toString());
+
+  logger.info({ qrId, shortId, userId }, "Standalone QR linked to new short URL");
+  return shortId;
+};
+
+const getUserQRs = async (userId: string, page: number, limit: number, filters: DashboardQRQueryParams = {}): Promise<{ data: any[]; total: number }> => {
+  const result = await getQRsByUserId(userId, page, limit, filters);
+  const data = result[0]?.data ?? [];
+  const total = result[0]?.totalCount[0]?.total ?? 0;
+  return { data, total };
+};
+
+// Disable — cascades to the linked URL if linked
+const toggleDisableQR = async (qrId: string, userId: string, forcedState?: boolean): Promise<boolean> => {
+  const qr = await findQRById(qrId);
+  if (!qr) return false;
+  if (qr.createdBy.toString() !== userId) throw new Error("Unauthorized to modify this QR code.");
+
+  const nextDisabled = forcedState !== undefined ? forcedState : !qr.isDisabled;
+
+  if (qr.linkedUrlId && forcedState === undefined) {
+    const linkedUrl = await findURLById(qr.linkedUrlId.toString());
+    if (linkedUrl) await updateURLDisabledStatus(linkedUrl.shortId, nextDisabled);
+  }
+
+  await updateQRDisabledStatus(qrId, nextDisabled);
+  logger.info({ qrId, userId, isDisabled: nextDisabled }, "QR disabled status toggled");
+  return true;
+};
+
+const toggleQRDisabledByMongoId = async (qrMongoId: string, userId: string, nextDisabled: boolean): Promise<void> => {
+  const qr = await QRCode.findById(qrMongoId);
+  if (!qr || qr.createdBy.toString() !== userId) return;
+  await updateQRDisabledStatus(qr.qrId, nextDisabled);
+};
+
+// Called via linkedQRId (Mongo _id), from url.service's deleteURL cascade
+const deleteQRByLinkedUrl = async (qrMongoId: string, userId: string): Promise<void> => {
+  const qr = await QRCode.findById(qrMongoId);
+  if (!qr || qr.createdBy.toString() !== userId) return;
+
+  await deleteQRByQrId(qr.qrId);
+  await deleteQRScansByQrId(qr._id.toString());
+
+  if (qr.cloudinaryPublicId) {
+    await qrAssetCleanupQueue.add("cleanup-qr-asset", { cloudinaryPublicId: qr.cloudinaryPublicId });
+  }
+};
+
+// Delete — cascades to the linked URL if linked (hard delete for now; soft-delete wiring is a follow-up commit)
+const deleteQR = async (qrId: string, userId: string): Promise<boolean> => {
+  const qr = await findQRById(qrId);
+
+  if (!qr) return false;
+  if (qr.createdBy.toString() !== userId) {
+    throw new Error("Unauthorized to delete this QR code.");
+  }
+
+  if (qr.linkedUrlId) {
+  const linkedUrl = await findURLById(qr.linkedUrlId.toString());
+  if (linkedUrl) {
+    await deleteURLByShortId(linkedUrl.shortId);
+  }
+  }
+
+  const deleted = await deleteQRByQrId(qrId);
+  if (!deleted) return false;
+
+  await deleteQRScansByQrId(qr._id.toString());
+
+  if (deleted.cloudinaryPublicId) {
+    await qrAssetCleanupQueue.add("cleanup-qr-asset", { cloudinaryPublicId: deleted.cloudinaryPublicId });
+  }
+
+  logger.info({ qrId, userId, cascaded: Boolean(qr.linkedUrlId) }, "QR deleted");
+  return true;
+};
+
+const resolveQRRedirectTarget = async (qrId: string): Promise<ResolvedQRTarget | null> => {
+  const qr = await findQRById(qrId);
+
+  if (!qr) return null;
+
+  if (qr.linkedUrlId) {
+    const linkedUrl = await findURLById(qr.linkedUrlId.toString());
+    if (!linkedUrl) return null;
+
+    return {
+      qrMongoId: qr._id.toString(),
+      destination: linkedUrl.redirectURL,
+      expiresAt: linkedUrl.expiresAt,
+      isDisabled: linkedUrl.isDisabled,
+    };
+  }
+
+  return {
+    qrMongoId: qr._id.toString(),
+    destination: qr.destinationURL ?? "",
+    expiresAt: qr.expiresAt,
+    isDisabled: qr.isDisabled,
+  };
+};
+
+// Records a scan, only ever called after the redirect target is confirmed valid
+const recordQRScan = async (qrMongoId: string): Promise<void> => {
+  await createQRScan(qrMongoId);
+};
+
+const getQRStatus = async (qrId: string) => {
+  return findQRById(qrId);
+};
+
+const getQRAnalytics = async (qrId: string): Promise<{ totalScans: number; analytics: any[] } | null> => {
+  const qr = await findQRById(qrId);
+  if (!qr) return null;
+
+  const totalScans = await countQRScans(qr._id.toString());
+  const analytics = await getQRScans(qr._id.toString());
+
+  return { totalScans, analytics };
+};
+
+const resolveQRFocusPage = async (userId: string, qrId: string): Promise<number | null> => {
+  const target = await findQRById(qrId);
+
+  if (!target || target.createdBy.toString() !== userId) {
+    return null;
+  }
+
+  const rank = await countQRsNewerThan(userId, target.createdAt);
+  return Math.floor(rank / QR_DASHBOARD_LIMIT) + 1;
+};
+
+const getQRDownloadAsset = async (qrId: string, userId: string, format: "svg" | "pdf"): Promise<{ buffer: Buffer; contentType: string; extension: string } | null> => {
+  const qr = await findQRById(qrId);
+
+  if (!qr || qr.createdBy.toString() !== userId) return null;
+  if (!qr.svgSource) return null;
+
+  if (format === "svg") {
+    return { buffer: Buffer.from(qr.svgSource), contentType: "image/svg+xml", extension: "svg" };
+  }
+
+  const pngBuffer = await rasterizeSvgToPng(qr.svgSource);
+  const pdfBuffer = await buildPdfFromPng(pngBuffer);
+  return { buffer: pdfBuffer, contentType: "application/pdf", extension: "pdf" };
+};
+
+
+export { 
+  createStandaloneQR, 
+  createLinkedQR, 
+  linkExistingQRToNewUrl, 
+  getUserQRs, 
+  toggleDisableQR,
+  deleteQR, 
+  resolveQRRedirectTarget, 
+  recordQRScan, 
+  getQRStatus,
+  getQRAnalytics,
+  resolveQRFocusPage,
+  getQRDownloadAsset,
+  toggleQRDisabledByMongoId,
+  deleteQRByLinkedUrl
+  };
