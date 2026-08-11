@@ -18,7 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   setTimeout(() => {
     target.classList.add("focus-glow-fade");
-    setTimeout(() => target.classList.remove("focus-glow", "focus-glow-fade"), 1600);
+    setTimeout(() => {target.classList.remove("focus-glow", "focus-glow-fade");
+    target.blur(); 
+    },1600);
   }, 2500);
 
   const url = new URL(window.location.href);

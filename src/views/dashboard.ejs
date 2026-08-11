@@ -142,7 +142,7 @@
 
                         <tbody>
                           <% urls.forEach((url)=> { %>
-                            <tr>
+                            <tr data-shortid="<%= url.shortId %>">
                               <!-- Title -->
                               <td class="title-cell" title="<%= url.title %>">
                                 <%= url.title %>

@@ -60,6 +60,14 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
       },
     },
     {
+    $lookup: {
+      from: "qrcodes",
+      localField: "linkedQRId",
+      foreignField: "_id",
+      as: "linkedQR",
+      },
+    },
+    {
       $addFields: {
         totalClicks: { $size: "$visits" },
         linkedQrSlug: { $arrayElemAt: ["$linkedQR.qrId", 0] },
