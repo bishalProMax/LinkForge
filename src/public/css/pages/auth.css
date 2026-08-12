@@ -392,6 +392,48 @@ input:-webkit-autofill:active {
   text-align: right;
 }
 
+select {
+  width: 100%;
+  padding: 18px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: white;
+  font-size: 15px;
+  transition: 0.25s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+}
+
+select:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+select:focus {
+  outline: none;
+  border-color: rgba(91, 109, 255, 0.6);
+  box-shadow: 0 0 0 4px rgba(91, 109, 255, 0.12);
+}
+
+select option {
+  background: #0d1224;
+  color: white;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+button:disabled:hover {
+  transform: none;
+}
+
 /* =========================
    MOBILE RESPONSIVENESS
 ========================= */

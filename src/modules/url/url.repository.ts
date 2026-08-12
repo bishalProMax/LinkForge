@@ -122,6 +122,11 @@ const countURLsNewerThan = (userId: string, createdAt: Date) => {
   return URL.countDocuments({ createdBy: userId, createdAt: { $gt: createdAt } });
 };
 
+const updateURLBasicInfo = (id: string, data: { shortId?: string; redirectURL?: string; title?: string; expiresAt?: Date }) => { 
+  return URL.findByIdAndUpdate(id, data, { returnDocument: "after" }); }; 
+
+
+
 export { 
   checkShortIdExists, 
   createShortURL, 
@@ -131,5 +136,6 @@ export {
   updateURLDisabledStatus, 
   findURLById,
   createURL,
-  countURLsNewerThan
+  countURLsNewerThan,
+  updateURLBasicInfo
   };

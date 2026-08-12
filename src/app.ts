@@ -70,6 +70,7 @@ app.use(passport.initialize());
 
 // parsing
 app.use(express.urlencoded({extended: false}))
+app.use(express.json());
 // cookies
 app.use(cookieParser())
 // static files

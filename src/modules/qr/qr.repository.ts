@@ -58,8 +58,6 @@ const getQRsByUserId = (userId: string, page: number, limit: number, filters: Da
     matchStage.$or = [{ qrId: { $regex: filters.search, $options: "i" } }, { title: { $regex: filters.search, $options: "i" } }];
   }
 
-  // REMOVED expiry from here — moved below, after delegation resolves
-
   if (filters.linked === "linked") {
     matchStage.linkedUrlId = { $ne: null };
   } else if (filters.linked === "standalone") {
@@ -140,4 +138,30 @@ const countQRsNewerThan = (userId: string, createdAt: Date) => {
   return QRCode.countDocuments({ createdBy: new mongoose.Types.ObjectId(userId), createdAt: { $gt: createdAt } });
 };
 
-export { checkQrIdExists, createQRCode, findQRById, updateQRStatus, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, deleteQRByQrId, getQRsByUserId, countQRsNewerThan };
+const updateQRBasicInfo = (qrId: string, data: { title?: string; destinationURL?: string }) => {
+  return QRCode.findOneAndUpdate({ qrId }, data, { returnDocument: "after" });
+};
+
+const updateQRDesignFields = (qrId: string, design: Partial<import("../../models/qrCode.model.js").IQRDesign>) => {
+  const setFields: Record<string, unknown> = { status: "PENDING" };
+  for (const [key, value] of Object.entries(design)) {
+    if (value !== undefined) setFields[`design.${key}`] = value;
+  }
+  return QRCode.findOneAndUpdate({ qrId }, { $set: setFields }, { returnDocument: "after" });
+};
+
+
+export { 
+  checkQrIdExists, 
+  createQRCode, 
+  findQRById, 
+  updateQRStatus, 
+  linkQRToUrl, 
+  updateURLLinkedQR, 
+  updateQRDisabledStatus, 
+  deleteQRByQrId, 
+  getQRsByUserId, 
+  countQRsNewerThan,
+  updateQRBasicInfo,
+  updateQRDesignFields
+  };

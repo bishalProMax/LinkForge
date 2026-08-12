@@ -1,5 +1,6 @@
 import { openModal, closeModal } from "./modal.js";
 import { showToast } from "./toast.js";
+import { shareQRImage, shareLink } from "./share.js";
 // ---------------- DISABLE MODAL ----------------
 
 const disableModal = document.getElementById("qrDisableModal");
@@ -18,13 +19,11 @@ document.querySelectorAll(".qr-disable-btn").forEach((button) => {
 
     selectedDisableQrId = qrId;
 
-    // Enable action — no modal, direct call
     if (isCurrentlyDisabled) {
       toggleDisable(qrId);
       return;
     }
 
-    // Disable action — always confirms
     disableTitle.textContent = "Disable QR Code?";
 
     disableMessage.textContent = isLinked
@@ -170,7 +169,6 @@ document.querySelectorAll(".qr-download-option").forEach((option) => {
       return;
     }
 
-    // svg / pdf — backend-generated, requires auth, so fetch + blob download
     try {
       const response = await fetch(`/qr/${qrId}/download/${format}`);
       if (!response.ok) throw new Error("Download failed");
@@ -200,36 +198,11 @@ document.querySelectorAll(".qr-share-btn").forEach((button) => {
       return;
     }
 
-    try {
-      const response = await fetch(img.src);
-      const blob = await response.blob();
-      const file = new File([blob], "qr-code.png", { type: "image/png" });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-  await navigator.share({
-    files: [file],
-    title: "LinkForge QR Code",
-    text: `🔗 Scan the attached QR code to open the link.
-          Generated with LinkForge`,
-      });
-
-  return;
-}
-
-      if (navigator.share) {
-        await navigator.share({ title: "QR Code", url: img.src });
-        return;
-      }
-
-      await navigator.clipboard.writeText(img.src);
-      showToast("QR image link copied to clipboard.");
-    } catch (error) {
-      console.error("Share failed:", error);
-    }
+    await shareQRImage(img.src);
   });
 });
 
-// ---------------- LINK DETAILS (jump to dashboard) ----------------
+// ---------------- SHOW LINK  (jump to dashboard) ----------------
 
 document.querySelectorAll(".link-details-btn").forEach((button) => {
   button.addEventListener("click", () => {
@@ -239,31 +212,57 @@ document.querySelectorAll(".link-details-btn").forEach((button) => {
   });
 });
 
-// ---------------- CREATE SHORT LINK (standalone QR) ----------------
+// ---------------- CREATE SHORT LINK FOR STANDALONE QR ----------------
+const createShortLinkModal = document.getElementById("createShortLinkModal");
+
+if (createShortLinkModal) {
+  createShortLinkModal.addEventListener("click", (e) => {
+    const isCloseTrigger = e.target.closest("[data-close-modal]") || e.target === createShortLinkModal;
+    if (isCloseTrigger) {
+      window.location.reload();
+    }
+  });
+}
+
+const createdShortLinkUrl = document.getElementById("createdShortLinkUrl");
+const createdShortLinkDestination = document.getElementById("createdShortLinkDestination");
+const shareCreatedShortLinkBtn = document.getElementById("shareCreatedShortLink");
 
 document.querySelectorAll(".create-short-link-btn").forEach((button) => {
   button.addEventListener("click", async () => {
     const qrId = button.dataset.qrid;
+    const card = document.querySelector(`.qr-card[data-qrid="${qrId}"]`);
+    const destinationEl = card?.querySelector(".qr-destination a");
+    const destination = destinationEl ? destinationEl.href : "";
+
     button.disabled = true;
 
     try {
       const response = await fetch(`/qr/${qrId}/link`, { method: "POST" });
       const result = await response.json();
+      if (!response.ok) throw new Error(result.message);
 
-      if (!response.ok) {
-        throw new Error(result.message);
-      }
+      createdShortLinkUrl.textContent = result.redirectUrl;
+      createdShortLinkDestination.textContent = destination;
 
-      showToast(`Short link created: ${result.redirectUrl}`);
-      window.location.reload();
+      document.getElementById("copyCreatedShortLinkBtn").dataset.url = result.redirectUrl;
+      shareCreatedShortLinkBtn.dataset.url = result.redirectUrl;
+
+      openModal(createShortLinkModal);
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Unable to create short link.");
+    } finally {
       button.disabled = false;
     }
   });
 });
 
-// ---------------- ANALYTICS (placeholder until the page exists) ----------------
+shareCreatedShortLinkBtn?.addEventListener("click", () => {
+  const url = shareCreatedShortLinkBtn.dataset.url;
+  if (url) shareLink(url);
+});
+
+// ---------------- ANALYTICS  ----------------
 
 document.querySelectorAll(".qr-analytics-btn").forEach((button) => {
   button.addEventListener("click", async () => {
@@ -315,3 +314,139 @@ document.querySelectorAll(".qr-thumb-clickable img").forEach((img) => {
     openModal(document.getElementById("qrPreviewModal"));
   });
 });
+
+// ---------------- QR EDIT BUTTON ----------------
+document.querySelectorAll(".edit-qr-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    const qrId = button.dataset.qrid;   
+    if (!qrId) return;
+    window.location.href = `/qr/${qrId}/edit`;   
+  });
+});
+
+// ---------------- DESIGN FORM + LIVE PREVIEW ----------------
+const saveDesignBtn = document.getElementById("saveDesignBtn");
+
+if (saveDesignBtn) {
+  const redirectTarget = saveDesignBtn.dataset.redirect;
+  let previewTimer = null;
+
+  const getDesign = () => ({
+    fgColor: document.getElementById("fgColorHex").value,
+    bgColor: document.getElementById("bgColorHex").value,
+    dotStyle: document.getElementById("dotStyleGroup").querySelector(".selected")?.dataset.value || "square",
+    frameShape: document.getElementById("frameShapeGroup").querySelector(".selected")?.dataset.value || "sharp",
+  });
+
+  const updatePreview = () => {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(async () => {
+      try {
+        const res = await fetch("/qr/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ redirectTarget, design: getDesign() }),
+        });
+        document.getElementById("qrPreviewBox").innerHTML = await res.text();
+      } catch {
+        // silent — preview is best-effort, not critical
+      }
+    }, 200);
+  };
+
+  function setupColorField(pickerId, hexId) {
+    const picker = document.getElementById(pickerId);
+    const hex = document.getElementById(hexId);
+    if (!picker || !hex) return;
+
+    picker.addEventListener("input", () => {
+      hex.value = picker.value;
+      updatePreview();
+    });
+
+    hex.addEventListener("input", () => {
+      let value = hex.value.trim();
+      if (!value.startsWith("#")) value = `#${value}`;
+      if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+        picker.value = value;
+        updatePreview();
+      }
+    });
+  }
+
+  setupColorField("fgColorPicker", "fgColorHex");
+  setupColorField("bgColorPicker", "bgColorHex");
+
+  function setupOptionGroup(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll(".option-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        group.querySelectorAll(".option-card").forEach((c) => c.classList.remove("selected"));
+        card.classList.add("selected");
+        updatePreview();
+      });
+    });
+  }
+
+  setupOptionGroup("dotStyleGroup");
+  setupOptionGroup("frameShapeGroup");
+
+  updatePreview();
+
+  saveDesignBtn.addEventListener("click", async () => {
+    const qrId = saveDesignBtn.dataset.qrid;
+    saveDesignBtn.disabled = true;
+    saveDesignBtn.textContent = "Saving...";
+
+    try {
+      const res = await fetch(`/qr/${qrId}/design`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({design: getDesign()}),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message);
+
+      window.location.href = `/qr?focus=${qrId}`;
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Unable to update design.", "error");
+      saveDesignBtn.disabled = false;
+      saveDesignBtn.textContent = "Apply Design Changes";
+    }
+  });
+}
+
+// ---------------- POLL FOR PENDING QR AFTER DESIGN SAVE / FOCUS REDIRECT ----------------
+(async function pollFocusedQRIfPending() {
+  const params = new URLSearchParams(window.location.search);
+  const focusId = params.get("focus");
+  if (!focusId) return;
+
+  const card = document.querySelector(`.qr-card[data-qrid="${focusId}"]`);
+  if (!card) return;
+
+  const pendingEl = card.querySelector(".qr-thumb .pending");
+  if (!pendingEl) return; 
+
+  const poll = async (attempt = 0) => {
+    const res = await fetch(`/qr/${focusId}/status`);
+    const data = await res.json();
+
+    if (data.status === "READY") {
+      window.location.reload();
+      return;
+    }
+
+    if (data.status === "FAILED") {
+      pendingEl.innerHTML = `<i class="ri-error-warning-line"></i><br />Failed`;
+      return;
+    }
+
+    const delays = [500, 800, 1200, 1800, 2500];
+    setTimeout(() => poll(attempt + 1), delays[Math.min(attempt, delays.length - 1)]);
+  };
+
+  poll();
+})();

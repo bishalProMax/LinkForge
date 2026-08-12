@@ -1,14 +1,28 @@
 import { z } from "zod";
+import { isValidPublicDomain } from "../../shared/utils/urlValidation.js";
 
-const designSchema = z.object({
-  fgColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Invalid color value.").optional(),
-  bgColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Invalid color value.").optional(),
-  dotStyle: z.enum(["square", "rounded", "dots"]).optional(),
-  frameShape: z.enum(["sharp", "round"]).optional(),
+export const designSchema = z.object({
+  fgColor: z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, "Invalid color value.")
+  .optional(),
+
+  bgColor: z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, "Invalid color value.")
+  .optional(),
+
+  dotStyle: z
+  .enum(["square", "rounded", "dots"])
+  .optional(),
+
+  frameShape: z
+  .enum(["sharp", "round"])
+  .optional(),
 });
 
 // For standalone QR creation
-const createStandaloneQRSchema = z
+export const createStandaloneQRSchema = z
   .object({
     destinationURL: z.preprocess(
       (value) => {
@@ -25,6 +39,9 @@ const createStandaloneQRSchema = z
         }
       },
       z.url({ message: "Please enter a valid URL." })
+      .refine(isValidPublicDomain, {
+      message: "Please enter a valid public domain (e.g. example.com).",
+    })
     ),
 
     title: z.preprocess(
@@ -52,7 +69,7 @@ const createStandaloneQRSchema = z
   });
 
 // For editing an existing QR's own destination/title (standalone case) or design
-const editQRSchema = z.object({
+export const editQRSchema = z.object({
   title: z.preprocess(
     (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
     z.string().trim().max(100).optional()
@@ -68,12 +85,39 @@ const editQRSchema = z.object({
         return `https://${trimmed}`;
       }
     },
-    z.url({ message: "Please enter a valid URL." }).optional()
+    z.url({ message: "Please enter a valid URL." })
+    .refine(isValidPublicDomain, {
+      message: "Please enter a valid public domain (e.g. example.com).",
+    })
+    .optional()
   ),
-});
+  expiration: z.enum(["never", "1d", "7d", "30d", "90d", "custom"]),
 
-const updateDesignSchema = z.object({
+  customExpiry: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
+
+}).superRefine((data, ctx) => {
+    if (data.expiration === "custom") {
+      if (!data.customExpiry) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["customExpiry"],
+          message: "Please select an expiry date.",
+        });
+
+        return;
+      }
+
+      if (data.customExpiry <= new Date()) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["customExpiry"],
+          message: "Expiry date must be in the future.",
+        });
+      }
+    }
+  });;
+
+export const updateDesignSchema = z.object({
   design: designSchema,
 });
 
-export { createStandaloneQRSchema, editQRSchema, updateDesignSchema, designSchema };

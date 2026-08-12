@@ -1,7 +1,7 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
-import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL, findURLDocByShortId, resolveFocusPage } from "./url.service.js";
+import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL, findURLDocByShortId, resolveFocusPage, editLink } from "./url.service.js";
 import { createLinkedQR } from "../qr/qr.service.js";
 import type { DashboardQueryParams, DashboardURL } from "./url.types.js";
 
@@ -158,6 +158,7 @@ const handleDeleteURL = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+// create QR code for a short URL
 const handleCreateQRForURL = asyncHandler(async (req: Request, res: Response) => {
   try {
     const shortId = req.params.shortId as string;
@@ -175,6 +176,32 @@ const handleCreateQRForURL = asyncHandler(async (req: Request, res: Response) =>
   }
 });
 
+// show edit link page
+const handleShowEditLinkPage = asyncHandler(async (req: Request, res: Response) => {
+  const shortId = req.params.shortId as string;
+  const url = await findURLDocByShortId(shortId);
+
+  if (!url || url.createdBy.toString() !== req.user!.id) {
+    return res.redirect(`/dashboard?error=${encodeURIComponent("Link not found")}`);
+  }
+
+  const error = typeof req.query.error === "string" ? req.query.error : null;
+  return res.render("editLink", { url, error });
+});
+
+//editing page for Short URL
+const handleEditURL = asyncHandler(async (req: Request, res: Response) => {
+  const shortId = req.params.shortId as string;
+
+  try {
+    const newShortId = await editLink(shortId, req.user!.id, req.body);
+    return res.redirect(`/dashboard?id=${newShortId}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong.";
+    return res.redirect(`/url/${shortId}/edit?error=${encodeURIComponent(message)}`);
+  }
+});
+
 export { 
   handleGenerateShortURL, 
   handleRedirectToURL, 
@@ -182,5 +209,7 @@ export {
   handleGetAllURL, 
   handleDeleteURL, 
   handleToggleDisableURL,
-  handleCreateQRForURL
+  handleCreateQRForURL,
+  handleShowEditLinkPage,
+  handleEditURL
   };

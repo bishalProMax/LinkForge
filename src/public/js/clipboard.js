@@ -1,4 +1,5 @@
 // ---------------- COPY TO CLIPBOARD ----------------
+import { showToast } from "./toast.js";
 
 async function copyToClipboard(button) {
   if (!button) {
@@ -40,7 +41,7 @@ async function copyToClipboard(button) {
 
     console.error("Failed to copy:", error);
 
-    alert("Failed to copy the link.");
+    showToast("Failed to copy the link.","error");
   }
 }
 

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="/images/icon.png" />
+  <link rel="stylesheet" href="/css/pages/editLink.css" />
+  <script type="module" src="/js/main.js" defer></script>
+  <title>Edit Link</title>
+</head>
+
+<body>
+  <div class="edit-link-page">
+    <div class="edit-link-topbar">
+      <div>
+        <h1>Edit Link</h1>
+        <small>Update this short link's destination and settings</small>
+      </div>
+    </div>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <form action="/url/<%= url.shortId %>/edit" method="POST" id="editForm">
+      <div class="form-group">
+        <label>Destination URL</label>
+        <input type="text" name="url" value="<%= url.redirectURL %>" required />
+      </div>
+
+      <div class="form-group">
+        <label>Custom Alias</label>
+        <input type="text" name="alias" value="<%= url.shortId %>" minlength="3" maxlength="50" required />
+      </div>
+
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" name="title" value="<%= url.title %>" maxlength="100" />
+      </div>
+
+      <div class="form-group">
+        <label for="expiration">Expiration</label>
+        <select id="expiration" name="expiration">
+          <option value="never" selected>Never</option>
+          <option value="1d">1 Day</option>
+          <option value="7d">7 Days</option>
+          <option value="30d">30 Days</option>
+          <option value="90d">90 Days</option>
+          <option value="custom">Custom Date</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="customDateWrapper" style="display: none">
+        <label for="customExpiry">Expiry Date</label>
+        <input type="datetime-local" id="customExpiry" name="customExpiry"
+          min="<%= new Date().toISOString().slice(0,16) %>" />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" id="saveChangesBtn" disabled>Save Changes</button>
+        <a href="/dashboard" class="cancel-btn">Cancel</a>
+      </div>
+    </form>
+      
+  </div>
+</body>
+</html>

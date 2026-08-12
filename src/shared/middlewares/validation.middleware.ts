@@ -64,4 +64,40 @@ const validateRedirect = <T>(schema: ZodType<T>, options: redirectValidationOpti
   };
 };
 
-export { validateRender, validateRedirect };
+// when the redirect path is dynamic like shortid or qrid in params which depends on the request 
+const validateRedirectDynamic = <T>(schema: ZodType<T>, param: string, base: string) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.body);
+
+    if (!result.success) {
+      const error = result.error.issues[0]?.message ?? "Invalid input";
+      res.redirect(`${base}/${req.params[param]}/edit?error=${encodeURIComponent(error)}`);
+      return;
+    }
+
+    req.body = result.data as never;
+    next();
+  };
+};
+
+const validateJSON = <T>(schema: ZodType<T>) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.body);
+
+    if (!result.success) {
+      const message = result.error.issues[0]?.message ?? "Invalid input";
+      res.status(400).json({ success: false, message });
+      return;
+    }
+
+    req.body = result.data as never;
+    next();
+  };
+};
+
+export {
+  validateRender, 
+  validateRedirect, 
+  validateRedirectDynamic,
+  validateJSON 
+  };

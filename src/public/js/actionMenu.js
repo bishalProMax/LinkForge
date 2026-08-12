@@ -95,3 +95,10 @@ window.addEventListener(
   },
   true 
 );
+
+document.querySelectorAll(".edit-link-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    const shortId = button.dataset.shortid;
+    window.location.href = `/url/${shortId}/edit`;
+  });
+});

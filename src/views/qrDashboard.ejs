@@ -168,18 +168,23 @@
                       </button>
 
                       <div class="action-menu">
+
+                        <button class="qr-analytics-btn" data-qrid="<%= qr.qrId %>">
+                          <i class="ri-line-chart-line"></i>
+                          Analytics
+                        </button>
+
+                        <button class="edit-qr-btn" data-qrid="<%= qr.qrId %>">
+                          <i class="ri-edit-line"></i>
+                          Edit QR
+                        </button>
+
                         <% if (qr.linkedUrlId) { %>
                           <button class="link-details-btn" data-shortid="<%= qr.linkedShortId %>">
                             <i class="ri-external-link-line"></i>
-                            Link Details
+                            Show Link
                           </button>
-                          <hr />
                           <% } %>
-
-                            <button class="edit-qr-btn" data-qrid="<%= qr.qrId %>">
-                              <i class="ri-edit-line"></i>
-                              Edit QR
-                            </button>
 
                             <% if (!qr.linkedUrlId) { %>
                               <button class="create-short-link-btn" data-qrid="<%= qr.qrId %>">
@@ -190,15 +195,10 @@
 
                                 <hr />
 
-                                <button class="qr-disable-btn" data-qrid="<%= qr.qrId %>"
+                                <button class="qr-disable-btn disable-btn" data-qrid="<%= qr.qrId %>"
                                   data-disabled="<%= qr.isDisabled %>" data-linked="<%= Boolean(qr.linkedUrlId) %>">
                                   <i class="ri-forbid-line"></i>
                                   <%= qr.isDisabled ? "Enable" : "Disable" %>
-                                </button>
-
-                                <button class="qr-analytics-btn" data-qrid="<%= qr.qrId %>">
-                                  <i class="ri-line-chart-line"></i>
-                                  Analytics
                                 </button>
 
                                 <hr />
@@ -391,6 +391,33 @@
       <img id="qrPreviewImage" src="" style="max-width: 260px;" />
     </div>
   </div>
+
+  <!-- CREATE SHORT LINK MODAL -->
+<div id="createShortLinkModal" class="modal">
+  <div class="modal-content modal-content--qr">
+    <span class="close" data-close-modal>&times;</span>
+    <h3>Short Link Created</h3>
+
+    <div class="created-link-pill-row">
+      <span class="created-link-pill">
+        <i class="ri-link"></i>
+        <span id="createdShortLinkUrl"></span>
+      </span>
+      <button class="created-link-copy-btn copy-btn" id="copyCreatedShortLinkBtn" title="Copy">
+  <i class="ri-file-copy-line"></i>
+</button>
+    </div>
+
+    <div class="created-destination-row">
+      <i class="ri-arrow-right-up-line"></i>
+      <span id="createdShortLinkDestination"></span>
+    </div>
+
+    <button id="shareCreatedShortLink" class="share-full-btn">
+      <i class="ri-share-line"></i>
+    </button>
+  </div>
+</div>
 
 </body>
 

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="/images/icon.png" />
+  <!-- <link rel="stylesheet" href="/css/pages/dashboard.css" /> -->
+  <link rel="stylesheet" href="/css/pages/qrEditor.css" />
+  <script type="module" src="/js/main.js" defer></script>
+  <title>Edit QR Code</title>
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <div>
+        <h1>Edit QR Code</h1>
+        <small>Update destination details or customize the design</small>
+      </div>
+    </header>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <% if (qr.isLinked) { %>
+      <p class="auth-message">This QR is linked to a short link. Changes here update both.</p>
+    <% } %>
+
+    <div class="qr-editor-grid">
+
+      <div class="qr-editor-preview card">
+        <h2>Live Preview</h2>
+        <div class="qr-preview-box" id="qrPreviewBox"></div>
+        <p class="qr-preview-note">Updates instantly — click "Apply Design Changes" to save.</p>
+      </div>
+
+      <div class="qr-editor-forms">
+
+        <section class="card">
+          <h2>Details</h2>
+          <form action="/qr/<%= qr.qrId %>/edit" method="POST" id="editForm">
+            <div class="form-group">
+              <label>Destination URL</label>
+              <input type="text" name="destinationURL" value="<%= qr.destinationURL %>" />
+            </div>
+
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" name="title" value="<%= qr.title %>" maxlength="100" />
+            </div>
+
+            <div class="form-group">
+            <label for="expiration">Expiration</label>
+
+            <select id="expiration" name="expiration">
+              <option value="never" selected>Never</option>
+              <option value="1d">1 Day</option>
+              <option value="7d">7 Days</option>
+              <option value="30d">30 Days</option>
+              <option value="90d">90 Days</option>
+              <option value="custom">Custom Date</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="customDateWrapper" style="display: none">
+            <label for="customExpiry">Expiry Date</label>
+            <input type="datetime-local" id="customExpiry" name="customExpiry"
+              min="<%= new Date().toISOString().slice(0,16) %>" />
+          </div>
+
+            <div class="form-actions">
+              <button type="submit" id="saveChangesBtn" disabled>Save Changes</button>
+              <a href="/qr" class="cancel-btn">Cancel</a>
+            </div>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Customize Design</h2>
+
+          <div class="design-row">
+            <div class="color-field">
+              <label>Foreground</label>
+              <div class="color-input-row">
+                <input type="color" id="fgColorPicker" value="<%= qr.design.fgColor %>" class="color-swatch-input" />
+                <input type="text" id="fgColorHex" value="<%= qr.design.fgColor %>" class="color-hex-input" maxlength="7" />
+              </div>
+            </div>
+
+            <div class="color-field">
+              <label>Background</label>
+              <div class="color-input-row">
+                <input type="color" id="bgColorPicker" value="<%= qr.design.bgColor %>" class="color-swatch-input" />
+                <input type="text" id="bgColorHex" value="<%= qr.design.bgColor %>" class="color-hex-input" maxlength="7" />
+              </div>
+            </div>
+          </div>
+
+          <div class="design-field">
+            <label>Pattern</label>
+            <div class="option-card-grid" id="dotStyleGroup">
+              <button type="button" class="option-card <%= qr.design.dotStyle === 'square' ? 'selected' : '' %>" data-value="square">
+                <svg viewBox="0 0 40 40"><g fill="currentColor"><rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="26" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><rect x="26" y="14" width="8" height="8"/><rect x="2" y="26" width="8" height="8"/><rect x="14" y="26" width="8" height="8"/><rect x="26" y="26" width="8" height="8"/></g></svg>
+                <span>Square</span>
+              </button>
+              <button type="button" class="option-card <%= qr.design.dotStyle === 'rounded' ? 'selected' : '' %>" data-value="rounded">
+                <svg viewBox="0 0 40 40"><g fill="currentColor"><rect x="2" y="2" width="8" height="8" rx="2.5"/><rect x="14" y="2" width="8" height="8" rx="2.5"/><rect x="26" y="2" width="8" height="8" rx="2.5"/><rect x="2" y="14" width="8" height="8" rx="2.5"/><rect x="26" y="14" width="8" height="8" rx="2.5"/><rect x="2" y="26" width="8" height="8" rx="2.5"/><rect x="14" y="26" width="8" height="8" rx="2.5"/><rect x="26" y="26" width="8" height="8" rx="2.5"/></g></svg>
+                <span>Rounded</span>
+              </button>
+              <button type="button" class="option-card <%= qr.design.dotStyle === 'dots' ? 'selected' : '' %>" data-value="dots">
+                <svg viewBox="0 0 40 40"><g fill="currentColor"><circle cx="6" cy="6" r="4"/><circle cx="18" cy="6" r="4"/><circle cx="30" cy="6" r="4"/><circle cx="6" cy="18" r="4"/><circle cx="30" cy="18" r="4"/><circle cx="6" cy="30" r="4"/><circle cx="18" cy="30" r="4"/><circle cx="30" cy="30" r="4"/></g></svg>
+                <span>Dots</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="design-field">
+            <label>Frame Shape</label>
+            <div class="option-card-grid frame-shape-grid" id="frameShapeGroup">
+              <button type="button" class="option-card <%= qr.design.frameShape === 'sharp' ? 'selected' : '' %>" data-value="sharp">
+                <svg viewBox="0 0 40 40"><rect x="3" y="3" width="34" height="34" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+                <span>Sharp</span>
+              </button>
+              <button type="button" class="option-card <%= qr.design.frameShape === 'round' ? 'selected' : '' %>" data-value="round">
+                <svg viewBox="0 0 40 40"><rect x="3" y="3" width="34" height="34" rx="10" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+                <span>Round</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="saveDesignBtn" data-qrid="<%= qr.qrId %>" data-redirect="<%= baseUrl %>/qr/<%= qr.qrId %>">Apply Design Changes</button>
+            <a href="/qr" class="cancel-btn">Cancel</a>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

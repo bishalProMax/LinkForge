@@ -1,7 +1,7 @@
 import { Router } from "express";
-import {handleCreateStandaloneQR, handleCreateLinkedQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleGetQRAnalytics, handleDownloadQRAsset } from "./qr.controller.js";
-import { createStandaloneQRSchema } from "./qr.schemas.js";
-import { validateRedirect } from "../../shared/middlewares/validation.middleware.js";
+import {handleCreateStandaloneQR, handleCreateLinkedQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleGetQRAnalytics, handleDownloadQRAsset, handleShowEditQRPage, handleEditQR, handleUpdateQRDesign, handlePreviewQRDesign } from "./qr.controller.js";
+import { createStandaloneQRSchema, editQRSchema, updateDesignSchema } from "./qr.schemas.js";
+import { validateRedirect, validateRedirectDynamic, validateJSON } from "../../shared/middlewares/validation.middleware.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
 
 const router = Router();
@@ -18,15 +18,28 @@ router.route("/:qrId/link").post(authenticateUser, handleLinkQRToNewUrl);
 // Poll generation status
 router.route("/:qrId/status").get(authenticateUser, handleGetQRStatus);
 
-// Disable / delete
+// Analytics
+router.route("/:qrId/analytics").get(authenticateUser, handleGetQRAnalytics);
+
+// edit page
+router.route("/:qrId/edit").get(authenticateUser, handleShowEditQRPage).post(authenticateUser,validateRedirectDynamic(editQRSchema, "qrId", "/qr"), handleEditQR);
+
+//edit design
+router.route("/:qrId/design").patch(authenticateUser, validateJSON(updateDesignSchema), handleUpdateQRDesign);
+
+// Disable 
 router.route("/:qrId/disable").patch(authenticateUser, handleToggleDisableQR);
+
+//download asset
 router.route("/:qrId/download/:format").get(authenticateUser, handleDownloadQRAsset);
+
+// delete
 router.route("/:qrId").delete(authenticateUser, handleDeleteQR);
 
 // Public redirect — logs scans, never touches URL click counts
 router.route("/:qrId").get(handleRedirectQR);
 
-
-router.route("/:qrId/analytics").get(authenticateUser, handleGetQRAnalytics);
+// PREVIEW QR CHANGES
+router.route("/preview").post(authenticateUser, handlePreviewQRDesign);
 
 export default router;

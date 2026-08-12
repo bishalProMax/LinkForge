@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import { toggleDisableQR as toggleQRDisabledByMongoId, deleteQRByLinkedUrl } from "../qr/qr.service.js";
-import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus, countURLsNewerThan } from "./url.repository.js";
+import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus, countURLsNewerThan, updateURLBasicInfo } from "./url.repository.js";
 import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
@@ -146,6 +146,34 @@ const resolveFocusPage = async (userId: string, shortId: string): Promise<number
   return Math.floor(rank / DASHBOARD_LIMIT) + 1;
 };
 
+// Edit a short URL's basic information (URL, alias, title)
+const editLink = async (shortId: string, userId: string, data: { url: string; alias: string; title?: string; expiration: string; customExpiry?: Date }): Promise<string> => {
+  const existing = await findURLByShortId(shortId);
+  if (!existing) throw new Error("Link not found.");
+
+  if (existing.createdBy.toString() !== userId) throw new Error("Unauthorized to edit this link.");
+
+  if (data.alias !== existing.shortId) {
+    if (RESERVED_ALIASES.includes(data.alias)) throw new Error("This alias is reserved.");
+
+    const conflict = await checkShortIdExists(data.alias);
+    
+    if (conflict) throw new Error("Alias already exists.");
+  }
+
+  const resolvedTitle = normalizeTitle(data.title) ?? getDefaultTitle(data.url);
+  const expiresAt = getExpiryDate(data.expiration as any, data.customExpiry);
+
+  await updateURLBasicInfo(existing._id.toString(), {
+    shortId: data.alias,
+    redirectURL: data.url,
+    title: resolvedTitle,
+    expiresAt,
+  });
+
+  logger.info({ oldShortId: shortId, newShortId: data.alias, userId }, "Link edited");
+  return data.alias;
+};
 
 export { 
   generateShortURL, 
@@ -155,5 +183,6 @@ export {
   deleteURL, 
   toggleDisableURL, 
   findURLDocByShortId,
-  resolveFocusPage
+  resolveFocusPage,
+  editLink
   };

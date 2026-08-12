@@ -214,6 +214,88 @@ body.modal-open {
 }
 
 /* ==========================================================
+   Created-Link Row (QR / Short Link creation modals)
+========================================================== */
+.created-destination-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 16px;
+  color: #6b7280;
+  width: 100%;
+  margin-top: -45px;
+}
+
+.created-destination-row i {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.created-destination-row span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.created-link-pill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.created-link-pill {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #eef2ff;
+  border: 1px solid #c7cdfb;
+  color: #4f46e5;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.created-link-pill i {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.created-link-pill span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.created-link-copy-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid #c7cdfb;
+  color: #4f46e5;
+}
+.created-link-copy-btn:hover { background: #e0e7ff; }
+.created-link-copy-btn.copied { color: #16a34a; border-color: #86efac; }
+
+.share-full-btn {
+  width: 72px;
+  height: 48px;
+  border-radius: 14px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================
    Responsive
 ========================================================== */
 

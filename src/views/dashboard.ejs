@@ -18,7 +18,7 @@
   <title>Dashboard</title>
 </head>
 
-<body>
+<body data-base-url="<%= baseUrl %>">
   <div class="dashboard-container">
     <!-- Header -->
     <header class="dashboard-header">
@@ -204,6 +204,11 @@
                                     <button class="analytics-btn" data-shortid="<%= url.shortId %>">
                                       <i class="ri-line-chart-line"></i>
                                       Analytics
+                                    </button>
+
+                                    <button class="edit-link-btn" data-shortid="<%= url.shortId %>">
+                                      <i class="ri-edit-line"></i>
+                                      Edit Link
                                     </button>
 
                                     <button class="copy-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>">
@@ -442,33 +447,29 @@
     </div>
   </div>
 
-  <!-- QR MODAL -->
+<!-- CREATE QR MODAL -->
+<div id="createQrModal" class="modal">
+  <div class="modal-content modal-content--qr">
+    <span class="close" data-close-modal>&times;</span>
+    <h3>QR Code Created</h3>
 
-  <div id="qrModal" class="modal">
-    <div class="modal-content modal-content--qr">
-      <span class="close" data-close-modal> &times; </span>
-
-      <h3>Scan QR Code</h3>
-
-      <div id="qrLoader" class="dots-loader">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-
-      <canvas id="qrCanvas"></canvas>
-
-      <div class="qr-actions">
-        <button id="downloadQR">
-          <i class="ri-download-2-line"></i>
-        </button>
-
-        <button id="shareQR">
-          <i class="ri-share-line"></i>
-        </button>
-      </div>
+    <div id="createQrLoader" class="dots-loader">
+      <span></span><span></span><span></span>
     </div>
+
+    <img id="createQrImage" src="" style="max-width: 220px; display: none;" />
+
+    <div class="created-destination-row" id="createQrDestinationRow" style="display: none;">
+      <i class="ri-arrow-right-up-line"></i>
+      <span id="createQrDestination"></span>
+    </div>
+
+    <button id="shareCreatedQR" class="share-full-btn" style="display: none;">
+      <i class="ri-share-line"></i>
+    </button>
   </div>
+</div>
+
 </body>
 
 </html>

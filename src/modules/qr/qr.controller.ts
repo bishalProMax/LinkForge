@@ -1,6 +1,6 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { createStandaloneQR, createLinkedQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, getQRAnalytics, resolveQRFocusPage, getQRDownloadAsset } from "./qr.service.js";
+import { createStandaloneQR, createLinkedQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, getQRAnalytics, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg } from "./qr.service.js";
 import type { DashboardQRQueryParams } from "./qr.types.js";
 
 // Create a standalone QR code
@@ -122,6 +122,7 @@ const handleGetAllQRs = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// TOGGLE DISABLE QR
 const handleToggleDisableQR = asyncHandler(async (req: Request, res: Response) => {
   const qrId = req.params.qrId as string;
 
@@ -135,6 +136,7 @@ const handleToggleDisableQR = asyncHandler(async (req: Request, res: Response) =
   }
 });
 
+// DELETE QR
 const handleDeleteQR = asyncHandler(async (req: Request, res: Response) => {
   const qrId = req.params.qrId as string;
 
@@ -148,6 +150,7 @@ const handleDeleteQR = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+// ANALYTICS OF QR 
 const handleGetQRAnalytics = asyncHandler(async (req: Request, res: Response) => {
   const qrId = req.params.qrId as string;
   const result = await getQRAnalytics(qrId);
@@ -159,6 +162,7 @@ const handleGetQRAnalytics = asyncHandler(async (req: Request, res: Response) =>
   return res.status(200).json({ totalScans: result.totalScans, analytics: result.analytics });
 });
 
+//DOWNLOAD ASSET
 const handleDownloadQRAsset = asyncHandler(async (req: Request, res: Response) => {
   const qrId = req.params.qrId as string;
   const format = req.params.format as string;
@@ -178,6 +182,59 @@ const handleDownloadQRAsset = asyncHandler(async (req: Request, res: Response) =
   return res.status(200).send(asset.buffer);
 });
 
+// edit qr page render
+const handleShowEditQRPage = asyncHandler(async (req: Request, res: Response) => {
+  const qrId = req.params.qrId as string;
+  const data = await getQREditData(qrId, req.user!.id);
+
+  if (!data) {
+    return res.redirect(`/qr?error=${encodeURIComponent("QR code not found")}`);
+  }
+
+  const error = typeof req.query.error === "string" ? req.query.error : null;
+  
+  return res.render("editQR", { qr: data, error, baseUrl: process.env.BASE_URL  });
+});
+
+// edit qr form submission
+const handleEditQR = asyncHandler(async (req: Request, res: Response) => {
+  const qrId = req.params.qrId as string;
+
+  try {
+    await editQR({ qrId, userId: req.user!.id, ...req.body });
+    return res.redirect(`/qr?focus=${qrId}`);
+  } catch (error) {
+    const data = await getQREditData(qrId, req.user!.id);
+    const message = error instanceof Error ? error.message : "Something went wrong.";
+    return res.status(400).render("editQR", { qr: data, error: message });
+  }
+});
+
+// update qr design form submission
+const handleUpdateQRDesign = asyncHandler(async (req: Request, res: Response) => {
+  const qrId = req.params.qrId as string;
+
+  try {
+    await updateQRDesign(qrId, req.user!.id, req.body.design);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong.";
+    return res.status(400).json({ success: false, message });
+  }
+});
+
+const handlePreviewQRDesign = asyncHandler(async (req: Request, res: Response) => {
+  const { redirectTarget, design } = req.body;
+
+  if (typeof redirectTarget !== "string" || !redirectTarget) {
+    return res.status(400).json({ success: false, message: "Missing redirect target" });
+  }
+
+  const svg = previewQRSvg(redirectTarget, design ?? {});
+  res.setHeader("Content-Type", "image/svg+xml");
+  return res.status(200).send(svg);
+});
+
 export {
   handleCreateStandaloneQR,
   handleCreateLinkedQR,
@@ -188,5 +245,9 @@ export {
   handleToggleDisableQR,
   handleDeleteQR,
   handleGetQRAnalytics,
-  handleDownloadQRAsset
+  handleDownloadQRAsset,
+  handleShowEditQRPage, 
+  handleEditQR, 
+  handleUpdateQRDesign,
+  handlePreviewQRDesign
 };

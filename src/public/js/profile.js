@@ -1,19 +1,5 @@
 import { openModal } from "./modal.js";
-
-// ---------------- HELPERS ----------------
-
-function showToast(message, isSuccess) {
-  const toast = document.getElementById("profileToast");
-  if (!toast) return;
-
-  toast.textContent = message;
-  toast.className = `profile-toast ${isSuccess ? "success" : "error"}`;
-  toast.style.display = "block";
-
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 4000);
-}
+import { showToast } from "./toast.js";
 
 async function sendJSON(method, url, body) {
   const response = await fetch(url, {
@@ -64,7 +50,7 @@ saveUsernameBtn?.addEventListener("click", async () => {
     return;
   }
 
-  showToast("Username updated successfully.", true);
+  showToast("Username updated successfully.", "success");
 });
 
 // ---------------- PASSWORD ----------------
@@ -99,7 +85,7 @@ savePasswordBtn?.addEventListener("click", async () => {
   newPasswordInput.value = "";
   confirmNewPasswordInput.value = "";
 
-  showToast("Password updated. Other devices have been signed out.", true);
+  showToast("Password updated. Other devices have been signed out.", "success");
 });
 
 // ---------------- DETAILS ----------------
@@ -128,7 +114,7 @@ saveDetailsBtn?.addEventListener("click", async () => {
     return;
   }
 
-  showToast("Details updated successfully.", true);
+  showToast("Details updated successfully.", "success");
 });
 
 // ---------------- DELETE ACCOUNT ----------------
@@ -155,7 +141,7 @@ confirmDeleteAccountBtn?.addEventListener("click", async () => {
   confirmDeleteAccountBtn.textContent = "Delete Account";
 
   if (!ok) {
-    alert(data.message || "Account deletion is not available yet.");
+    showToast(data.message || "Account deletion is not available yet.", "error");
     confirmDeleteAccountBtn.disabled = deleteAccountConfirmInput.value !== "CONFIRM DELETE";
     return;
   }
