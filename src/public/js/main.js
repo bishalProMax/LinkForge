@@ -14,3 +14,5 @@ import "./qrAction.js";
 import "./focusHighlight.js";
 import "./showQr.js";
 import "./editForm.js";
+import "./standaloneQr.js";
+import "./createdLinkModal.js";

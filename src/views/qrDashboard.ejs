@@ -12,6 +12,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
   <link rel="icon" type="image/png" href="/images/icon.png" />
   <link rel="stylesheet" href="/css/pages/dashboard.css" />
+  <link rel="stylesheet" href="/css/pages/qrEditor.css" />
   <script type="module" src="/js/main.js"></script>
 
   <title>QR Codes — Dashboard</title>
@@ -39,6 +40,130 @@
         <%= error %>
       </p>
       <% } %>
+
+        <form class="url-form" id="standaloneQrForm">
+          <label for="qrDestinationUrl">Destination URL</label>
+          <input id="qrDestinationUrl" name="destinationURL" type="text"
+            placeholder="example.com or https://example.com" required />
+
+          <label for="qrTitle">Title (Optional)</label>
+          <input id="qrTitle" name="title" type="text" maxlength="100" placeholder="e.g. Portfolio Site" />
+
+          <div class="form-group">
+            <label for="expiration">Expiration</label>
+            <select id="expiration" name="expiration">
+              <option value="never" selected>Never</option>
+              <option value="1d">1 Day</option>
+              <option value="7d">7 Days</option>
+              <option value="30d">30 Days</option>
+              <option value="90d">90 Days</option>
+              <option value="custom">Custom Date</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="customDateWrapper" style="display: none">
+            <label for="customExpiry">Expiry Date</label>
+            <input type="datetime-local" id="customExpiry" name="customExpiry"
+              min="<%= new Date().toISOString().slice(0,16) %>" />
+          </div>
+
+          <button type="button" id="toggleDesignBtn" class="pagination-btn nav"
+            style="align-self: center; margin-top: 8px;">
+            <i class="ri-palette-line"></i> Customize Design (Optional)
+          </button>
+
+          <div id="standaloneDesignSection" style="display: none; margin-top: 16px;">
+            <div class="design-row">
+              <div class="color-field">
+                <label>Foreground</label>
+                <div class="color-input-row">
+                  <input type="color" id="sqFgColorPicker" value="#000000" class="color-swatch-input" />
+                  <input type="text" id="sqFgColorHex" value="#000000" class="color-hex-input" maxlength="7" />
+                </div>
+              </div>
+
+              <div class="color-field">
+                <label>Background</label>
+                <div class="color-input-row">
+                  <input type="color" id="sqBgColorPicker" value="#ffffff" class="color-swatch-input" />
+                  <input type="text" id="sqBgColorHex" value="#ffffff" class="color-hex-input" maxlength="7" />
+                </div>
+              </div>
+            </div>
+
+            <div class="design-field">
+              <label>Pattern</label>
+              <div class="option-card-grid" id="sqDotStyleGroup">
+                <button type="button" class="option-card selected" data-value="square">
+                  <svg viewBox="0 0 40 40">
+                    <g fill="currentColor">
+                      <rect x="2" y="2" width="8" height="8" />
+                      <rect x="14" y="2" width="8" height="8" />
+                      <rect x="26" y="2" width="8" height="8" />
+                      <rect x="2" y="14" width="8" height="8" />
+                      <rect x="26" y="14" width="8" height="8" />
+                      <rect x="2" y="26" width="8" height="8" />
+                      <rect x="14" y="26" width="8" height="8" />
+                      <rect x="26" y="26" width="8" height="8" />
+                    </g>
+                  </svg>
+                  <span>Square</span>
+                </button>
+                <button type="button" class="option-card" data-value="rounded">
+                  <svg viewBox="0 0 40 40">
+                    <g fill="currentColor">
+                      <rect x="2" y="2" width="8" height="8" rx="2.5" />
+                      <rect x="14" y="2" width="8" height="8" rx="2.5" />
+                      <rect x="26" y="2" width="8" height="8" rx="2.5" />
+                      <rect x="2" y="14" width="8" height="8" rx="2.5" />
+                      <rect x="26" y="14" width="8" height="8" rx="2.5" />
+                      <rect x="2" y="26" width="8" height="8" rx="2.5" />
+                      <rect x="14" y="26" width="8" height="8" rx="2.5" />
+                      <rect x="26" y="26" width="8" height="8" rx="2.5" />
+                    </g>
+                  </svg>
+                  <span>Rounded</span>
+                </button>
+                <button type="button" class="option-card" data-value="dots">
+                  <svg viewBox="0 0 40 40">
+                    <g fill="currentColor">
+                      <circle cx="6" cy="6" r="4" />
+                      <circle cx="18" cy="6" r="4" />
+                      <circle cx="30" cy="6" r="4" />
+                      <circle cx="6" cy="18" r="4" />
+                      <circle cx="30" cy="18" r="4" />
+                      <circle cx="6" cy="30" r="4" />
+                      <circle cx="18" cy="30" r="4" />
+                      <circle cx="30" cy="30" r="4" />
+                    </g>
+                  </svg>
+                  <span>Dots</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="design-field">
+              <label>Frame Shape</label>
+              <div class="option-card-grid frame-shape-grid" id="sqFrameShapeGroup">
+                <button type="button" class="option-card selected" data-value="sharp">
+                  <svg viewBox="0 0 40 40">
+                    <rect x="3" y="3" width="34" height="34" fill="none" stroke="currentColor" stroke-width="3" />
+                  </svg>
+                  <span>Sharp</span>
+                </button>
+                <button type="button" class="option-card" data-value="round">
+                  <svg viewBox="0 0 40 40">
+                    <rect x="3" y="3" width="34" height="34" rx="10" fill="none" stroke="currentColor"
+                      stroke-width="3" />
+                  </svg>
+                  <span>Round</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="generateQrBtn"><i class="ri-qr-code-line"></i> Generate QR Code</button>
+        </form>
 
         <h2>My QR Codes</h2>
 
@@ -374,7 +499,7 @@
   <!-- DISABLE MODAL -->
   <div id="qrDisableModal" class="modal">
     <div class="modal-content modal-content--delete">
-      <h3 id="qrDisableTitle">Disable QR Code?</h3>
+      <h3 "id="qrDisableTitle">Disable QR Code?</h3>
       <p id="qrDisableMessage"></p>
       <div class="delete-actions">
         <button id="qrCancelDisableBtn" data-close-modal type="button">Cancel</button>
@@ -387,37 +512,60 @@
   <div id="qrPreviewModal" class="modal">
     <div class="modal-content modal-content--qr">
       <span class="close" data-close-modal>&times;</span>
-      <h3>QR Code</h3>
+      <h3 style="color: black;">QR Code</h3>
       <img id="qrPreviewImage" src="" style="max-width: 260px;" />
     </div>
   </div>
 
-  <!-- CREATE SHORT LINK MODAL -->
-<div id="createShortLinkModal" class="modal">
-  <div class="modal-content modal-content--qr">
-    <span class="close" data-close-modal>&times;</span>
-    <h3>Short Link Created</h3>
+  <!-- SHORT LINK GENERATED MODAL -->
+  <div id="createShortLinkModal" class="modal">
+    <div class="modal-content modal-content--qr">
+      <span class="close" data-close-modal>&times;</span>
+      <h3>Short Link Created</h3>
 
-    <div class="created-link-pill-row">
-      <span class="created-link-pill">
-        <i class="ri-link"></i>
-        <span id="createdShortLinkUrl"></span>
-      </span>
-      <button class="created-link-copy-btn copy-btn" id="copyCreatedShortLinkBtn" title="Copy">
-  <i class="ri-file-copy-line"></i>
-</button>
+      <div class="created-link-pill-row">
+        <span class="created-link-pill">
+          <i class="ri-link"></i>
+          <span id="createdShortLinkUrl"></span>
+        </span>
+        <button class="created-link-copy-btn copy-btn" id="copyCreatedShortLinkBtn" title="Copy">
+          <i class="ri-file-copy-line"></i>
+        </button>
+      </div>
+
+      <div class="created-destination-row">
+        <i class="ri-arrow-right-up-line"></i>
+        <span id="createdShortLinkDestination"></span>
+      </div>
+
+      <button id="shareCreatedShortLink" class="share-full-btn">
+        <i class="ri-share-line"></i>
+      </button>
     </div>
-
-    <div class="created-destination-row">
-      <i class="ri-arrow-right-up-line"></i>
-      <span id="createdShortLinkDestination"></span>
-    </div>
-
-    <button id="shareCreatedShortLink" class="share-full-btn">
-      <i class="ri-share-line"></i>
-    </button>
   </div>
-</div>
+
+  <!-- RESULT MODAL -->
+  <div id="standaloneQrModal" class="modal">
+    <div class="modal-content modal-content--qr">
+      <span class="close" data-close-modal>&times;</span>
+      <h3>QR Code Created</h3>
+
+      <div id="standaloneQrLoader" class="dots-loader">
+        <span></span><span></span><span></span>
+      </div>
+
+      <img id="standaloneQrImage" src="" style="max-width: 220px; display: none;" />
+
+      <div class="created-destination-row" id="standaloneQrDestinationRow" style="display: none;">
+        <i class="ri-arrow-right-up-line"></i>
+        <span id="standaloneQrDestination"></span>
+      </div>
+
+      <button id="shareStandaloneQR" class="share-full-btn" style="display: none;">
+        <i class="ri-share-line"></i>
+      </button>
+    </div>
+  </div>
 
 </body>
 

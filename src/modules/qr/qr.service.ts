@@ -1,7 +1,19 @@
 import { nanoid } from "nanoid";
 import QRCode from "../../models/qrCode.model.js";
 import { buildQRSvg, rasterizeSvgToPng } from "../../shared/services/qrRenderer.service.js";
-import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, deleteQRByQrId, getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields } from "./qr.repository.js";
+import {
+  checkQrIdExists,
+  createQRCode,
+  findQRById,
+  linkQRToUrl,
+  updateURLLinkedQR,
+  updateQRDisabledStatus,
+  deleteQRByQrId,
+  getQRsByUserId,
+  countQRsNewerThan,
+  updateQRBasicInfo,
+  updateQRDesignFields,
+} from "./qr.repository.js";
 import { deleteQRScansByQrId, createQRScan, countQRScans, getQRScans } from "./qrScan.repository.js";
 import { findURLByShortId, updateURLDisabledStatus, deleteURLByShortId, findURLById, createURL, updateURLBasicInfo } from "../url/url.repository.js";
 import qrGenerationQueue from "../../infrastructure/queues/qrGeneration.queue.js";
@@ -11,7 +23,6 @@ import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
 import logger from "../../infrastructure/configs/logger.config.js";
 import type { CreateStandaloneQRProps, CreateLinkedQRProps, DashboardQRQueryParams, ResolvedQRTarget, EditQRProps, QRDesignInput } from "./qr.types.js";
-
 
 const DEFAULT_DESIGN = { fgColor: "#000000", bgColor: "#ffffff", dotStyle: "square" as const, frameShape: "sharp" as const };
 const QR_DASHBOARD_LIMIT = 9;
@@ -116,14 +127,14 @@ const linkExistingQRToNewUrl = async (qrId: string, userId: string): Promise<str
     exists = await findURLByShortId(shortId);
   } while (exists);
 
-const newUrl = await createURL({
-  shortId,
-  redirectURL: qr.destinationURL,
-  title: qr.title ?? getDefaultTitle(qr.destinationURL),
-  createdBy: userId,
-  expiresAt: qr.expiresAt,
-  linkedQRId: qr._id.toString(),
-});
+  const newUrl = await createURL({
+    shortId,
+    redirectURL: qr.destinationURL,
+    title: qr.title ?? getDefaultTitle(qr.destinationURL),
+    createdBy: userId,
+    expiresAt: qr.expiresAt,
+    linkedQRId: qr._id.toString(),
+  });
 
   await linkQRToUrl(qrId, newUrl._id.toString());
 
@@ -187,10 +198,10 @@ const deleteQR = async (qrId: string, userId: string): Promise<boolean> => {
   }
 
   if (qr.linkedUrlId) {
-  const linkedUrl = await findURLById(qr.linkedUrlId.toString());
-  if (linkedUrl) {
-    await deleteURLByShortId(linkedUrl.shortId);
-  }
+    const linkedUrl = await findURLById(qr.linkedUrlId.toString());
+    if (linkedUrl) {
+      await deleteURLByShortId(linkedUrl.shortId);
+    }
   }
 
   const deleted = await deleteQRByQrId(qrId);
@@ -237,7 +248,7 @@ const recordQRScan = async (qrMongoId: string): Promise<void> => {
   await createQRScan(qrMongoId);
 };
 
-//GET QR CREATION STATUS (PENDING, READY OR FAILED) 
+//GET QR CREATION STATUS (PENDING, READY OR FAILED)
 const getQRStatus = async (qrId: string) => {
   return findQRById(qrId);
 };
@@ -295,6 +306,7 @@ const getQREditData = async (qrId: string, userId: string) => {
       qrId: qr.qrId,
       title: linkedUrl?.title ?? "",
       destinationURL: linkedUrl?.redirectURL ?? "",
+      expiresAt: linkedUrl?.expiresAt ?? null, 
       design: qr.design,
       isLinked: true,
     };
@@ -304,32 +316,39 @@ const getQREditData = async (qrId: string, userId: string) => {
     qrId: qr.qrId,
     title: qr.title ?? "",
     destinationURL: qr.destinationURL ?? "",
+    expiresAt: qr.expiresAt ?? null,
     design: qr.design,
     isLinked: false,
   };
 };
 
 //EDITING QR
-const editQR = async ({ qrId, userId, title, destinationURL, expiration, customExpiry }: EditQRProps): Promise<void> => { 
-  const qr = await findQRById(qrId); 
+const editQR = async ({ qrId, userId, title, destinationURL, expiration, customExpiry }: EditQRProps): Promise<void> => {
+  const qr = await findQRById(qrId);
 
-  if (!qr) throw new Error("QR code not found."); 
+  if (!qr) throw new Error("QR code not found.");
 
-  if (qr.createdBy.toString() !== userId) throw new Error("Unauthorized to edit this QR code."); 
+  if (qr.createdBy.toString() !== userId) throw new Error("Unauthorized to edit this QR code.");
 
-  const resolvedTitle = title !== undefined ? (normalizeTitle(title) ?? getDefaultTitle(destinationURL ?? qr.destinationURL ?? "")) : undefined; 
+  const resolvedTitle = title !== undefined ? (normalizeTitle(title) ?? getDefaultTitle(destinationURL ?? qr.destinationURL ?? "")) : undefined;
 
-  const expiresAt = expiration !== undefined ? getExpiryDate(expiration as any, customExpiry) : undefined; 
+  const expiresAt = expiration !== undefined && expiration !== "keep" ? getExpiryDate(expiration as any, customExpiry) : undefined;
 
-  if (qr.linkedUrlId) { 
-    await updateURLBasicInfo(qr.linkedUrlId.toString(), 
-    { ...(resolvedTitle !== undefined ? { title: resolvedTitle } : {}), ...(destinationURL !== undefined ? { redirectURL: destinationURL } : {}), ...(expiresAt !== undefined ? { expiresAt } : {}), }); 
-  } 
-  else { 
-    await updateQRBasicInfo(qrId, 
-      { ...(resolvedTitle !== undefined ? { title: resolvedTitle } : {}), ...(destinationURL !== undefined ? { destinationURL } : {}), ...(expiresAt !== undefined ? { expiresAt } : {}), }); } 
-      
-  logger.info({ qrId, userId, linked: Boolean(qr.linkedUrlId) }, "QR details edited"); 
+  if (qr.linkedUrlId) {
+    await updateURLBasicInfo(qr.linkedUrlId.toString(), {
+      ...(resolvedTitle !== undefined ? { title: resolvedTitle } : {}),
+      ...(destinationURL !== undefined ? { redirectURL: destinationURL } : {}),
+      ...(expiresAt !== undefined ? { expiresAt } : {}),
+    });
+  } else {
+    await updateQRBasicInfo(qrId, {
+      ...(resolvedTitle !== undefined ? { title: resolvedTitle } : {}),
+      ...(destinationURL !== undefined ? { destinationURL } : {}),
+      ...(expiresAt !== undefined ? { expiresAt } : {}),
+    });
+  }
+
+  logger.info({ qrId, userId, linked: Boolean(qr.linkedUrlId) }, "QR details edited");
 };
 
 // Design changes always write to the QR's own doc and always trigger regeneration
@@ -349,23 +368,23 @@ const previewQRSvg = (redirectTarget: string, design: QRDesignInput): string => 
   return buildQRSvg(redirectTarget, { ...DEFAULT_DESIGN, ...design });
 };
 
-export { 
-  createStandaloneQR, 
-  createLinkedQR, 
-  linkExistingQRToNewUrl, 
-  getUserQRs, 
+export {
+  createStandaloneQR,
+  createLinkedQR,
+  linkExistingQRToNewUrl,
+  getUserQRs,
   toggleDisableQR,
-  deleteQR, 
-  resolveQRRedirectTarget, 
-  recordQRScan, 
+  deleteQR,
+  resolveQRRedirectTarget,
+  recordQRScan,
   getQRStatus,
   getQRAnalytics,
   resolveQRFocusPage,
   getQRDownloadAsset,
   toggleQRDisabledByMongoId,
   deleteQRByLinkedUrl,
-  getQREditData, 
-  editQR, 
+  getQREditData,
+  editQR,
   updateQRDesign,
-  previewQRSvg 
-  };
+  previewQRSvg,
+};

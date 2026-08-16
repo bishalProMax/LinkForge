@@ -109,7 +109,7 @@ export const createUrlSchema = z
     .optional()
   ),
 
-  expiration: z.enum(["never", "1d", "7d", "30d", "90d", "custom"]),
+  expiration: z.enum(["keep", "never", "1d", "7d", "30d", "90d", "custom"]),
 
   customExpiry: z.preprocess((value) => (value === "" ? undefined : value), 
   z.coerce

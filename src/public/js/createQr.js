@@ -1,6 +1,7 @@
 import { openModal } from "./modal.js";
 import { showToast } from "./toast.js";
 import { shareQRImage } from "./share.js";
+import { pollQRStatus } from "./qrPolling.js";
 
 const createQrModal = document.getElementById("createQrModal");
 const createQrImage = document.getElementById("createQrImage");
@@ -8,8 +9,6 @@ const createQrLoader = document.getElementById("createQrLoader");
 const createQrDestinationRow = document.getElementById("createQrDestinationRow");
 const createQrDestination = document.getElementById("createQrDestination");
 const shareCreatedQRBtn = document.getElementById("shareCreatedQR");
-
-const MIN_LOADER_MS = 500;
 
 function revealCreatedQR(imageUrl, destination) {
   createQrImage.onload = () => {
@@ -27,25 +26,6 @@ function revealCreatedQR(imageUrl, destination) {
   };
 
   createQrImage.src = imageUrl;
-}
-
-async function pollStatus(qrId, destination, attempt = 0, startedAt = Date.now()) {
-  const res = await fetch(`/qr/${qrId}/status`);
-  const data = await res.json();
-
-  if (data.status === "READY") {
-    const elapsed = Date.now() - startedAt;
-    setTimeout(() => revealCreatedQR(data.imageUrl, destination), Math.max(0, MIN_LOADER_MS - elapsed));
-    return;
-  }
-
-  if (data.status === "FAILED") {
-    createQrLoader.textContent = "QR generation failed. Please try again.";
-    return;
-  }
-
-  const delays = [300, 600, 1000, 1500];
-  setTimeout(() => pollStatus(qrId, destination, attempt + 1, startedAt), delays[Math.min(attempt, delays.length - 1)]);
 }
 
 document.querySelectorAll(".create-qr-btn").forEach((button) => {
@@ -69,7 +49,11 @@ document.querySelectorAll(".create-qr-btn").forEach((button) => {
       createQrLoader.style.display = "flex";
 
       openModal(createQrModal);
-      pollStatus(data.qrId, destination, 0);
+      pollQRStatus(
+        data.qrId,
+        (imageUrl) => revealCreatedQR(imageUrl, destination),
+        () => { createQrLoader.textContent = "QR generation failed. Please try again."; }
+      );
 
       button.textContent = "Show QR";
       button.classList.replace("create-qr-btn", "show-qr-tab-btn");

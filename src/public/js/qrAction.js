@@ -1,6 +1,7 @@
 import { openModal, closeModal } from "./modal.js";
 import { showToast } from "./toast.js";
 import { shareQRImage, shareLink } from "./share.js";
+import { pollQRStatus } from "./qrPolling.js";
 // ---------------- DISABLE MODAL ----------------
 
 const disableModal = document.getElementById("qrDisableModal");
@@ -338,6 +339,21 @@ if (saveDesignBtn) {
     frameShape: document.getElementById("frameShapeGroup").querySelector(".selected")?.dataset.value || "sharp",
   });
 
+  
+  const initialDesign = {
+    fgColor: document.getElementById("fgColorHex").value,
+    bgColor: document.getElementById("bgColorHex").value,
+    dotStyle: document.getElementById("dotStyleGroup").querySelector(".selected")?.dataset.value || "square",
+    frameShape: document.getElementById("frameShapeGroup").querySelector(".selected")?.dataset.value || "sharp",
+  };
+
+  // ADDED — compares current vs initial, toggles the button
+  function checkDesignDirty() {
+    const current = getDesign();
+    const isDirty = Object.keys(initialDesign).some((key) => current[key] !== initialDesign[key]);
+    saveDesignBtn.disabled = !isDirty;
+  }
+
   const updatePreview = () => {
     clearTimeout(previewTimer);
     previewTimer = setTimeout(async () => {
@@ -349,7 +365,7 @@ if (saveDesignBtn) {
         });
         document.getElementById("qrPreviewBox").innerHTML = await res.text();
       } catch {
-        // silent — preview is best-effort, not critical
+        //
       }
     }, 200);
   };
@@ -362,6 +378,7 @@ if (saveDesignBtn) {
     picker.addEventListener("input", () => {
       hex.value = picker.value;
       updatePreview();
+      checkDesignDirty();  
     });
 
     hex.addEventListener("input", () => {
@@ -370,6 +387,7 @@ if (saveDesignBtn) {
       if (/^#[0-9a-fA-F]{6}$/.test(value)) {
         picker.value = value;
         updatePreview();
+        checkDesignDirty();   
       }
     });
   }
@@ -385,6 +403,7 @@ if (saveDesignBtn) {
         group.querySelectorAll(".option-card").forEach((c) => c.classList.remove("selected"));
         card.classList.add("selected");
         updatePreview();
+        checkDesignDirty();  
       });
     });
   }
@@ -393,6 +412,7 @@ if (saveDesignBtn) {
   setupOptionGroup("frameShapeGroup");
 
   updatePreview();
+  saveDesignBtn.disabled = true;   
 
   saveDesignBtn.addEventListener("click", async () => {
     const qrId = saveDesignBtn.dataset.qrid;
@@ -419,7 +439,7 @@ if (saveDesignBtn) {
 }
 
 // ---------------- POLL FOR PENDING QR AFTER DESIGN SAVE / FOCUS REDIRECT ----------------
-(async function pollFocusedQRIfPending() {
+(function pollFocusedQRIfPending() {
   const params = new URLSearchParams(window.location.search);
   const focusId = params.get("focus");
   if (!focusId) return;
@@ -428,25 +448,11 @@ if (saveDesignBtn) {
   if (!card) return;
 
   const pendingEl = card.querySelector(".qr-thumb .pending");
-  if (!pendingEl) return; 
+  if (!pendingEl) return;
 
-  const poll = async (attempt = 0) => {
-    const res = await fetch(`/qr/${focusId}/status`);
-    const data = await res.json();
-
-    if (data.status === "READY") {
-      window.location.reload();
-      return;
-    }
-
-    if (data.status === "FAILED") {
-      pendingEl.innerHTML = `<i class="ri-error-warning-line"></i><br />Failed`;
-      return;
-    }
-
-    const delays = [500, 800, 1200, 1800, 2500];
-    setTimeout(() => poll(attempt + 1), delays[Math.min(attempt, delays.length - 1)]);
-  };
-
-  poll();
+  pollQRStatus(
+    focusId,
+    () => window.location.reload(),
+    () => { pendingEl.innerHTML = `<i class="ri-error-warning-line"></i><br />Failed`; }
+  );
 })();

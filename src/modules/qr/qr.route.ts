@@ -1,13 +1,13 @@
 import { Router } from "express";
 import {handleCreateStandaloneQR, handleCreateLinkedQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleGetQRAnalytics, handleDownloadQRAsset, handleShowEditQRPage, handleEditQR, handleUpdateQRDesign, handlePreviewQRDesign } from "./qr.controller.js";
 import { createStandaloneQRSchema, editQRSchema, updateDesignSchema } from "./qr.schemas.js";
-import { validateRedirect, validateRedirectDynamic, validateJSON } from "../../shared/middlewares/validation.middleware.js";
+import { validateRedirectDynamic, validateJSON } from "../../shared/middlewares/validation.middleware.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
 
 const router = Router();
 
 // Create standalone QR
-router.route("/generate").post(authenticateUser, validateRedirect(createStandaloneQRSchema, { redirectPath: "/qr" }), handleCreateStandaloneQR);
+router.route("/generate").post(authenticateUser, validateJSON(createStandaloneQRSchema), handleCreateStandaloneQR);
 
 // Create QR linked to an existing URL (dashboard action menu)
 router.route("/from-url/:urlId").post(authenticateUser, handleCreateLinkedQR);

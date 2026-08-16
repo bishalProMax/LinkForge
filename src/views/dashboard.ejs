@@ -18,7 +18,7 @@
   <title>Dashboard</title>
 </head>
 
-<body data-base-url="<%= baseUrl %>">
+<body data-base-url="<%= baseUrl %>" data-created-short-id="<%= shortId || '' %>">
   <div class="dashboard-container">
     <!-- Header -->
     <header class="dashboard-header">
@@ -447,24 +447,51 @@
     </div>
   </div>
 
-<!-- CREATE QR MODAL -->
-<div id="createQrModal" class="modal">
+  <!-- CREATE QR MODAL -->
+  <div id="createQrModal" class="modal">
+    <div class="modal-content modal-content--qr">
+      <span class="close" data-close-modal>&times;</span>
+      <h3>QR Code Created</h3>
+
+      <div id="createQrLoader" class="dots-loader">
+        <span></span><span></span><span></span>
+      </div>
+
+      <img id="createQrImage" src="" style="max-width: 220px; display: none;" />
+
+      <div class="created-destination-row" id="createQrDestinationRow" style="display: none;">
+        <i class="ri-arrow-right-up-line"></i>
+        <span id="createQrDestination"></span>
+      </div>
+
+      <button id="shareCreatedQR" class="share-full-btn" style="display: none;">
+        <i class="ri-share-line"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- SHORT LINK GENERATED MODAL (main dashboard) -->
+<div id="createdLinkModal" class="modal">
   <div class="modal-content modal-content--qr">
     <span class="close" data-close-modal>&times;</span>
-    <h3>QR Code Created</h3>
+    <h3>Short Link Created</h3>
 
-    <div id="createQrLoader" class="dots-loader">
-      <span></span><span></span><span></span>
+    <div class="created-link-pill-row">
+      <span class="created-link-pill">
+        <i class="ri-link"></i>
+        <span id="createdLinkUrl"></span>
+      </span>
+      <button class="created-link-copy-btn copy-btn" id="copyCreatedLinkBtn" title="Copy">
+        <i class="ri-file-copy-line"></i>
+      </button>
     </div>
 
-    <img id="createQrImage" src="" style="max-width: 220px; display: none;" />
-
-    <div class="created-destination-row" id="createQrDestinationRow" style="display: none;">
+    <div class="created-destination-row">
       <i class="ri-arrow-right-up-line"></i>
-      <span id="createQrDestination"></span>
+      <span id="createdLinkDestination"></span>
     </div>
 
-    <button id="shareCreatedQR" class="share-full-btn" style="display: none;">
+    <button id="shareCreatedLink" class="share-full-btn">
       <i class="ri-share-line"></i>
     </button>
   </div>

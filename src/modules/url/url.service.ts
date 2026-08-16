@@ -157,18 +157,17 @@ const editLink = async (shortId: string, userId: string, data: { url: string; al
     if (RESERVED_ALIASES.includes(data.alias)) throw new Error("This alias is reserved.");
 
     const conflict = await checkShortIdExists(data.alias);
-    
     if (conflict) throw new Error("Alias already exists.");
   }
 
   const resolvedTitle = normalizeTitle(data.title) ?? getDefaultTitle(data.url);
-  const expiresAt = getExpiryDate(data.expiration as any, data.customExpiry);
+  const expiresAt = data.expiration !== "keep" ? getExpiryDate(data.expiration as any, data.customExpiry) : undefined;
 
   await updateURLBasicInfo(existing._id.toString(), {
     shortId: data.alias,
     redirectURL: data.url,
     title: resolvedTitle,
-    expiresAt,
+    ...(data.expiration !== "keep" ? { expiresAt } : {}),  
   });
 
   logger.info({ oldShortId: shortId, newShortId: data.alias, userId }, "Link edited");

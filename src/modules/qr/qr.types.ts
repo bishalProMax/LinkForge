@@ -40,7 +40,7 @@ export interface EditQRProps {
   userId: string;
   title?: string;
   destinationURL?: string;
-  expiration?: "never" | "1d" | "7d" | "30d" | "90d" | "custom";
+  expiration?: "keep" | "never" | "1d" | "7d" | "30d" | "90d" | "custom";
   customExpiry?: Date;
 }
 
