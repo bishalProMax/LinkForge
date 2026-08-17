@@ -1,20 +1,9 @@
 import { nanoid } from "nanoid";
 import QRCode from "../../models/qrCode.model.js";
 import { buildQRSvg, rasterizeSvgToPng } from "../../shared/services/qrRenderer.service.js";
-import {
-  checkQrIdExists,
-  createQRCode,
-  findQRById,
-  linkQRToUrl,
-  updateURLLinkedQR,
-  updateQRDisabledStatus,
-  deleteQRByQrId,
-  getQRsByUserId,
-  countQRsNewerThan,
-  updateQRBasicInfo,
-  updateQRDesignFields,
-} from "./qr.repository.js";
+import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, deleteQRByQrId,getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields } from "./qr.repository.js";
 import { deleteQRScansByQrId, createQRScan, countQRScans, getQRScans } from "./qrScan.repository.js";
+import { deleteVisitsByLinkId } from "../url/visit.repository.js";
 import { findURLByShortId, updateURLDisabledStatus, deleteURLByShortId, findURLById, createURL, updateURLBasicInfo } from "../url/url.repository.js";
 import qrGenerationQueue from "../../infrastructure/queues/qrGeneration.queue.js";
 import qrAssetCleanupQueue from "../../infrastructure/queues/qrAssetCleanup.queue.js";
@@ -200,8 +189,11 @@ const deleteQR = async (qrId: string, userId: string): Promise<boolean> => {
   if (qr.linkedUrlId) {
     const linkedUrl = await findURLById(qr.linkedUrlId.toString());
     if (linkedUrl) {
-      await deleteURLByShortId(linkedUrl.shortId);
+      const deletedLinkedUrl = await deleteURLByShortId(linkedUrl.shortId);
+      if (deletedLinkedUrl) {
+        await deleteVisitsByLinkId(deletedLinkedUrl._id.toString());
     }
+  }
   }
 
   const deleted = await deleteQRByQrId(qrId);

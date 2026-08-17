@@ -3,11 +3,13 @@
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
   margin-top: 24px;
+  align-items: start;
 }
 
 .qr-card {
   position: relative;
   display: flex;
+  flex-direction: column;
   gap: 16px;
   padding: 18px;
   background: #fff;
@@ -50,6 +52,7 @@
 
 /* ── body ── */
 .qr-card-body {
+  display: flex;
   flex: 1;
   min-width: 0;
   display: flex;
@@ -59,8 +62,17 @@
 
 .qr-badges {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 2px;
+  margin-bottom: 8px;
+}
+
+.qr-badge.id {
+  background: #f3f4f6;
+  color: #6b7280;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-weight: 700;
+  font-size: 10.5px;
 }
 
 .qr-badge {
@@ -89,8 +101,18 @@
   text-overflow: ellipsis;
 }
 
+.qr-id-label {
+  font-size: 11px;
+  color: #374151;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .qr-destination {
   font-size: 12.5px;
+  padding: 5px;
   color: #6b7280;
   white-space: nowrap;
   overflow: hidden;
@@ -106,22 +128,17 @@
 }
 
 .qr-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
 }
 
 .qr-meta-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #f3f4f6;
-  color: #4b5563;
-  font-size: 11.5px;
-  font-weight: 500;
+  padding: 5px 10px;
+  font-size: 11px;
+  justify-content: flex-start;
+  color: #4b5563; 
 }
 
 .qr-meta-pill i {

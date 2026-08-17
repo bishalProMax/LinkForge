@@ -54,10 +54,6 @@ const getQRsByUserId = (userId: string, page: number, limit: number, filters: Da
     createdBy: new mongoose.Types.ObjectId(userId),
   };
 
-  if (filters.search) {
-    matchStage.$or = [{ qrId: { $regex: filters.search, $options: "i" } }, { title: { $regex: filters.search, $options: "i" } }];
-  }
-
   if (filters.linked === "linked") {
     matchStage.linkedUrlId = { $ne: null };
   } else if (filters.linked === "standalone") {
@@ -68,6 +64,15 @@ const getQRsByUserId = (userId: string, page: number, limit: number, filters: Da
 
   if (filters.status && filters.status !== "all") {
     postResolveMatch.status = filters.status;
+  }
+
+  if (filters.search) {
+  postResolveMatch.$or = [
+    { qrId: { $regex: filters.search, $options: "i" } },
+    { title: { $regex: filters.search, $options: "i" } },
+    { destinationURL: { $regex: filters.search, $options: "i" } },
+    { linkedShortId: { $regex: filters.search, $options: "i" } },
+  ];
   }
 
   if (filters.expiry === "set") {

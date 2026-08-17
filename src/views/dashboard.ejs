@@ -38,6 +38,7 @@
         <form action="/auth/logout" method="POST">
           <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
         </form>
+        </div>
     </header>
 
     <!-- Create URL -->
@@ -451,12 +452,14 @@
   <div id="createQrModal" class="modal">
     <div class="modal-content modal-content--qr">
       <span class="close" data-close-modal>&times;</span>
-      <h3>QR Code Created</h3>
 
+      <div class="qr-loading-state" id="createQrLoadingState">
       <div id="createQrLoader" class="dots-loader">
         <span></span><span></span><span></span>
       </div>
-
+      <p class="dots-loader-label" id="createQrLoaderLabel">Generating your QR code…</p>
+      </div>
+      
       <img id="createQrImage" src="" style="max-width: 220px; display: none;" />
 
       <div class="created-destination-row" id="createQrDestinationRow" style="display: none;">

@@ -12,7 +12,7 @@ const shareCreatedQRBtn = document.getElementById("shareCreatedQR");
 
 function revealCreatedQR(imageUrl, destination) {
   createQrImage.onload = () => {
-    createQrLoader.style.display = "none";
+    document.getElementById("createQrLoadingState").style.display = "none";
     createQrImage.style.display = "block";
 
     if (destination) {
@@ -45,14 +45,16 @@ document.querySelectorAll(".create-qr-btn").forEach((button) => {
       createQrImage.style.display = "none";
       createQrDestinationRow.style.display = "none";
       shareCreatedQRBtn.style.display = "none";
-      createQrLoader.textContent = "";
-      createQrLoader.style.display = "flex";
+      createQrLoader.innerHTML = "<span></span><span></span><span></span>";
+      document.getElementById("createQrLoadingState").style.display = "flex";
 
       openModal(createQrModal);
       pollQRStatus(
         data.qrId,
         (imageUrl) => revealCreatedQR(imageUrl, destination),
-        () => { createQrLoader.textContent = "QR generation failed. Please try again."; }
+        () => {
+          createQrLoader.textContent = "QR generation failed. Please try again.";
+        }
       );
 
       button.textContent = "Show QR";

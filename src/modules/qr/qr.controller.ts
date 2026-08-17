@@ -1,6 +1,6 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { createStandaloneQR, createLinkedQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, getQRAnalytics, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg } from "./qr.service.js";
+import { createStandaloneQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, getQRAnalytics, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg } from "./qr.service.js";
 import type { DashboardQRQueryParams } from "./qr.types.js";
 
 // Create a standalone QR code
@@ -13,21 +13,6 @@ const handleCreateStandaloneQR = asyncHandler(async (req: Request, res: Response
       expiration: req.body.expiration,
       customExpiry: req.body.customExpiry,
       design: req.body.design,
-    });
-
-    return res.status(201).json({ success: true, qrId });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Something went wrong. Please try again.";
-    return res.status(400).json({ success: false, message });
-  }
-});
-
-// Create a QR linked to an existing URL (dashboard "Create QR" action)
-const handleCreateLinkedQR = asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const qrId = await createLinkedQR({
-      urlId: req.params.urlId as string,
-      userId: req.user!.id,
     });
 
     return res.status(201).json({ success: true, qrId });
@@ -237,7 +222,6 @@ const handlePreviewQRDesign = asyncHandler(async (req: Request, res: Response) =
 
 export {
   handleCreateStandaloneQR,
-  handleCreateLinkedQR,
   handleLinkQRToNewUrl,
   handleGetQRStatus,
   handleRedirectQR,

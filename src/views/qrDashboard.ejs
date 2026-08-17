@@ -214,16 +214,18 @@
 
                     <!-- body -->
                     <div class="qr-card-body">
-                      <div class="qr-badges">
+                      <div class="qr-badges">             
                         <span class="qr-badge"><i class="ri-qr-code-line"></i> QR Code</span>
                         <% if (qr.linkedUrlId) { %>
                           <span class="qr-badge linked"><i class="ri-link"></i> Linked</span>
                           <% } %>
-                      </div>
+                          <span class="qr-badge id" data-qrid-label><i class="ri-key-2-line"></i> <%= qr.qrId %></span>
+                        </div>
 
                       <div class="qr-title" title="<%= qr.title %>">
                         <%= qr.title %>
                       </div>
+
 
                       <div class="qr-destination" title="<%= qr.destinationURL %>">
                         <i class="ri-arrow-right-up-line"></i>
@@ -256,8 +258,14 @@
                             <span class="qr-meta-pill"
                               title="<%= qr.expiresAt ? new Date(qr.expiresAt).toLocaleString('en-IN') : 'Never expires' %>">
                               <i class="ri-time-line"></i>
-                              <%= qr.expiresAt ? new Date(qr.expiresAt).toLocaleDateString('en-IN', { day: 'numeric' ,
-                                month: 'short' , year: 'numeric' }) : 'Never' %>
+                              Expires: <%= qr.expiresAt ? new Date(qr.expiresAt).toLocaleDateString('en-IN', {
+                                day: 'numeric' , month: 'short' , year: 'numeric' }) : 'Never' %>
+                            </span>
+
+                            <span class="qr-meta-pill" title="<%= new Date(qr.createdAt).toLocaleString('en-IN') %>">
+                              <i class="ri-calendar-line"></i>
+                              Created: <%= new Date(qr.createdAt).toLocaleDateString('en-IN', { day: 'numeric' ,
+                                month: 'short' , year: 'numeric' }) %>
                             </span>
                           </div>
 
@@ -499,7 +507,7 @@
   <!-- DISABLE MODAL -->
   <div id="qrDisableModal" class="modal">
     <div class="modal-content modal-content--delete">
-      <h3 "id="qrDisableTitle">Disable QR Code?</h3>
+      <h3 "id=" qrDisableTitle">Disable QR Code?</h3>
       <p id="qrDisableMessage"></p>
       <div class="delete-actions">
         <button id="qrCancelDisableBtn" data-close-modal type="button">Cancel</button>
@@ -550,10 +558,12 @@
       <span class="close" data-close-modal>&times;</span>
       <h3>QR Code Created</h3>
 
+      <div class="qr-loading-state" id="standaloneQrLoadingState">
       <div id="standaloneQrLoader" class="dots-loader">
         <span></span><span></span><span></span>
       </div>
-
+      <p class="dots-loader-label" id="standaloneQrLoaderLabel">Generating your QR code…</p>
+      </div>
       <img id="standaloneQrImage" src="" style="max-width: 220px; display: none;" />
 
       <div class="created-destination-row" id="standaloneQrDestinationRow" style="display: none;">

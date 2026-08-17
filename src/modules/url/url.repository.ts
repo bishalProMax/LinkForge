@@ -34,7 +34,7 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
   };
 
   if (filters.search) {
-    matchStage.$or = [{ shortId: { $regex: filters.search, $options: "i" } }, { redirectURL: { $regex: filters.search, $options: "i" } }];
+    matchStage.$or = [{ shortId: { $regex: filters.search, $options: "i" } }, { redirectURL: { $regex: filters.search, $options: "i" } }, { title: { $regex: filters.search, $options: "i" } }];
   }
 
   if (filters.createdFrom || filters.createdTo) {

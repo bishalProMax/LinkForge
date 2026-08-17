@@ -55,7 +55,6 @@ if (form) {
   setupOptionGroup("sqFrameShapeGroup");
 
   function getDesign() {
-    // only send design if the user actually opened the section — otherwise let backend DEFAULT_DESIGN apply
     if (designSection.style.display === "none") return undefined;
 
     return {
@@ -66,10 +65,10 @@ if (form) {
     };
   }
 
-  // ---------------- CREATE + POLL (unchanged from before) ----------------
+  // ---------------- CREATE + POLL ----------------
   function reveal(imageUrl, destination) {
     image.onload = () => {
-      loader.style.display = "none";
+      document.getElementById("standaloneQrLoadingState").style.display = "none";
       image.style.display = "block";
       destinationEl.textContent = destination;
       destinationRow.style.display = "flex";
@@ -111,8 +110,8 @@ if (form) {
       image.style.display = "none";
       destinationRow.style.display = "none";
       shareBtn.style.display = "none";
-      loader.textContent = "";
-      loader.style.display = "flex";
+      loader.innerHTML = "<span></span><span></span><span></span>";
+      document.getElementById("standaloneQrLoadingState").style.display = "flex";
 
       openModal(modal);
       pollQRStatus(

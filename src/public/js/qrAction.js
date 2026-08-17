@@ -151,7 +151,7 @@ document.querySelectorAll(".qr-download-option").forEach((option) => {
     if (format === "png") {
       if (!img) return;
 
-      const downloadUrl = img.src.includes("/upload/") ? img.src.replace("/upload/", "/upload/fl_attachment/") : img.src;
+      const downloadUrl = img.src.includes("/upload/") ? img.src.replace("/upload/", `/upload/fl_attachment:${qrId}/`) : img.src;
 
       const link = document.createElement("a");
       link.href = downloadUrl;
@@ -162,7 +162,7 @@ document.querySelectorAll(".qr-download-option").forEach((option) => {
 
     if (format === "jpeg") {
       if (!img) return;
-      const jpegUrl = img.src.replace("/upload/", "/upload/f_jpg,fl_attachment/");
+      const jpegUrl = img.src.replace("/upload/", `/upload/f_jpg,fl_attachment:${qrId}/`);
       const link = document.createElement("a");
       link.href = jpegUrl;
       link.download = `${qrId}.jpg`;

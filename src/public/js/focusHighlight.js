@@ -1,3 +1,4 @@
+//focus highlight URL->QR OR QR-> URL
 document.addEventListener("DOMContentLoaded", () => {
   const container = document.querySelector("[data-focus-id]");
   if (!container) return;
@@ -26,4 +27,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const url = new URL(window.location.href);
   url.searchParams.delete("focus");
   window.history.replaceState({}, "", url.toString());
+});
+
+//search highlight
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function highlightText(el, query) {
+  if (!el || !query) return;
+
+  const regex = new RegExp(`(${escapeRegex(query)})`, "gi");
+  const original = el.textContent;
+
+  if (!regex.test(original)) return;
+
+  el.innerHTML = original.replace(regex, '<mark class="search-highlight">$1</mark>');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get("search");
+  if (!query) return;
+
+  document.querySelectorAll(".title-cell, .short-link, .redirect-link").forEach((el) => {
+    highlightText(el, query);
+  });
+
+  document.querySelectorAll(".qr-title, .qr-destination a, [data-qrid-label]").forEach((el) => {
+    highlightText(el, query);
+  });
 });

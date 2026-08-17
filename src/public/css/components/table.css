@@ -38,7 +38,6 @@ table {
 table {
   width: 100%;
   min-width: 1120px;
-
   border-collapse: collapse;
 }
 
@@ -48,30 +47,20 @@ thead {
 
 th {
   padding:16px;
-
   text-align: left;
-
   font-size: 13px;
   font-weight: 700;
-
   color: #6b7280;
-
   letter-spacing: 0.03em;
-
   text-transform: uppercase;
-
   border-bottom: 1px solid #e5e7eb;
 }
 
 td {
   padding:16px;
-
   border-bottom: 1px solid #f1f5f9;
-
   vertical-align: middle;
-
   color: #111827;
-
   font-size: 14px;
 }
 
@@ -109,12 +98,9 @@ max-width:220px;
 }
 
 .redirect-link {
-  display: block;
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
   color: #374151;
 }
 
@@ -145,9 +131,7 @@ max-width:220px;
   display: flex;
   flex-direction: column;
   align-items: center;
-
   padding: 80px 20px;
-
   text-align: center;
 }
 
@@ -160,18 +144,21 @@ max-width:220px;
 
 .empty-state h3 {
   margin-bottom: 10px;
-
   font-size: 22px;
 }
 
 .empty-state p {
   color: #6b7280;
-
   max-width: 420px;
-
   line-height: 1.7;
 }
 
+.search-highlight {
+  background: #fef08a;
+  color: #78350f;
+  border-radius: 2px;
+  padding: 0;
+}
 /* ---------- Mobile ---------- */
 
 @media (max-width: 900px) {
