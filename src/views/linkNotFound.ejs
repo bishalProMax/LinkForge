@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/pages/notfound.css" />
+    <link rel="icon" type="image/png" href="/images/icon.png" />
+    <title>
+        <%= title %> — LinkForge
+    </title>
+</head>
+
+<body>
+    <div class="bg-layer"></div>
+    <div class="bg-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <header class="nf-nav">
+        <a href="/" class="nf-logo">
+            <img src="/images/LinkForge.png" alt="LinkForge" />
+        </a>
+        
+        <nav class="nf-nav-actions">
+        <a href="/login" class="nav-btn">Log in</a>
+        <a href="/signup" class="nav-btn nav-btn-primary">Sign up for free</a>
+        </nav>
+    </header>
+
+    <main class="nf-container">
+        <div class="nf-icon-wrap nf-icon-<%= reason %>">
+            <i class="<%= icon %>"></i>
+        </div>
+
+        <div class="nf-badge">
+            <%= badge %>
+        </div>
+
+        <h1 class="nf-title">
+            <%= title %>
+        </h1>
+
+        <p class="nf-message">
+            <%= message %>
+        </p>
+
+        <% if (identifier) { %>
+            <div class="nf-identifier">
+                <i class="ri-link"></i>
+                <span>
+                    <%= identifier %>
+                </span>
+            </div>
+            <% } %>
+
+                <div class="nf-actions">
+                    <a href="/" class="primary-btn">Go to LinkForge Home →</a>
+                </div>
+    </main>
+
+    <footer class="nf-footer">
+        <p>© 2026 LinkForge. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

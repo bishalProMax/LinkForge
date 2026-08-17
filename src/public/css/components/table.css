@@ -98,9 +98,12 @@ max-width:220px;
 }
 
 .redirect-link {
+  display: block;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
   color: #374151;
 }
 
@@ -156,8 +159,8 @@ max-width:220px;
 .search-highlight {
   background: #fef08a;
   color: #78350f;
-  border-radius: 2px;
-  padding: 0;
+  border-radius: 3px;
+  padding: 0 2px;
 }
 /* ---------- Mobile ---------- */
 

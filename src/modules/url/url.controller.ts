@@ -30,13 +30,43 @@ const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) 
 // redirect to original URL
 const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => {
   const shortId = req.params.shortId as string;
-  const entry = await redirectToOriginalURL(shortId);
+  const url = await findURLDocByShortId(shortId);
 
-  if (!entry) {
-    return res.redirect(`/dashboard?error=${encodeURIComponent("URL not found")}`);
+  if (!url) {
+    return res.status(404).render("linkNotFound", {
+      reason: "notfound",
+      icon: "ri-link-unlink-m",
+      badge: "Link Not Found",
+      title: "We couldn't find this short link",
+      message: "The short link you're looking for may have been removed, or the URL might be incorrect. Double-check the link and try again.",
+      identifier: `${process.env.BASE_URL}/url/${shortId}`,
+    });
   }
 
-  res.redirect(entry.redirectURL);
+  if (url.isDisabled) {
+    return res.status(403).render("linkNotFound", {
+      reason: "disabled",
+      icon: "ri-forbid-2-line",
+      badge: "Link Disabled",
+      title: "This short link is currently unavailable",
+      message: "The owner has temporarily disabled this link. If you believe this is a mistake, contact whoever shared it with you.",
+      identifier: `${process.env.BASE_URL}/url/${shortId}`,
+    });
+  }
+
+  if (url.expiresAt && url.expiresAt <= new Date()) {
+    return res.status(410).render("linkNotFound", {
+      reason: "expired",
+      icon: "ri-time-line",
+      badge: "Link Expired",
+      title: "This short link is no longer available",
+      message: "This link reached its expiration date and can no longer be used to access the destination.",
+      identifier: `${process.env.BASE_URL}/url/${shortId}`,
+    });
+  }
+
+  const entry = await redirectToOriginalURL(shortId);
+  return res.redirect(entry.redirectURL);
 });
 
 // get analytics of a short URL

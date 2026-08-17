@@ -53,12 +53,37 @@ const handleRedirectQR = asyncHandler(async (req: Request, res: Response) => {
   const qrId = req.params.qrId as string;
   const target = await resolveQRRedirectTarget(qrId);
 
-  if (!target || target.isDisabled || !target.destination) {
-    return res.redirect(`/dashboard?error=${encodeURIComponent("QR code not found or disabled")}`);
+  if (!target || !target.destination) {
+    return res.status(404).render("linkNotFound", {
+      reason: "notfound",
+      icon: "ri-qr-code-line",
+      badge: "QR Code Not Found",
+      title: "We couldn't find this QR code",
+      message: "It may have been removed, or the scan may not have been read correctly. Try again or check with whoever shared it.",
+      identifier: `${process.env.BASE_URL}/qr/${qrId}`,
+    });
+  }
+
+    if (target.isDisabled) {
+    return res.status(410).render("linkNotFound", {
+      reason: "disabled",
+      icon: "ri-forbid-2-line",
+      badge: "QR Code Disabled",
+      title: "This QR code is currently unavailable",
+      message: "The owner has temporarily disabled it. If you believe this is a mistake, contact whoever shared it with you.",
+      identifier: `${process.env.BASE_URL}/qr/${qrId}`,
+    });
   }
 
   if (target.expiresAt && target.expiresAt <= new Date()) {
-    return res.redirect(`/dashboard?error=${encodeURIComponent("This QR code has expired")}`);
+    return res.status(410).render("linkNotFound", {
+      reason: "expired",
+      icon: "ri-time-line",
+      badge: "QR Code Expired",
+      title: "This QR code is no longer available",
+      message: "It reached its expiration date and can no longer be used to access the destination.",
+      identifier: `${process.env.BASE_URL}/qr/${qrId}`,
+    });
   }
 
   await recordQRScan(target.qrMongoId);
