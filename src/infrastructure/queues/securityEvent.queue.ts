@@ -11,7 +11,7 @@ const securityEventQueue = new Queue<SecurityEventJob>("securityEventQueue", {
       delay: 3000,
     },
     removeOnComplete: true,
-    removeOnFail: false, // keep failed jobs visible for inspection later if mongodb down for long time
+    removeOnFail: false, 
   },
 });
 

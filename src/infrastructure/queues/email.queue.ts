@@ -7,11 +7,13 @@ type EmailQueueJobs = SendVerificationEmailJob | SendWelcomeEmailJob | SendPassw
 const emailQueue = new Queue<EmailQueueJobs>("emailQueue", {
   connection: redis,
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 5,
     backoff: {
       type: "exponential",
-      delay: 2000,
+      delay: 3000,
     },
+    removeOnComplete: true,
+    removeOnFail: false,
   },
 });
 

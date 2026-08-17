@@ -5,10 +5,10 @@ import type { QRGenerationJob } from "../../shared/types/queue.types.js";
 const qrGenerationQueue = new Queue<QRGenerationJob>("qrGenerationQueue", {
   connection: redis,
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 5,
     backoff: {
       type: "exponential",
-      delay: 2000,
+      delay: 3000,
     },
     removeOnComplete: true,
     removeOnFail: false,

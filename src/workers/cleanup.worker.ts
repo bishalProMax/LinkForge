@@ -18,4 +18,8 @@ import logger from "../infrastructure/configs/logger.config.js";
   }
 );
 
+  cleanupWorker.on("failed", (job, error) => {
+  logger.error({ jobName: job?.name, jobId: job?.id, err: error },"Old unverified accounts cleanup job failed after retries");
+});
+
 export default cleanupWorker;
