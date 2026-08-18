@@ -22,7 +22,7 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
   }
 
   if (!user.authProviders.includes("local")) {
-    logSecurityEvent({ event: "LOCAL_AUTH_REQUIRED", email, ip, userId: user._id.toString(), role: user.role });
+    logSecurityEvent({ event: "LOCAL_AUTH_REQUIRED", email, ip, userId: user._id.toString(), reason: "LOCAL_AUTH_NOT_ENABLED", role: user.role });
     return {
       type: "LOCAL_AUTH_REQUIRED",
     };
@@ -42,7 +42,7 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
   //this part only runs when attacker tries to bypass frontend, by calling api directly. For normal users, frontend will prevent them from making requests until cooldown expires.
   const cooldown = await redis.ttl(`password-resend-otp-cooldown-timer:${email}`);
   if (cooldown > 0) {
-    logSecurityEvent({ event: "OTP_COOLDOWN_ACTIVE", email, ip, cooldown, role: user.role });
+    logSecurityEvent({ event: "OTP_COOLDOWN_ACTIVE", email, ip, cooldown, userId: user._id.toString(), role: user.role });
     return {
       type: "OTP_COOLDOWN_ACTIVE",
       cooldown,
@@ -82,9 +82,10 @@ const forgotPassword = async ({ email, ip }: ForgotPasswordProps): Promise<Forgo
 // -----------------------------VERIFY RESET OTP-----------------------------
 const verifyResetOTP = async ({ email, otp, ip }: VerifyResetOTPProps): Promise<VerifyOTPResult> => {
   const storedOTP = await redis.get(`password-otp-generated:${email}`);
+  const existingUser = await findUserByEmail(email);
 
   if (!storedOTP) {
-    logSecurityEvent({ event: "OTP_EXPIRED", email, ip });
+    logSecurityEvent({ event: "OTP_EXPIRED", email, ip, userId: existingUser?._id.toString(), role: existingUser?.role });
     return {
       type: "OTP_EXPIRED",
     };
@@ -93,7 +94,7 @@ const verifyResetOTP = async ({ email, otp, ip }: VerifyResetOTPProps): Promise<
   const attempts = Number(await redis.get(`password-reset-otp-attempts:${email}`)) || 0;
 
   if (attempts >= 5) {
-    logSecurityEvent({ event: "OTP_TOO_MANY_ATTEMPTS", email, ip, attempts });
+    logSecurityEvent({ event: "OTP_TOO_MANY_ATTEMPTS", email, ip, attempts, userId: existingUser?._id.toString(), role: existingUser?.role });
     return {
       type: "OTP_TOO_MANY_ATTEMPTS",
     };
@@ -107,7 +108,7 @@ const verifyResetOTP = async ({ email, otp, ip }: VerifyResetOTPProps): Promise<
     if (attempts === 1) {
       await redis.expire(`password-reset-otp-attempts:${email}`, 600);
     }
-    logSecurityEvent({ event: "INVALID_OTP", email, ip, attempts });
+    logSecurityEvent({ event: "INVALID_OTP", email, ip, attempts, userId: existingUser?._id.toString(), role: existingUser?.role });
     return {
       type: "INVALID_OTP",
     };
@@ -118,7 +119,7 @@ const verifyResetOTP = async ({ email, otp, ip }: VerifyResetOTPProps): Promise<
   await redis.del(`password-resend-otp-count:${email}`);
   await redis.set(`password-reset-session:${email}`, "verified", "EX", 600);
 
-  logSecurityEvent({ event: "OTP_VERIFIED", email, ip }, "info");
+  logSecurityEvent({ event: "OTP_VERIFIED", email, ip, userId: existingUser?._id.toString(), role: existingUser?.role }, "info");
 
   return {
     type: "SUCCESS",
@@ -130,7 +131,8 @@ const resetPassword = async ({ email, password, ip }: ResetPasswordProps): Promi
   const session = await redis.get(`password-reset-session:${email}`);
 
   if (!session) {
-    logSecurityEvent({ event: "PASSWORD_RESET_SESSION_EXPIRED", email, ip });
+    const existingUser = await findUserByEmail(email); 
+    logSecurityEvent({ event: "PASSWORD_RESET_SESSION_EXPIRED", email, ip, userId: existingUser?._id.toString(), role: existingUser?.role });
     return {
       type: "PASSWORD_RESET_SESSION_EXPIRED",
     };

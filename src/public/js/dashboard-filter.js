@@ -12,12 +12,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!triggerBtn || !filterModal || !searchInput || !clearBtn || !clearAllFiltersBtn || !urlToolbarForm) return;
 
+  // restore scroll position + search focus after a debounced auto-submit reload
+  const savedScroll = sessionStorage.getItem("dashboardScrollY");
+  if (savedScroll) {
+    window.scrollTo(0, Number(savedScroll));
+    sessionStorage.removeItem("dashboardScrollY");
+  }
+
+  if (sessionStorage.getItem("dashboardSearchFocus")) {
+    sessionStorage.removeItem("dashboardSearchFocus");
+    searchInput.focus();
+    const len = searchInput.value.length;
+    searchInput.setSelectionRange(len, len);
+  }
+
   triggerBtn.addEventListener("click", () => {
     openModal(filterModal);
   });
 
+  let searchDebounce = null;
+
   searchInput.addEventListener("input", () => {
     clearBtn.classList.toggle("is-hidden", !searchInput.value);
+
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+      sessionStorage.setItem("dashboardScrollY", window.scrollY);
+      sessionStorage.setItem("dashboardSearchFocus", "1");
+      searchInput.form.submit();
+    }, searchInput.value ? 1000 : 0);
   });
 
   clearBtn.addEventListener("click", () => {
@@ -43,11 +66,10 @@ document.addEventListener("DOMContentLoaded", function () {
     syncExpiryWithStatus();
   });
 
-clearAllFiltersBtn?.addEventListener("click", () => {
+  clearAllFiltersBtn?.addEventListener("click", () => {
     window.location.href = "/dashboard";
   });
 });
-
 
 //removes the query parameters from the URL when the page is loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -59,33 +81,17 @@ document.addEventListener("DOMContentLoaded", () => {
     window.history.replaceState({}, "", url.toString());
   }
 
-  const generatedBanner = document.querySelector(".generated");
-
-  if (generatedBanner) {
-    const closeBtn = document.createElement("button");
-    closeBtn.type = "button";
-    closeBtn.className = "generated-close-btn";
-    closeBtn.innerHTML = "&times;";
-    closeBtn.addEventListener("click", () => {
-      generatedBanner.remove();
-    });
-
-    generatedBanner.appendChild(closeBtn);
-  }
+  const isDashboardPage = document.querySelector(".dashboard-container");
+  if (!isDashboardPage) return;
 
   const errorBanner = document.querySelector(".error");
-
   if (errorBanner) {
     errorBanner.style.position = "relative";
-
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
     closeBtn.className = "generated-close-btn";
     closeBtn.innerHTML = "&times;";
-    closeBtn.addEventListener("click", () => {
-      errorBanner.remove();
-    });
-
+    closeBtn.addEventListener("click", () => errorBanner.remove());
     errorBanner.appendChild(closeBtn);
   }
 });

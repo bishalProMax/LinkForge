@@ -45,7 +45,7 @@ const handleExportAuditCSV = asyncHandler(async (req: Request, res: Response) =>
   };
 
   const viewerRole = req.user!.role as "ADMIN" | "SUPER_ADMIN";
-  const events = await exportAuditReport(viewerRole, filters);
+  const events = await exportAuditReport(viewerRole,req.user!.id, req.ip ?? "", req.user!.email, filters);
 
   const header = ["Event", "Role", "Email", "UserId", "IP", "CreatedAt"];
   const rows = events.map((e) => [csvEscape(e.event), csvEscape(e.role), csvEscape(e.email), csvEscape(e.userId), csvEscape(e.ip), csvEscape(new Date(e.createdAt).toISOString())].join(","));

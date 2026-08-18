@@ -162,7 +162,7 @@ document.querySelectorAll(".qr-download-option").forEach((option) => {
 
     if (format === "jpeg") {
       if (!img) return;
-      const jpegUrl = img.src.replace("/upload/", `/upload/f_jpg,fl_attachment:${qrId}/`);
+      const jpegUrl = img.src.replace("/upload/", `/upload/f_jpg,q_100,fl_attachment:${qrId}/`);
       const link = document.createElement("a");
       link.href = jpegUrl;
       link.download = `${qrId}.jpg`;
@@ -282,7 +282,7 @@ document.querySelectorAll(".qr-analytics-btn").forEach((button) => {
   });
 });
 
-// ---------------- FILTER MODAL TRIGGER ----------------
+// ---------------- FILTER MODAL TRIGGER + SEARCH ----------------
 
 document.addEventListener("DOMContentLoaded", () => {
   const triggerBtn = document.getElementById("qrFilterTriggerBtn");
@@ -291,10 +291,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearBtn = document.getElementById("clearQrSearchBtn");
   const clearAllBtn = document.getElementById("clearAllQrFiltersBtn");
 
+  // restore scroll position + search focus after a debounced auto-submit reload
+  const savedQrScroll = sessionStorage.getItem("qrScrollY");
+  if (savedQrScroll) {
+    window.scrollTo(0, Number(savedQrScroll));
+    sessionStorage.removeItem("qrScrollY");
+  }
+
+  if (searchInput && sessionStorage.getItem("qrSearchFocus")) {
+    sessionStorage.removeItem("qrSearchFocus");
+    searchInput.focus();
+    const len = searchInput.value.length;
+    searchInput.setSelectionRange(len, len);
+  }
+
   triggerBtn?.addEventListener("click", () => openModal(filterModal));
+
+  let qrSearchDebounce = null;
 
   searchInput?.addEventListener("input", () => {
     clearBtn.classList.toggle("is-hidden", !searchInput.value);
+
+    clearTimeout(qrSearchDebounce);
+    qrSearchDebounce = setTimeout(() => {
+      sessionStorage.setItem("qrScrollY", window.scrollY);
+      sessionStorage.setItem("qrSearchFocus", "1");
+      searchInput.form.submit();
+    }, searchInput.value ? 1000 : 0);
   });
 
   clearBtn?.addEventListener("click", () => {
@@ -319,9 +342,9 @@ document.querySelectorAll(".qr-thumb-clickable img").forEach((img) => {
 // ---------------- QR EDIT BUTTON ----------------
 document.querySelectorAll(".edit-qr-btn").forEach((button) => {
   button.addEventListener("click", () => {
-    const qrId = button.dataset.qrid;   
+    const qrId = button.dataset.qrid;
     if (!qrId) return;
-    window.location.href = `/qr/${qrId}/edit`;   
+    window.location.href = `/qr/${qrId}/edit`;
   });
 });
 
@@ -339,7 +362,6 @@ if (saveDesignBtn) {
     frameShape: document.getElementById("frameShapeGroup").querySelector(".selected")?.dataset.value || "sharp",
   });
 
-  
   const initialDesign = {
     fgColor: document.getElementById("fgColorHex").value,
     bgColor: document.getElementById("bgColorHex").value,
@@ -347,7 +369,6 @@ if (saveDesignBtn) {
     frameShape: document.getElementById("frameShapeGroup").querySelector(".selected")?.dataset.value || "sharp",
   };
 
-  // ADDED — compares current vs initial, toggles the button
   function checkDesignDirty() {
     const current = getDesign();
     const isDirty = Object.keys(initialDesign).some((key) => current[key] !== initialDesign[key]);
@@ -378,7 +399,7 @@ if (saveDesignBtn) {
     picker.addEventListener("input", () => {
       hex.value = picker.value;
       updatePreview();
-      checkDesignDirty();  
+      checkDesignDirty();
     });
 
     hex.addEventListener("input", () => {
@@ -387,7 +408,7 @@ if (saveDesignBtn) {
       if (/^#[0-9a-fA-F]{6}$/.test(value)) {
         picker.value = value;
         updatePreview();
-        checkDesignDirty();   
+        checkDesignDirty();
       }
     });
   }
@@ -403,7 +424,7 @@ if (saveDesignBtn) {
         group.querySelectorAll(".option-card").forEach((c) => c.classList.remove("selected"));
         card.classList.add("selected");
         updatePreview();
-        checkDesignDirty();  
+        checkDesignDirty();
       });
     });
   }
@@ -412,7 +433,7 @@ if (saveDesignBtn) {
   setupOptionGroup("frameShapeGroup");
 
   updatePreview();
-  saveDesignBtn.disabled = true;   
+  saveDesignBtn.disabled = true;
 
   saveDesignBtn.addEventListener("click", async () => {
     const qrId = saveDesignBtn.dataset.qrid;
@@ -423,7 +444,7 @@ if (saveDesignBtn) {
       const res = await fetch(`/qr/${qrId}/design`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({design: getDesign()}),
+        body: JSON.stringify({ design: getDesign() }),
       });
 
       const result = await res.json();

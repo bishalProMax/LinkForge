@@ -18,7 +18,7 @@ const createInvite = async ({ email, role, invitedById, invitedByName }: CreateI
   }
 
   await createRoleInvite(email, role, invitedById);
-  logSecurityEvent({ event: "ROLE_INVITE_CREATED", email, invitedById, role }, "info");
+  logSecurityEvent({ event: "ROLE_INVITE_CREATED", email, actingUserId: invitedById, invitedRole: role }, "info");
   await emailQueue.add("sendRoleInviteEmail", {
     email,
     role,

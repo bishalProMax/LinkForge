@@ -57,7 +57,26 @@ filterTriggerBtn?.addEventListener("click", () => {
   openModal(filterModal);
 });
 
-// ---------------- CLEARABLE SEARCH INPUTS ----------------
+// ---------------- RESTORE SCROLL + FOCUS AFTER DEBOUNCED AUTO-SUBMIT ----------------
+
+const savedReportScroll = sessionStorage.getItem("reportScrollY");
+if (savedReportScroll) {
+  window.scrollTo(0, Number(savedReportScroll));
+  sessionStorage.removeItem("reportScrollY");
+}
+
+const focusedReportInputId = sessionStorage.getItem("reportSearchFocusId");
+if (focusedReportInputId) {
+  sessionStorage.removeItem("reportSearchFocusId");
+  const focusedInput = document.getElementById(focusedReportInputId);
+  if (focusedInput) {
+    focusedInput.focus();
+    const len = focusedInput.value.length;
+    focusedInput.setSelectionRange(len, len);
+  }
+}
+
+// ---------------- CLEARABLE SEARCH INPUTS (with debounced auto-submit) ----------------
 
 function setupClearableInput(inputId, clearBtnId) {
   const input = document.getElementById(inputId);
@@ -65,11 +84,21 @@ function setupClearableInput(inputId, clearBtnId) {
 
   if (!input || !clearBtn) return;
 
+  let debounce = null;
+
   input.addEventListener("input", () => {
     clearBtn.classList.toggle("is-hidden", !input.value);
+
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      sessionStorage.setItem("reportScrollY", window.scrollY);
+      sessionStorage.setItem("reportSearchFocusId", inputId);
+      input.form.submit();
+    }, input.value ? 1000 : 0);
   });
 
   clearBtn.addEventListener("click", () => {
+    clearTimeout(debounce);
     input.value = "";
     clearBtn.classList.add("is-hidden");
     input.form.submit();

@@ -35,7 +35,7 @@ function escapeRegex(str) {
 }
 
 function highlightText(el, query) {
-  if (!el || !query) return;
+  if (!el || !query ) return;
 
   const regex = new RegExp(`(${escapeRegex(query)})`, "gi");
   const original = el.textContent;
@@ -47,14 +47,19 @@ function highlightText(el, query) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
-  const query = params.get("search");
-  if (!query) return;
 
-  document.querySelectorAll(".title-cell, .short-link, .redirect-link").forEach((el) => {
-    highlightText(el, query);
-  });
+  const searchQuery = params.get("search");
+  if (searchQuery) {
+    document.querySelectorAll(".title-cell, .short-link, .redirect-link").forEach((el) => highlightText(el, searchQuery));
+    document.querySelectorAll(".qr-title, .qr-destination a, [data-qrid-label]").forEach((el) => highlightText(el, searchQuery));
+  }
 
-  document.querySelectorAll(".qr-title, .qr-destination a, [data-qrid-label]").forEach((el) => {
-    highlightText(el, query);
-  });
+  const emailQuery = params.get("email");
+  const ipQuery = params.get("ip");
+  if (emailQuery || ipQuery) {
+    document.querySelectorAll("td").forEach((td) => {
+      if (emailQuery) highlightText(td, emailQuery);
+      if (ipQuery) highlightText(td, ipQuery);
+    });
+  }
 });

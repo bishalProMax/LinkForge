@@ -6,8 +6,8 @@ const getAuditReport = (viewerRole: "ADMIN" | "SUPER_ADMIN", page: number, limit
   return getAuditEvents(viewerRole, page, limit, filters);
 };
 
-const exportAuditReport = (viewerRole: "ADMIN" | "SUPER_ADMIN", filters: AuditQueryParams) => {
-  logSecurityEvent({ event: "AUDIT_REPORT_EXPORTED", role: viewerRole }, "info");
+const exportAuditReport = (viewerRole: "ADMIN" | "SUPER_ADMIN", viewerUserId: string, viewerIp: string, viewerEmail: string, filters: AuditQueryParams) =>{
+  logSecurityEvent({ event: "AUDIT_REPORT_EXPORTED", userId: viewerUserId,ip: viewerIp, email: viewerEmail, role: viewerRole }, "info");
   return getAuditEventsForExport(viewerRole, filters);
 };
 
