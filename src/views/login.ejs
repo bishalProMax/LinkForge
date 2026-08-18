@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="/images/icon.png" />
     <link rel="stylesheet" href="/css/pages/auth.css" />
     <script type="module" src="/js/main.js"></script>
@@ -36,10 +37,10 @@
         </div>
 
         <div class="form-group">
-          <label>Password</label>
+          <label for="loginPassword">Password</label>
           <div class="password-wrapper">
             <input type="password" id="loginPassword" name="password" autocomplete="current-password" required />
-            <button type="button" id="toggleLoginPassword">Show</button>
+            <button type="button" id="toggleLoginPassword" class="password-toggle-icon-btn"><i class="ri-eye-line"></i></button>
           </div>
           <p >
             <a href="/forgot-password" class="forgot-password"> Forgot Password? </a>

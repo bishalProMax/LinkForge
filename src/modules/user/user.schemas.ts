@@ -23,18 +23,37 @@ const changePasswordSchema = z.object({
     .string()
     .trim(),
   })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: "Passwords do not match",
-    path: ["confirmNewPassword"],
-  });
+  .superRefine((data,ctx) => {
+    if(data.oldPassword === data.newPassword){
+      ctx.addIssue({ code: "custom", path: ["oldPassword"], message: "New password cannot be the Old Password." });
+    }
+    if(data.newPassword !== data.confirmNewPassword){
+      ctx.addIssue({ code: "custom", path: ["confirmNewPassword"], message: "Passwords donot match" });
+    }
+  }
+  );
 
 const updateDetailsSchema = z.object({
-  organization: z.preprocess((v) => (v === "" ? undefined : v), z.string().trim().max(100, "Organization must be under 100 characters").optional()),
-  designation: z.preprocess((v) => (v === "" ? undefined : v), z.string().trim().max(100, "Designation must be under 100 characters").optional()),
+  organization: z
+  .preprocess((v) => (v === "" ? undefined : v), 
+  z
+  .string()
+  .trim()
+  .max(100, "Organization must be under 100 characters")
+  .optional()),
+
+  designation: z
+  .preprocess((v) => (v === "" ? undefined : v), 
+  z
+  .string()
+  .trim()
+  .max(100, "Designation must be under 100 characters")
+  .optional()),
 });
 
 const deleteAccountSchema = z.object({
-  confirmText: z.literal("CONFIRM DELETE", { message: "You must type CONFIRM DELETE exactly" }),
+  confirmText: z
+  .literal("CONFIRM DELETE", { message: "You must type CONFIRM DELETE exactly" }),
 });
 
 export {

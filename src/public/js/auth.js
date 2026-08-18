@@ -6,12 +6,10 @@ function togglePassword(id, btn) {
 
   if (input.type === "password") {
     input.type = "text";
-
-    btn.textContent = "Hide";
+    btn.innerHTML = '<i class="ri-eye-off-line"></i>';
   } else {
     input.type = "password";
-
-    btn.textContent = "Show";
+    btn.innerHTML = '<i class="ri-eye-line"></i>';
   }
 }
 
@@ -30,6 +28,10 @@ setupPasswordToggle("toggleLoginPassword", "loginPassword");
 setupPasswordToggle("toggleSignupPassword", "signupPassword");
 setupPasswordToggle("toggleResetPassword","resetPassword");
 setupPasswordToggle("toggleConfirmResetPassword","confirmResetPassword");
+setupPasswordToggle("toggleOldPassword","oldPasswordInput")
+setupPasswordToggle("toggleNewPassword","newPasswordInput")
+setupPasswordToggle("toggleConfirmNewPassword","confirmNewPasswordInput")
+
 
 
 // Forces a fresh reload whenever the page is restored from the browser's back/forward cache (bfcache)

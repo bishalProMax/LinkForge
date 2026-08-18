@@ -1,5 +1,6 @@
 import { openModal } from "./modal.js";
 import { showToast } from "./toast.js";
+import { watchDirty } from "./dirtyCheck.js";
 
 async function sendJSON(method, url, body) {
   const response = await fetch(url, {
@@ -11,23 +12,6 @@ async function sendJSON(method, url, body) {
   const data = await response.json().catch(() => ({}));
   return { ok: response.ok, data };
 }
-
-// ---------------- PASSWORD TOGGLE ----------------
-
-document.querySelectorAll(".profile-toggle-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const input = document.getElementById(btn.dataset.target);
-    if (!input) return;
-
-    if (input.type === "password") {
-      input.type = "text";
-      btn.textContent = "Hide";
-    } else {
-      input.type = "password";
-      btn.textContent = "Show";
-    }
-  });
-});
 
 // ---------------- USERNAME ----------------
 
@@ -43,9 +27,8 @@ saveUsernameBtn?.addEventListener("click", async () => {
 
   const { ok, data } = await sendJSON("PATCH", "/user/profile/username", { name: input.value.trim() });
 
-  saveUsernameBtn.disabled = false;
-
   if (!ok) {
+    saveUsernameBtn.disabled = false;
     errorEl.textContent = data.message || "Unable to update username.";
     return;
   }
@@ -74,9 +57,8 @@ savePasswordBtn?.addEventListener("click", async () => {
     confirmNewPassword: confirmNewPasswordInput.value,
   });
 
-  savePasswordBtn.disabled = false;
-
   if (!ok) {
+    savePasswordBtn.disabled = false;
     errorEl.textContent = data.message || "Unable to update password.";
     return;
   }
@@ -84,6 +66,7 @@ savePasswordBtn?.addEventListener("click", async () => {
   if (oldPasswordInput) oldPasswordInput.value = "";
   newPasswordInput.value = "";
   confirmNewPasswordInput.value = "";
+  savePasswordBtn.disabled = true;
 
   showToast("Password updated. Other devices have been signed out.", "success");
 });
@@ -107,15 +90,23 @@ saveDetailsBtn?.addEventListener("click", async () => {
     designation: designationInput.value.trim(),
   });
 
-  saveDetailsBtn.disabled = false;
-
   if (!ok) {
+    saveDetailsBtn.disabled = false;
     errorEl.textContent = data.message || "Unable to update details.";
     return;
   }
 
   showToast("Details updated successfully.", "success");
 });
+
+// ---------------- DIRTY-CHECK WIRING ----------------
+
+watchDirty([document.getElementById("usernameInput")], saveUsernameBtn);
+watchDirty(
+  [document.getElementById("oldPasswordInput"), document.getElementById("newPasswordInput"), document.getElementById("confirmNewPasswordInput")],
+  savePasswordBtn
+);
+watchDirty([document.getElementById("organizationInput"), document.getElementById("designationInput")], saveDetailsBtn);
 
 // ---------------- DELETE ACCOUNT ----------------
 
