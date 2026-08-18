@@ -203,3 +203,7 @@ font-size:15px;
 button.generated-close-btn:hover {
   color: #111827;
 }
+
+.pending{
+  color: #111827;
+}

@@ -244,14 +244,17 @@ button:hover {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: auto;
-  padding: 8px 14px;
+  width: 44px;
+  padding: 6px;
   background: transparent;
   border: none;
-  color: #8ea2ff;
-  font-weight: 600;
   box-shadow: none;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
+}
 
+.password-toggle-icon-btn:hover { 
+  color: rgba(255, 255, 255, 0.8); 
 }
 
 .auth-footer {

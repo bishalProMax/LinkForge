@@ -87,14 +87,6 @@
         <%= error %>
       </p>
       <% } %>
-        <% if(shortId){ %>
-          <div class="generated">
-            URL Generated :
-            <a target="_blank" href="/url/<%= shortId %>">
-              <%= `${baseUrl}/url/${shortId}` %>
-            </a>
-          </div>
-          <% } %>
 
             <h2>My Links</h2>
             <!-- Search Form -->
@@ -106,7 +98,7 @@
                 <form class="url-toolbar" method="GET" action="/dashboard" id="urlToolbarForm">
                   <div class="search-input-wrap">
                     <i class="ri-search-line search-icon"></i>
-                    <input type="text" name="search" id="searchInput" placeholder="Search by short code or URL..."
+                    <input type="text" name="search" id="searchInput" placeholder="Search Links"
                       value="<%= filters.search || '' %>" autocomplete="off" />
                     <button type="button" class="clear-search-btn <%= filters.search ? '' : 'is-hidden' %>"
                       id="clearSearchBtn">
@@ -452,6 +444,7 @@
   <div id="createQrModal" class="modal">
     <div class="modal-content modal-content--qr">
       <span class="close" data-close-modal>&times;</span>
+      <h3>QR Code Created</h3>
 
       <div class="qr-loading-state" id="createQrLoadingState">
       <div id="createQrLoader" class="dots-loader">
@@ -475,9 +468,9 @@
 
   <!-- SHORT LINK GENERATED MODAL (main dashboard) -->
 <div id="createdLinkModal" class="modal">
-  <div class="modal-content modal-content--qr">
+  <div class="modal-content modal-content--link">
     <span class="close" data-close-modal>&times;</span>
-    <h3>Short Link Created</h3>
+    <h3 link-modal>Short Link Created</h3>
 
     <div class="created-link-pill-row">
       <span class="created-link-pill">
@@ -489,7 +482,7 @@
       </button>
     </div>
 
-    <div class="created-destination-row">
+    <div class="created-link-destination-row">
       <i class="ri-arrow-right-up-line"></i>
       <span id="createdLinkDestination"></span>
     </div>

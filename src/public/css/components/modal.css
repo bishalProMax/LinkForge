@@ -72,6 +72,16 @@ body.modal-open {
   min-height: 320px;
 }
 
+.modal-content--link {
+  width: 380px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-height: 0;   
+}
+
 .qr-loading-state {
   flex: 1;
   width: 100%;
@@ -85,6 +95,7 @@ body.modal-open {
 .modal-content--qr h3 {
   font-size: 18px;
   font-weight: 700;
+  color: #111827;
 }
 
 .qr-actions {
@@ -228,6 +239,31 @@ body.modal-open {
   max-width: 300px;
 }
 
+.created-link-destination-row {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: 8px;
+  width: 100%;
+  margin-top: 0;
+  padding: 0 10px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.created-link-destination-row i {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.created-link-destination-row span {
+  min-width: 0;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .created-link-pill-row {
   display: flex;
   align-items: center;
@@ -294,6 +330,9 @@ body.modal-open {
   margin-top: -8px;
 }
 
+.link-modal{
+  color: #111827;
+}
 /* ==========================================================
    Responsive
 ========================================================== */

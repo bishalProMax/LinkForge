@@ -175,7 +175,7 @@
           <form class="url-toolbar" method="GET" action="/qr" id="qrToolbarForm">
             <div class="search-input-wrap">
               <i class="ri-search-line search-icon"></i>
-              <input type="text" name="search" id="qrSearchInput" placeholder="Search by QR ID or title..."
+              <input type="text" name="search" id="qrSearchInput" placeholder="Search QR"
                 value="<%= filters.search || '' %>" autocomplete="off" />
               <button type="button" class="clear-search-btn <%= filters.search ? '' : 'is-hidden' %>"
                 id="clearQrSearchBtn">
@@ -527,9 +527,9 @@
 
   <!-- SHORT LINK GENERATED MODAL -->
   <div id="createShortLinkModal" class="modal">
-    <div class="modal-content modal-content--qr">
+    <div class="modal-content modal-content--link">
       <span class="close" data-close-modal>&times;</span>
-      <h3>Short Link Created</h3>
+      <h3 class="link-modal">Short Link Created</h3>
 
       <div class="created-link-pill-row">
         <span class="created-link-pill">
@@ -541,7 +541,7 @@
         </button>
       </div>
 
-      <div class="created-destination-row">
+      <div class="created-link-destination-row">
         <i class="ri-arrow-right-up-line"></i>
         <span id="createdShortLinkDestination"></span>
       </div>
