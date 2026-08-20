@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import redis from "../../infrastructure/configs/redis.config.js";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import { forgotPassword, verifyResetOTP, resetPassword } from "./password.service.js";
 
@@ -130,4 +131,20 @@ const handleResetPassword = asyncHandler(async (req: Request, res: Response) => 
   return res.redirect("/login");
 });
 
-export { handleForgotPassword, handleVerifyResetOTP, handleResetPassword };
+//---------------------------- REDIS LIVE OTP COOLDOWN TIMER CHECK ---------------------
+const handleGetOTPCooldown = asyncHandler(async (req: Request, res: Response) => {
+  const email = typeof req.query.email === "string" ? req.query.email : "";
+  if (!email) return res.status(400).json({ cooldown: 0 });
+
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");   
+
+  const cooldown = await redis.ttl(`password-resend-otp-cooldown-timer:${email}`);
+  return res.status(200).json({ cooldown: cooldown > 0 ? cooldown : 0 });
+});
+
+export { 
+  handleForgotPassword, 
+  handleVerifyResetOTP, 
+  handleResetPassword,
+  handleGetOTPCooldown
+  };

@@ -5,7 +5,7 @@ import { validateRender } from "../../shared/middlewares/validation.middleware.j
 import { signupSchema, loginSchema, forgotPasswordSchema, verifyOtpSchema, resetPasswordSchema } from "./auth.schemas.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
 import { signupLimiter, loginLimiter } from "../../shared/middlewares/authRateLimit.middleware.js";
-import { handleForgotPassword, handleVerifyResetOTP, handleResetPassword } from "./password.controller.js";
+import { handleForgotPassword, handleVerifyResetOTP, handleResetPassword, handleGetOTPCooldown } from "./password.controller.js";
 import OTPLimiter from "../../shared/middlewares/otpLimiter.middleware.js";
 
 const router = Router();
@@ -36,5 +36,8 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 
 // GOOGLE CALLBACK
 router.get("/google/callback", passport.authenticate("google", { session: false, failureRedirect: "/login" }), handleGoogleCallback);
+
+//REDIS LIVE OTP COOLDOWN TIMER CHECK
+router.get("/otp-cooldown", handleGetOTPCooldown);
 
 export default router;

@@ -12,7 +12,6 @@ if (otpBoxes.length) {
   otpBoxes.forEach((box, index) => {
     box.addEventListener("input", (e) => {
       const value = e.target.value.replace(/\D/g, "");
-
       e.target.value = value;
 
       if (value && index < otpBoxes.length - 1) {
@@ -58,29 +57,73 @@ if (otpBoxes.length) {
   }
 }
 
-//---------------- Resend OTP Timer ----------------//
-const resendSection = document.querySelector(".resend-section");
-const resendBtn = document.getElementById("resendBtn");
-const resendTimer = document.getElementById("resendTimer");
-
-if (resendSection && resendBtn && resendTimer) {
-  let timeLeft = Number(resendSection.dataset.cooldown) || 0;
-
-  if (timeLeft > 0) {
-    resendBtn.disabled = true;
-    resendTimer.textContent = `Resend OTP in ${timeLeft}s`;
-  } else {
-  resendBtn.disabled = false;
+function clearOtpBoxes() {
+  otpBoxes.forEach((box) => (box.value = ""));
+  if (otpHiddenInput) otpHiddenInput.value = "";
+  if (otpValue) otpValue.value = "";
 }
 
-  const timer = setInterval(() => {
+document.addEventListener("DOMContentLoaded", () => {
+  clearOtpBoxes();
+  setTimeout(clearOtpBoxes, 50);
+});
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    clearOtpBoxes();
+    setTimeout(clearOtpBoxes, 50);
+  }
+});
+//---------------- Resend OTP Timer ----------------//
+let cooldownInterval = null;
+
+function initResendTimer() {
+  const resendSection = document.querySelector(".resend-section");
+  const resendBtn = document.getElementById("resendBtn");
+  const resendTimer = document.getElementById("resendTimer");
+
+  if (!resendSection || !resendBtn || !resendTimer) return;
+
+  const emailInput = document.querySelector('input[name="email"]');
+  const email = emailInput ? emailInput.value : "";
+
+  clearInterval(cooldownInterval); 
+
+  resendBtn.disabled = true;
+  resendTimer.textContent = "Checking...";
+
+  fetch(`/auth/otp-cooldown?email=${encodeURIComponent(email)}`, { cache: "no-store" })
+  .then((res) => res.json())
+  .then((data) => startCountdown(data.cooldown || 0))
+  .catch((err) => {
+    console.error("OTP cooldown fetch failed:", err);
+    startCountdown(0);
+  });
+
+  function startCountdown(timeLeft) {
     if (timeLeft <= 0) {
-      clearInterval(timer);
       resendBtn.disabled = false;
       resendTimer.textContent = "You can now resend the OTP.";
       return;
     }
-    timeLeft--;
+
+    resendBtn.disabled = true;
     resendTimer.textContent = `Resend OTP in ${timeLeft}s`;
-  }, 1000);
+
+    cooldownInterval = setInterval(() => {
+      timeLeft--;
+      if (timeLeft <= 0) {
+        clearInterval(cooldownInterval);
+        resendBtn.disabled = false;
+        resendTimer.textContent = "You can now resend the OTP.";
+        return;
+      }
+      resendTimer.textContent = `Resend OTP in ${timeLeft}s`;
+    }, 1000);
+  }
 }
+
+document.addEventListener("DOMContentLoaded", initResendTimer);
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) initResendTimer();
+});
