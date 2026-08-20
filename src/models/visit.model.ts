@@ -4,6 +4,14 @@ import type { HydratedDocument } from "mongoose";
 // -----------------------------VISIT INTERFACE-----------------------------
 export interface IVisit {
   linkId: mongoose.Types.ObjectId;
+  ip?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
+  referrer?: string;
   timestamp: Date;
 }
 
@@ -23,6 +31,39 @@ const visitSchema = new mongoose.Schema<IVisit, VisitModel>(
       index: true,
     },
 
+    ip: {
+      type: String,
+      select: false,
+    },
+
+    country: {
+      type: String,
+    },
+
+    region: {
+      type: String,
+    },
+
+    city: {
+      type: String,
+    },
+
+    browser: {
+      type: String,
+    },
+
+    os: {
+      type: String,
+    },
+
+    device: {
+      type: String,
+    },
+
+    referrer: {
+      type: String,
+    },
+
     timestamp: {
       type: Date,
       default: Date.now,
@@ -35,8 +76,8 @@ const visitSchema = new mongoose.Schema<IVisit, VisitModel>(
 );
 
 visitSchema.index({
-  linkId: 1,  //ascending order
-  timestamp: -1,  //descending order
+  linkId: 1,  
+  timestamp: -1,  
 });
 
 const Visit = mongoose.model<IVisit, VisitModel>("Visit", visitSchema);

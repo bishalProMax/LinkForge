@@ -2,16 +2,17 @@ import { nanoid } from "nanoid";
 import QRCode from "../../models/qrCode.model.js";
 import { buildQRSvg, rasterizeSvgToPng } from "../../shared/services/qrRenderer.service.js";
 import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, deleteQRByQrId,getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields } from "./qr.repository.js";
-import { deleteQRScansByQrId, createQRScan, countQRScans, getQRScans } from "./qrScan.repository.js";
+import { deleteQRScansByQrId, countQRScans, getQRScans } from "./qrScan.repository.js";
 import { deleteVisitsByLinkId } from "../url/visit.repository.js";
 import { findURLByShortId, updateURLDisabledStatus, deleteURLByShortId, findURLById, createURL, updateURLBasicInfo } from "../url/url.repository.js";
 import qrGenerationQueue from "../../infrastructure/queues/qrGeneration.queue.js";
 import qrAssetCleanupQueue from "../../infrastructure/queues/qrAssetCleanup.queue.js";
+import qrScanEnrichmentQueue from "../../infrastructure/queues/qrScanEnrichment.queue.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
 import logger from "../../infrastructure/configs/logger.config.js";
-import type { CreateStandaloneQRProps, CreateLinkedQRProps, DashboardQRQueryParams, ResolvedQRTarget, EditQRProps, QRDesignInput } from "./qr.types.js";
+import type { CreateStandaloneQRProps, CreateLinkedQRProps, DashboardQRQueryParams, ResolvedQRTarget, EditQRProps, QRDesignInput, ScanContext } from "./qr.types.js";
 
 const DEFAULT_DESIGN = { fgColor: "#000000", bgColor: "#ffffff", dotStyle: "square" as const, frameShape: "sharp" as const };
 const QR_DASHBOARD_LIMIT = 9;
@@ -139,7 +140,7 @@ const getUserQRs = async (userId: string, page: number, limit: number, filters: 
   return { data, total };
 };
 
-// Disable — cascades to the linked URL if linked
+// Disable standalone QR — cascades to the linked URL if linked
 const toggleDisableQR = async (qrId: string, userId: string, forcedState?: boolean): Promise<boolean> => {
   const qr = await findQRById(qrId);
   if (!qr) return false;
@@ -157,14 +158,14 @@ const toggleDisableQR = async (qrId: string, userId: string, forcedState?: boole
   return true;
 };
 
-//DISABLE STANDALONE QR
+//Disable qr which is linked to url, incoming from URL dashboard
 const toggleQRDisabledByMongoId = async (qrMongoId: string, userId: string, nextDisabled: boolean): Promise<void> => {
   const qr = await QRCode.findById(qrMongoId);
   if (!qr || qr.createdBy.toString() !== userId) return;
   await updateQRDisabledStatus(qr.qrId, nextDisabled);
 };
 
-// DELETE STANDALONE QR
+// delete qr which is linked to URL, incoming from URL dashboard
 const deleteQRByLinkedUrl = async (qrMongoId: string, userId: string): Promise<void> => {
   const qr = await QRCode.findById(qrMongoId);
   if (!qr || qr.createdBy.toString() !== userId) return;
@@ -177,7 +178,7 @@ const deleteQRByLinkedUrl = async (qrMongoId: string, userId: string): Promise<v
   }
 };
 
-// Delete both qr and linked URL
+// Delete standalone qr, also check if URL linked delete url also
 const deleteQR = async (qrId: string, userId: string): Promise<boolean> => {
   const qr = await findQRById(qrId);
 
@@ -236,8 +237,13 @@ const resolveQRRedirectTarget = async (qrId: string): Promise<ResolvedQRTarget |
 };
 
 // Records a scan, only ever called after the redirect target is confirmed valid
-const recordQRScan = async (qrMongoId: string): Promise<void> => {
-  await createQRScan(qrMongoId);
+const recordQRScan = async (qrMongoId: string, scanContext: ScanContext): Promise<void> => {
+  await qrScanEnrichmentQueue.add("enrich-scan", {
+    qrId: qrMongoId,
+    ip: scanContext.ip,
+    userAgent: scanContext.userAgent,
+    referrer: scanContext.referrer,
+  });
 };
 
 //GET QR CREATION STATUS (PENDING, READY OR FAILED)

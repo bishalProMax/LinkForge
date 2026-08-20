@@ -71,3 +71,17 @@ export interface QRGenerationJob {
 export interface QRAssetCleanupJob {
   cloudinaryPublicId: string;
 }
+
+export interface VisitEnrichmentJob {
+  linkId: string;
+  ip: string;
+  userAgent?: string;
+  referrer?: string;
+}
+
+export interface QRScanEnrichmentJob {
+  qrId: string;
+  ip: string;
+  userAgent?: string;
+  referrer?: string;
+}

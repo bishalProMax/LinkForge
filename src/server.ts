@@ -7,13 +7,18 @@ import cleanupWorker from "./workers/cleanup.worker.js";
 import securityEventWorker from "./workers/securityEvent.worker.js";
 import qrGenerationWorker from "./workers/qrGeneration.worker.js";
 import qrAssetCleanupWorker from "./workers/qrAssetCleanup.worker.js";
+import visitEnrichmentWorker from "./workers/visitEnrichment.worker.js";
+import qrScanEnrichmentWorker from "./workers/qrScanEnrichment.worker.js";
 import qrGenerationQueue from "./infrastructure/queues/qrGeneration.queue.js";
 import qrAssetCleanupQueue from "./infrastructure/queues/qrAssetCleanup.queue.js";
 import cleanupQueue from "./infrastructure/queues/cleanup.queue.js";
 import emailQueue from "./infrastructure/queues/email.queue.js";
 import securityEventQueue from "./infrastructure/queues/securityEvent.queue.js";
+import visitEnrichmentQueue from "./infrastructure/queues/visitEnrichment.queue.js";
+import qrScanEnrichmentQueue from "./infrastructure/queues/qrScanEnrichment.queue.js";
 import redis from "./infrastructure/configs/redis.config.js";
 import connectToMongoDB from "./infrastructure/configs/db.config.js";
+import { loadGeoIPReader } from "./infrastructure/configs/geoip.config.js";
 import logger from "./infrastructure/configs/logger.config.js";
 
 let server: ReturnType<typeof app.listen>;
@@ -23,7 +28,8 @@ const sockets = new Set<Socket>();
   await cleanupQueue.add("cleanup-unverified-users", { triggeredBy: "cron" }, { jobId: "cleanup-unverified-users", repeat: { every: 1000 * 60 * 60 } });
 })();
 
-connectToMongoDB()
+loadGeoIPReader()
+  .then(() => connectToMongoDB())
   .then(() => {
     const PORT = process.env.PORT || 8000;
     server = app.listen(PORT, () => logger.info({ port: PORT }, "Server started "));
@@ -39,7 +45,7 @@ connectToMongoDB()
   })
 
   .catch((error: unknown) => {
-    logger.error({ err: error }, "MongoDB connection failed");
+    logger.error({ err: error }, "Startup failed (MongoDB or MaxMind GeoLite2 database)");
     process.exit(1);
   });
 
@@ -64,10 +70,10 @@ const gracefulShutdown = async (signal: string): Promise<void> => {
       logger.info("HTTP server closed");
     }
 
-    await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close(), qrGenerationWorker.close(), qrAssetCleanupWorker.close()]);
+    await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close(), qrGenerationWorker.close(), qrAssetCleanupWorker.close(), visitEnrichmentWorker.close(), qrScanEnrichmentWorker.close()]);
     logger.info("BullMQ workers closed");
 
-    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close(), qrGenerationQueue.close(), qrAssetCleanupQueue.close()]);
+    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close(), qrGenerationQueue.close(), qrAssetCleanupQueue.close(), visitEnrichmentQueue.close(), qrScanEnrichmentQueue.close()]);
     logger.info("BullMQ queues closed");
 
     await redis.quit();

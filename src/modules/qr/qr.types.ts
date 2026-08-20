@@ -60,3 +60,9 @@ export interface CreateQRCodeData {
   };
   status: "PENDING" | "READY" | "FAILED";
 }
+
+export interface ScanContext {
+  ip: string;
+  userAgent?: string;
+  referrer?: string;
+}

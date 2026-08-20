@@ -86,7 +86,12 @@ const handleRedirectQR = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  await recordQRScan(target.qrMongoId);
+  await recordQRScan(target.qrMongoId, {
+    ip: req.ip ?? "",
+    userAgent: req.headers["user-agent"],
+    referrer: req.headers["referer"] as string | undefined,
+  });
+  
   return res.redirect(target.destination);
 });
 
@@ -132,7 +137,7 @@ const handleGetAllQRs = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// TOGGLE DISABLE QR
+// disable standalone QR, if linked url exist that too
 const handleToggleDisableQR = asyncHandler(async (req: Request, res: Response) => {
   const qrId = req.params.qrId as string;
 
@@ -146,7 +151,7 @@ const handleToggleDisableQR = asyncHandler(async (req: Request, res: Response) =
   }
 });
 
-// DELETE QR
+// Delete standalone qr, also check if URL linked delete url also
 const handleDeleteQR = asyncHandler(async (req: Request, res: Response) => {
   const qrId = req.params.qrId as string;
 

@@ -65,7 +65,12 @@ const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => 
     });
   }
 
-  const entry = await redirectToOriginalURL(shortId);
+  const entry = await redirectToOriginalURL(shortId, {
+    ip: req.ip ?? "",
+    userAgent: req.headers["user-agent"],
+    referrer: req.headers["referer"] as string | undefined,
+  });
+
   return res.redirect(entry.redirectURL);
 });
 
@@ -160,7 +165,7 @@ const handleToggleDisableURL = asyncHandler(async (req: Request, res: Response) 
   }
 });
 
-// delete a short URL
+// delete a short URL and linked QR if any
 const handleDeleteURL = asyncHandler(async (req: Request, res: Response) => {
   const shortId = req.params.shortId as string;
 

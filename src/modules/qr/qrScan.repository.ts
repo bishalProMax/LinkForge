@@ -1,7 +1,10 @@
 import QRScan from "../../models/qrScan.model.js";
+import type { IQRScan } from "../../models/qrScan.model.js";
 
-const createQRScan = (qrId: string) => {
-  return QRScan.create({ qrId });
+type CreateQRScanData = Omit<IQRScan, "timestamp">;
+
+const createQRScan = (data: CreateQRScanData) => {
+  return QRScan.create(data);
 };
 
 const countQRScans = (qrId: string) => {

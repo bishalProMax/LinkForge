@@ -41,3 +41,9 @@ export interface DashboardQueryParams {
   expiry?: "all" | "set" | "never";
   sortBy?: "newest" | "oldest" | "mostClicked" | "leastClicked";
 }
+
+export interface VisitContext {
+  ip: string;
+  userAgent?: string;
+  referrer?: string;
+}

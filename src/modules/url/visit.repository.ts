@@ -1,9 +1,10 @@
 import Visit from "../../models/visit.model.js";
+import type { IVisit } from "../../models/visit.model.js";
 
-const createVisit = (linkId: string) => {
-  return Visit.create({
-    linkId,
-  });
+type CreateVisitData = Omit<IVisit, "timestamp">;
+
+const createVisit = (data: CreateVisitData) => {
+  return Visit.create(data);
 };
 
 //countDocuments is faster than using .length after find() method
@@ -20,7 +21,7 @@ const getVisits = (linkId: string) => {
     .sort({ timestamp: -1 });
 };
 
-const deleteVisitsByLinkId = (linkId: string) => {  //didnt used for now
+const deleteVisitsByLinkId = (linkId: string) => {  
   return Visit.deleteMany({
     linkId,
   });

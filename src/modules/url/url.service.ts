@@ -1,11 +1,12 @@
 import { nanoid } from "nanoid";
 import { toggleDisableQR as toggleQRDisabledByMongoId, deleteQRByLinkedUrl } from "../qr/qr.service.js";
 import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus, countURLsNewerThan, updateURLBasicInfo } from "./url.repository.js";
-import { createVisit, countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
+import { countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
+import visitEnrichmentQueue from "../../infrastructure/queues/visitEnrichment.queue.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
 import logger from "../../infrastructure/configs/logger.config.js";
-import type { DashboardQueryParams, GenerateShortURLProps } from "./url.types.js";
+import type { DashboardQueryParams, GenerateShortURLProps, VisitContext } from "./url.types.js";
 
 const RESERVED_ALIASES = ["generate","analytics"]
 const DASHBOARD_LIMIT = 6;
@@ -51,7 +52,7 @@ const generateShortURL = async ({ originalURL, userId, customAlias, expiration, 
 };
 
 // Redirect to the original URL based on the short ID
-const redirectToOriginalURL = async (shortId: string): Promise<any> => {
+const redirectToOriginalURL = async (shortId: string, visitContext: VisitContext): Promise<any> => {
   const url = await findURLByShortId(shortId);
 
   if (!url) {
@@ -66,7 +67,13 @@ const redirectToOriginalURL = async (shortId: string): Promise<any> => {
     return null;
   }
 
-  await createVisit(url._id.toString());
+  await visitEnrichmentQueue.add("enrich-visit", {
+    linkId: url._id.toString(),
+    ip: visitContext.ip,
+    userAgent: visitContext.userAgent,
+    referrer: visitContext.referrer,
+  });
+
   return url;
 };
 
@@ -94,7 +101,7 @@ const getUserURLs = async (userId: string, page: number, limit: number, filters:
   return { data, total };
 };
 
-// Delete a short URL and its associated visits
+// Delete a short URL and its associated visits, if any qr linked delete that too
 const deleteURL = async (shortId: string, userId: string): Promise<boolean> => {
   const url = await findURLByShortId(shortId);
   if (!url) return false;
@@ -112,7 +119,7 @@ const deleteURL = async (shortId: string, userId: string): Promise<boolean> => {
   return true;
 };
 
-// toggle disable a short URL
+// toggle disable a short URL, if linked QR exist that too
 const toggleDisableURL = async (shortId: string, userId: string): Promise<boolean> => {
   const url = await findURLByShortId(shortId);
   if (!url) return false;

@@ -4,6 +4,14 @@ import type { HydratedDocument } from "mongoose";
 // -----------------------------QRSCAN INTERFACE-----------------------------
 export interface IQRScan {
   qrId: mongoose.Types.ObjectId;
+  ip?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
+  referrer?: string;
   timestamp: Date;
 }
 
@@ -21,6 +29,39 @@ const qrScanSchema = new mongoose.Schema<IQRScan, QRScanModel>(
       ref: "QRCode",
       required: true,
       index: true,
+    },
+
+    ip: {
+      type: String,
+      select: false,
+    },
+
+    country: {
+      type: String,
+    },
+
+    region: {
+      type: String,
+    },
+
+    city: {
+      type: String,
+    },
+
+    browser: {
+      type: String,
+    },
+
+    os: {
+      type: String,
+    },
+
+    device: {
+      type: String,
+    },
+
+    referrer: {
+      type: String,
     },
 
     timestamp: {
