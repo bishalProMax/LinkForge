@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap"
+    rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
   <link rel="icon" type="image/png" href="/images/icon.png" />
   <link rel="stylesheet" href="/css/pages/analytics.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
   <script type="module" src="/js/main.js"></script>
-  
+
   <title>Analytics</title>
 </head>
 
@@ -20,11 +23,15 @@
     <header class="dashboard-header">
       <div>
         <h1>Analytics</h1>
-        <small>Welcome back, <strong><%= name %></strong> — track how your links and QR codes perform</small>
+        <small>Welcome back, <strong>
+            <%= name %>
+          </strong> — track how your links and QR codes perform</small>
       </div>
       <div style="display:flex; gap:10px;">
-        <a href="/dashboard" class="pagination-btn nav" style="text-decoration:none;"><i class="ri-links-line"></i> Links</a>
-        <a href="/qr" class="pagination-btn nav" style="text-decoration:none;"><i class="ri-qr-code-line"></i> QR Codes</a>
+        <a href="/dashboard" class="pagination-btn nav" style="text-decoration:none;"><i class="ri-links-line"></i>
+          Links</a>
+        <a href="/qr" class="pagination-btn nav" style="text-decoration:none;"><i class="ri-qr-code-line"></i> QR
+          Codes</a>
       </div>
     </header>
 
@@ -33,92 +40,125 @@
       <button type="button" class="analytics-type-btn" data-type="qr"><i class="ri-qr-code-line"></i> QR Code</button>
     </div>
 
-    <form class="url-toolbar" id="analyticsSearchForm">
-      <div class="search-input-wrap">
-        <i class="ri-search-line search-icon"></i>
-        <input type="text" id="analyticsSearchInput" placeholder="Search by short code or QR ID for a specific item…" autocomplete="off" />
-        <button type="button" class="clear-search-btn is-hidden" id="analyticsClearSearchBtn"><i class="ri-close-line"></i></button>
+    <% if (role==="ADMIN" || role==="SUPER_ADMIN" ) { %>
+      <div class="analytics-admin-search">
+        <div class="search-input-wrap">
+          <i class="ri-user-search-line search-icon"></i>
+          <input type="text" id="adminUserSearchInput" placeholder="Scope to a specific user (name or email)…"
+            autocomplete="off" />
+        </div>
+        <div id="adminUserSearchResults" class="admin-user-results"></div>
+        <div id="adminScopedUserPill" class="admin-scoped-pill" style="display:none;">
+          Scoped to: <strong id="adminScopedUserLabel"></strong>
+          <button type="button" id="clearAdminUserScope"><i class="ri-close-line"></i></button>
+        </div>
       </div>
-      <button type="submit" class="pagination-btn nav">Search</button>
-    </form>
+      <a href="#" id="exportRawCsvBtn" class="pagination-btn nav"
+        style="text-decoration:none; display:inline-flex; margin-bottom:16px;">
+        <i class="ri-download-2-line"></i> Export Raw Activity (CSV, includes IP)
+      </a>
+      <% } else { %>
+        <a href="#" id="exportRawCsvBtn" class="pagination-btn nav"
+          style="text-decoration:none; display:inline-flex; margin-bottom:16px;">
+          <i class="ri-download-2-line"></i> Export My Activity (CSV)
+        </a>
+        <% } %>
 
-    <div class="analytics-stat-grid">
-      <div class="analytics-stat-card">
-        <div class="analytics-stat-label"><i class="ri-cursor-line"></i> Total Activity</div>
-        <div class="analytics-stat-value" id="statTotal">0</div>
-      </div>
-      <div class="analytics-stat-card">
-        <div class="analytics-stat-label"><i class="ri-checkbox-circle-line"></i> Active</div>
-        <div class="analytics-stat-value" id="statActive">0</div>
-      </div>
-      <div class="analytics-stat-card">
-        <div class="analytics-stat-label"><i class="ri-time-line"></i> Expired</div>
-        <div class="analytics-stat-value" id="statExpired">0</div>
-      </div>
-      <div class="analytics-stat-card">
-        <div class="analytics-stat-label"><i class="ri-calendar-line"></i> First Activity</div>
-        <div class="analytics-stat-value" id="statFirst">—</div>
-      </div>
-      <div class="analytics-stat-card">
-        <div class="analytics-stat-label"><i class="ri-calendar-check-line"></i> Last Activity</div>
-        <div class="analytics-stat-value" id="statLast">—</div>
-      </div>
-    </div>
+          <form class="url-toolbar" id="analyticsSearchForm">
+            <div class="search-input-wrap">
+              <i class="ri-search-line search-icon"></i>
+              <input type="text" id="analyticsSearchInput"
+                placeholder="Search by short code or QR ID for a specific item…" autocomplete="off" />
+              <button type="button" class="clear-search-btn is-hidden" id="analyticsClearSearchBtn"><i
+                  class="ri-close-line"></i></button>
+            </div>
+            <button type="submit" class="pagination-btn nav">Search</button>
+          </form>
 
-    <div class="chart-grid">
-      <% const chartCards = [
-        { metric: 'timeSeries', title: 'Clicks / Scans Over Time', canvasId: 'chart-timeSeries' },
-        { metric: 'topItems', title: 'Top Performing', canvasId: 'chart-topItems' },
-        { metric: 'country', title: 'Top Countries', canvasId: 'chart-country' },
-        { metric: 'region', title: 'Top Regions', canvasId: 'chart-region' },
-        { metric: 'city', title: 'Top Cities', canvasId: 'chart-city' },
-        { metric: 'browser', title: 'Browsers', canvasId: 'chart-browsers' },
-        { metric: 'os', title: 'Operating Systems', canvasId: 'chart-os' },
-        { metric: 'device', title: 'Device Types', canvasId: 'chart-devices' },
-      ]; %>
-
-      <% chartCards.forEach((c) => { %>
-        <div class="chart-card" data-metric="<%= c.metric %>">
-          <div class="chart-card-header">
-            <h3><%= c.title %></h3>
-            <div class="chart-download-wrap">
-              <button class="chart-icon-btn chart-download-trigger" type="button" title="Download">
-                <i class="ri-download-2-line"></i>
-              </button>
-              <div class="chart-download-menu">
-                <button class="chart-download-option" data-format="png">PNG</button>
-                <button class="chart-download-option" data-format="jpeg">JPEG</button>
-                <button class="chart-download-option" data-format="pdf">PDF</button>
-                <button class="chart-download-option" data-format="csv">CSV</button>
-              </div>
+          <div class="analytics-stat-grid">
+            <div class="analytics-stat-card">
+              <div class="analytics-stat-label"><i class="ri-cursor-line"></i> Total Activity</div>
+              <div class="analytics-stat-value" id="statTotal">0</div>
+            </div>
+            <div class="analytics-stat-card">
+              <div class="analytics-stat-label"><i class="ri-checkbox-circle-line"></i> Active</div>
+              <div class="analytics-stat-value" id="statActive">0</div>
+            </div>
+            <div class="analytics-stat-card">
+              <div class="analytics-stat-label"><i class="ri-time-line"></i> Expired</div>
+              <div class="analytics-stat-value" id="statExpired">0</div>
+            </div>
+            <div class="analytics-stat-card">
+              <div class="analytics-stat-label"><i class="ri-calendar-line"></i> First Activity</div>
+              <div class="analytics-stat-value" id="statFirst">—</div>
+            </div>
+            <div class="analytics-stat-card">
+              <div class="analytics-stat-label"><i class="ri-calendar-check-line"></i> Last Activity</div>
+              <div class="analytics-stat-value" id="statLast">—</div>
             </div>
           </div>
-          <div class="chart-canvas-wrap">
-            <canvas id="<%= c.canvasId %>"></canvas>
-          </div>
-        </div>
-      <% }) %>
 
-      <div class="chart-card chart-card--table" data-metric="referrer">
-        <div class="chart-card-header">
-          <h3>Referrers</h3>
-          <div class="chart-download-wrap">
-            <button class="chart-icon-btn chart-download-trigger" type="button" title="Download">
-              <i class="ri-download-2-line"></i>
-            </button>
-            <div class="chart-download-menu">
-              <button class="chart-download-option" data-format="csv">CSV</button>
-            </div>
+          <div class="chart-grid">
+            <% const chartCards=[ { metric: 'timeSeries' , title: 'Clicks / Scans Over Time' ,
+              canvasId: 'chart-timeSeries' }, { metric: 'topItems' , title: 'Top Performing' ,
+              canvasId: 'chart-topItems' }, { metric: 'country' , title: 'Top Countries' , canvasId: 'chart-country' },
+              { metric: 'region' , title: 'Top Regions' , canvasId: 'chart-region' }, { metric: 'city' ,
+              title: 'Top Cities' , canvasId: 'chart-city' }, { metric: 'browser' , title: 'Browsers' ,
+              canvasId: 'chart-browsers' }, { metric: 'os' , title: 'Operating Systems' , canvasId: 'chart-os' }, {
+              metric: 'device' , title: 'Device Types' , canvasId: 'chart-devices' }, ]; %>
+
+              <% chartCards.forEach((c)=> { %>
+                <div class="chart-card" data-metric="<%= c.metric %>">
+                  <div class="chart-card-header">
+                    <h3>
+                      <%= c.title %>
+                    </h3>
+                    <div class="chart-download-wrap">
+                      <button class="chart-icon-btn chart-download-trigger" type="button" title="Download">
+                        <i class="ri-download-2-line"></i>
+                      </button>
+                      <div class="chart-download-menu">
+                        <button class="chart-download-option" data-format="png">PNG</button>
+                        <button class="chart-download-option" data-format="jpeg">JPEG</button>
+                        <button class="chart-download-option" data-format="pdf">PDF</button>
+                        <button class="chart-download-option" data-format="csv">CSV</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="chart-canvas-wrap">
+                    <canvas id="<%= c.canvasId %>"></canvas>
+                  </div>
+                </div>
+                <% }) %>
+
+                  <div class="chart-card chart-card--table" data-metric="referrer">
+                    <div class="chart-card-header">
+                      <h3>Referrers</h3>
+                      <div class="chart-download-wrap">
+                        <button class="chart-icon-btn chart-download-trigger" type="button" title="Download">
+                          <i class="ri-download-2-line"></i>
+                        </button>
+                        <div class="chart-download-menu">
+                          <button class="chart-download-option" data-format="csv">CSV</button>
+                        </div>
+                      </div>
+                    </div>
+                    <table class="referrer-table">
+                      <thead>
+                        <tr>
+                          <th>Referrer</th>
+                          <th>Count</th>
+                        </tr>
+                      </thead>
+                      <tbody id="referrerTableBody">
+                        <tr>
+                          <td colspan="2" class="empty-cell">Loading…</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
           </div>
-        </div>
-        <table class="referrer-table">
-          <thead><tr><th>Referrer</th><th>Count</th></tr></thead>
-          <tbody id="referrerTableBody">
-            <tr><td colspan="2" class="empty-cell">Loading…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
   </div>
 </body>
+
 </html>

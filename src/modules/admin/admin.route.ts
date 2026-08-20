@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { handleCreateRoleInvite, handleBanUser, handleUnbanUser, handlePromoteUser, handleDemoteUser, handleGetAllUsers } from "./admin.controller.js";
+import { handleCreateRoleInvite, handleBanUser, handleUnbanUser, handlePromoteUser, handleDemoteUser, handleGetAllUsers, handleSearchUsers } from "./admin.controller.js";
 import { handleGetAuditReport, handleExportAuditCSV } from "./report.controller.js";
 import { createInviteSchema } from "./admin.schemas.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
@@ -27,4 +27,7 @@ router.route("/reports").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN
 
 //export reports route
 router.route("/reports/export").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN"), handleExportAuditCSV);
+
+router.route("/users/search").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN"), handleSearchUsers);
+
 export default router;

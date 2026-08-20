@@ -1,5 +1,5 @@
 import { findUserByEmail, findUserById, setUserBannedStatus, updateUserRole } from "../user/user.repository.js";
-import { findRoleInviteByEmail, createRoleInvite, getAllUsers as getAllUsersRepo } from "./admin.repository.js";
+import { findRoleInviteByEmail, createRoleInvite, getAllUsers as getAllUsersRepo, searchUsersByQuery as searchUsersByQueryRepo } from "./admin.repository.js";
 import { revokeAllUserSessions } from "../../shared/services/jwt.service.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 import type { CreateInviteProps, CreateInviteResult, BanActionProps, BanActionResult, RoleChangeActionProps, RoleChangeActionResult, GetAllUsersProps, AdminUserListItem } from "../admin/admin.types.js";
@@ -143,4 +143,16 @@ const getAllUsers = async ({ actingUserRole, page, limit }: GetAllUsersProps): P
   return getAllUsersRepo(actingUserRole, page, limit);
 };
 
-export { createInvite, banUser, unbanUser, promoteToSuperAdmin, demoteToAdmin, getAllUsers };
+const searchUsers = (query: string, actingUserRole: "ADMIN" | "SUPER_ADMIN") => {
+  return searchUsersByQueryRepo(query, actingUserRole);
+};
+
+export { 
+  createInvite, 
+  banUser, 
+  unbanUser, 
+  promoteToSuperAdmin, 
+  demoteToAdmin, 
+  getAllUsers,
+  searchUsers 
+  };

@@ -84,9 +84,10 @@ if (typeToggleContainer) {
   };
 
   const loadAnalytics = async (params) => {
-    window.__analyticsCurrentParams = params;
-
-    const query = new URLSearchParams(params).toString();
+    const adminUserId = window.__analyticsAdminUserId;
+    const fullParams = adminUserId ? { ...params, userId: adminUserId } : params;
+    window.__analyticsCurrentParams = fullParams;
+    const query = new URLSearchParams(fullParams).toString();
 
     try {
       const res = await fetch(`/analytics/overview?${query}`);
@@ -133,6 +134,8 @@ if (typeToggleContainer) {
     clearSearchBtn.classList.toggle("is-hidden", !currentId);
   };
 
+  window.addEventListener("analytics:admin-scope-changed", () => refresh());
+
   typeToggleButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       currentType = btn.dataset.type;
@@ -157,4 +160,12 @@ if (typeToggleContainer) {
   if (currentId && searchInput) searchInput.value = currentId;
 
   refresh();
+
+  document.getElementById("exportRawCsvBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    const params = window.__analyticsCurrentParams;
+    if (!params) return;
+    const query = new URLSearchParams(params).toString();
+    window.location.href = `/analytics/export/raw?${query}`;
+  });
 }

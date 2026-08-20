@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { findURLByShortId, getURLIdsByUserId, countURLStatusByIds } from "../url/url.repository.js";
 import { findQRById, getQRIdsByUserId, countQRStatusByIds } from "../qr/qr.repository.js";
-import { getTimeSeries, getTopItems, getFieldBreakdown, getScopedStats } from "./analytics.repository.js";
+import { getTimeSeries, getTopItems, getFieldBreakdown, getScopedStats, getRawEvents } from "./analytics.repository.js";
 import type { AnalyticsQueryParams, AnalyticsOverview, Requester, ExportMetric } from "./analytics.types.js";
 
 interface ResolvedScope {
@@ -9,8 +9,10 @@ interface ResolvedScope {
   isSingleItem: boolean;
 }
 
+const isAdminRole = (role: Requester["role"]): boolean => role === "ADMIN" || role === "SUPER_ADMIN";
+
 const resolveScope = async (params: AnalyticsQueryParams, requester: Requester): Promise<ResolvedScope | null> => {
-  const isAdmin = requester.role === "ADMIN" || requester.role === "SUPER_ADMIN";
+  const isAdmin = isAdminRole(requester.role);
 
   if (params.id) {
     if (params.type === "url") {
@@ -26,15 +28,18 @@ const resolveScope = async (params: AnalyticsQueryParams, requester: Requester):
     return { ids: [qr._id], isSingleItem: true };
   }
 
+  // Admin/Super Admin searching one specific user's aggregate
   if (isAdmin && params.userId) {
     const ids = params.type === "url" ? await getURLIdsByUserId(params.userId) : await getQRIdsByUserId(params.userId);
     return { ids, isSingleItem: false };
   }
 
+  // Admin/Super Admin platform-wide aggregate — no user searched, no id restriction at all
   if (isAdmin) {
     return { ids: null, isSingleItem: false };
   }
 
+  // Regular user's own "all my links" / "all my QRs" aggregate
   const ids = params.type === "url" ? await getURLIdsByUserId(requester.id) : await getQRIdsByUserId(requester.id);
   return { ids, isSingleItem: false };
 };
@@ -95,9 +100,22 @@ const getExportData = async (metric: ExportMetric, params: AnalyticsQueryParams,
   return getFieldBreakdown(params.type, scope.ids, range, metric);
 };
 
+// Raw per-event rows for export. IP is only ever included when the requester is Admin/Super Admin —
+// never reachable by a plain USER role, even indirectly (see design spec, Section 5).
+const getRawEventsExport = async (params: AnalyticsQueryParams, requester: Requester) => {
+  const scope = await resolveScope(params, requester);
+  if (!scope) return null;
+
+  const range = buildRange(params);
+  const includeIp = isAdminRole(requester.role);
+
+  return getRawEvents(params.type, scope.ids, range, includeIp);
+};
+
 export { 
   getAnalyticsOverview, 
   getExportData, 
   resolveScope, 
-  buildRange 
+  buildRange,
+  getRawEventsExport
   };

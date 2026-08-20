@@ -205,6 +205,66 @@ body {
     padding: 24px 0 !important; 
 }
 
+.analytics-admin-search {
+  position: relative;
+  max-width: 420px;
+  margin-bottom: 16px;
+}
+
+.admin-user-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 40;
+  display: none;
+}
+
+.admin-user-results.open { 
+  display: block; 
+}
+
+.admin-user-result-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+
+.admin-user-result-item:hover { 
+  background: #eef2ff; 
+}
+.admin-user-result-item .result-email { 
+  color: #6b7280; 
+  font-size: 12px; 
+}
+
+.admin-scoped-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eef2ff;
+  border: 1px solid #c7cdfb;
+  color: #4f46e5;
+  font-size: 13px;
+}
+
+.admin-scoped-pill button { 
+  background: transparent; 
+  border: none; 
+  color: inherit; 
+  padding: 0; 
+  cursor: pointer; 
+}
+
 @media (max-width: 768px) {
   .chart-card--table { grid-column: span 1; }
 }

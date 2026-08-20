@@ -18,3 +18,4 @@ import "./standaloneQr.js";
 import "./createdLinkModal.js";
 import "./analytics.js";
 import "./analyticsExport.js";
+import "./analyticsAdmin.js";

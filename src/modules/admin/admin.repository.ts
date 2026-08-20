@@ -31,9 +31,22 @@ const getAllUsers = async (actingUserRole: "ADMIN" | "SUPER_ADMIN",page: number,
   return { data: data as unknown as AdminUserListItem[], total };
 };
 
+const searchUsersByQuery = (query: string, actingUserRole: "ADMIN" | "SUPER_ADMIN", limit = 8) => {
+  const roleFilter = actingUserRole === "ADMIN" ? { role: "USER" } : {};
+
+  return User.find({
+    ...roleFilter,
+    $or: [{ name: { $regex: query, $options: "i" } }, { email: { $regex: query, $options: "i" } }],
+  })
+    .select("name email role")
+    .limit(limit)
+    .lean();
+};
+
 export { 
 findRoleInviteByEmail,
   createRoleInvite,
   deleteRoleInviteByEmail,
-  getAllUsers
+  getAllUsers,
+  searchUsersByQuery
   }

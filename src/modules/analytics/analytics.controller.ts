@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { format } from "fast-csv";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import { getAnalyticsOverview, getExportData } from "./analytics.service.js";
+import { getAnalyticsOverview, getExportData, getRawEventsExport } from "./analytics.service.js";
 import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
 import type { AnalyticsQueryParams, ExportMetric } from "./analytics.types.js";
 
@@ -16,7 +16,6 @@ const parseParams = (req: Request): AnalyticsQueryParams => ({
   granularity: req.query.granularity === "hour" ? "hour" : "day",
 });
 
-// It powers the analytics stats cards
 const handleGetAnalyticsOverview = asyncHandler(async (req: Request, res: Response) => {
   const params = parseParams(req);
   const requester = { id: req.user!.id, role: req.user!.role };
@@ -72,8 +71,31 @@ const handleExportAnalyticsPDF = asyncHandler(async (req: Request, res: Response
   return res.status(200).send(pdfBuffer);
 });
 
+// Raw event log export. Available to any authenticated user, scoped normally — but the IP column
+// only appears in the file when the requester is Admin/Super Admin (handled inside the service layer).
+const handleExportRawEventsCSV = asyncHandler(async (req: Request, res: Response) => {
+  const params = parseParams(req);
+  const requester = { id: req.user!.id, role: req.user!.role };
+
+  const data = await getRawEventsExport(params, requester);
+
+  if (!data) {
+    return res.status(404).json({ success: false, message: "Not found, or you don't have access to this item." });
+  }
+
+  const filename = `analytics-${params.type}-raw-${new Date().toISOString().slice(0, 10)}.csv`;
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+  const csvStream = format({ headers: true });
+  csvStream.pipe(res);
+  data.forEach((row) => csvStream.write(row));
+  csvStream.end();
+});
+
 export { 
   handleGetAnalyticsOverview,
   handleExportAnalyticsCSV,
-  handleExportAnalyticsPDF
+  handleExportAnalyticsPDF,
+  handleExportRawEventsCSV
   };

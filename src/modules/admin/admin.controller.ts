@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import { createInvite, banUser, unbanUser, promoteToSuperAdmin, demoteToAdmin, getAllUsers } from "./admin.service.js";
+import { createInvite, banUser, unbanUser, promoteToSuperAdmin, demoteToAdmin, getAllUsers, searchUsers } from "./admin.service.js";
 
 
 const handleCreateRoleInvite = asyncHandler(async (req: Request, res: Response) => {
@@ -114,12 +114,24 @@ const handleGetAllUsers = asyncHandler(async (req: Request, res: Response) => {
   return res.render("adminUsers", { users,currentPage: page,totalPages,total,error,success,actingUserId: req.user!.id,actingUserRole: req.user!.role });
 });
 
+const handleSearchUsers = asyncHandler(async (req: Request, res: Response) => {
+  const query = typeof req.query.q === "string" ? req.query.q.trim() : "";
+
+  if (!query) {
+    return res.status(200).json({ success: true, users: [] });
+  }
+
+  const users = await searchUsers(query, req.user!.role as "ADMIN" | "SUPER_ADMIN");
+  return res.status(200).json({ success: true, users });
+});
+
 export { 
   handleCreateRoleInvite, 
   handleBanUser, 
   handleUnbanUser, 
   handlePromoteUser, 
   handleDemoteUser, 
-  handleGetAllUsers 
+  handleGetAllUsers,
+  handleSearchUsers 
   };
 
