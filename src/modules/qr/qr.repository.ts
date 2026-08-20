@@ -160,6 +160,17 @@ const getQRIdsByUserId = async (userId: string): Promise<mongoose.Types.ObjectId
   return qrs.map((q) => q._id as mongoose.Types.ObjectId);
 };
 
+const countQRStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promise<{ active: number; expired: number }> => {
+  const now = new Date();
+  const baseMatch: Record<string, unknown> = ids ? { _id: { $in: ids } } : {};
+
+  const [active, expired] = await Promise.all([
+    QRCode.countDocuments({ ...baseMatch, isDisabled: false, $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }),
+    QRCode.countDocuments({ ...baseMatch, expiresAt: { $ne: null, $lte: now } }),
+  ]);
+
+  return { active, expired };
+};
 export { 
   checkQrIdExists, 
   createQRCode, 
@@ -173,5 +184,6 @@ export {
   countQRsNewerThan,
   updateQRBasicInfo,
   updateQRDesignFields,
-  getQRIdsByUserId
+  getQRIdsByUserId,
+  countQRStatusByIds
   };

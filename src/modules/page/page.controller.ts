@@ -55,4 +55,27 @@ const handleShowAccountBannedPage = (req: Request, res: Response): void => {
   res.render("accountBanned");
 };
 
-export { handleShowSignupPage, handleShowLoginPage, handleShowForgotPasswordPage, handleShowLandingPage, handleShowPrivacyPage, handleShowTermsPage, handleShowAboutPage, handleShowAccountBannedPage };
+const handleShowAnalyticsPage = (req: Request, res: Response): void => {
+  const initialType = req.query.type === "qr" ? "qr" : "url";
+  const initialId = typeof req.query.id === "string" ? req.query.id : null;
+
+  res.render("analytics", {
+    name: req.user!.name,
+    role: req.user!.role,
+    baseUrl: process.env.BASE_URL,
+    initialType,
+    initialId,
+  });
+};
+
+export { 
+  handleShowSignupPage, 
+  handleShowLoginPage, 
+  handleShowForgotPasswordPage, 
+  handleShowLandingPage, 
+  handleShowPrivacyPage, 
+  handleShowTermsPage, 
+  handleShowAboutPage, 
+  handleShowAccountBannedPage, 
+  handleShowAnalyticsPage 
+  };

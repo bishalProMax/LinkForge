@@ -29,9 +29,15 @@
           </strong> — manage your QR codes here</small>
       </div>
 
-      <form action="/auth/logout" method="POST">
-        <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
-      </form>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <a href="/dashboard" class="pagination-btn nav" style="text-decoration:none;"><i class="ri-links-line"></i>
+          Links</a>
+        <a href="/analytics" class="pagination-btn nav" style="text-decoration:none;"><i class="ri-line-chart-line"></i>
+          Analytics</a>
+        <form action="/auth/logout" method="POST">
+          <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
+        </form>
+      </div>
     </header>
 
     <!-- error message -->
@@ -214,13 +220,15 @@
 
                     <!-- body -->
                     <div class="qr-card-body">
-                      <div class="qr-badges">             
+                      <div class="qr-badges">
                         <span class="qr-badge"><i class="ri-qr-code-line"></i> QR Code</span>
                         <% if (qr.linkedUrlId) { %>
                           <span class="qr-badge linked"><i class="ri-link"></i> Linked</span>
                           <% } %>
-                          <span class="qr-badge id" data-qrid-label><i class="ri-key-2-line"></i> <%= qr.qrId %></span>
-                        </div>
+                            <span class="qr-badge id" data-qrid-label><i class="ri-key-2-line"></i>
+                              <%= qr.qrId %>
+                            </span>
+                      </div>
 
                       <div class="qr-title" title="<%= qr.title %>">
                         <%= qr.title %>
@@ -559,10 +567,10 @@
       <h3>QR Code Created</h3>
 
       <div class="qr-loading-state" id="standaloneQrLoadingState">
-      <div id="standaloneQrLoader" class="dots-loader">
-        <span></span><span></span><span></span>
-      </div>
-      <p class="dots-loader-label" id="standaloneQrLoaderLabel">Generating your QR code…</p>
+        <div id="standaloneQrLoader" class="dots-loader">
+          <span></span><span></span><span></span>
+        </div>
+        <p class="dots-loader-label" id="standaloneQrLoaderLabel">Generating your QR code…</p>
       </div>
       <img id="standaloneQrImage" src="" style="max-width: 220px; display: none;" />
 

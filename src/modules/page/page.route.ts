@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { handleGetAllURL } from "../url/url.controller.js";
 import { handleShowProfilePage } from "../user/user.controller.js";
-import { handleShowSignupPage, handleShowLoginPage,handleShowForgotPasswordPage, handleShowLandingPage, handleShowTermsPage, handleShowPrivacyPage, handleShowAboutPage, handleShowAccountBannedPage} from "./page.controller.js";
+import { handleShowSignupPage, handleShowLoginPage, handleShowForgotPasswordPage, handleShowLandingPage, handleShowTermsPage, handleShowPrivacyPage, handleShowAboutPage, handleShowAccountBannedPage, handleShowAnalyticsPage } from "./page.controller.js";
 import { authenticateUser, redirectIfAuthenticated } from "../../shared/middlewares/auth.middleware.js";
 import { handleGetAllQRs } from "../qr/qr.controller.js";
 
@@ -30,5 +30,7 @@ router.route("/about").get(handleShowAboutPage);
 router.route("/account-banned").get(handleShowAccountBannedPage);
 
 router.route("/profile").get(authenticateUser, handleShowProfilePage);
+
+router.route("/analytics").get(authenticateUser, handleShowAnalyticsPage);
 
 export default router;

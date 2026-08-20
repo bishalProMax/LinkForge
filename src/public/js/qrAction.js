@@ -203,7 +203,7 @@ document.querySelectorAll(".qr-share-btn").forEach((button) => {
   });
 });
 
-// ---------------- SHOW LINK  (jump to dashboard) ----------------
+// ---------------- SHOW LINK BUTTON (jump to dashboard) ----------------
 
 document.querySelectorAll(".link-details-btn").forEach((button) => {
   button.addEventListener("click", () => {
@@ -213,7 +213,7 @@ document.querySelectorAll(".link-details-btn").forEach((button) => {
   });
 });
 
-// ---------------- CREATE SHORT LINK FOR STANDALONE QR ----------------
+// ---------------- CREATE SHORT LINK FOR STANDALONE QR BUTTON ----------------
 const createShortLinkModal = document.getElementById("createShortLinkModal");
 
 if (createShortLinkModal) {
@@ -261,6 +261,24 @@ document.querySelectorAll(".create-short-link-btn").forEach((button) => {
 shareCreatedShortLinkBtn?.addEventListener("click", () => {
   const url = shareCreatedShortLinkBtn.dataset.url;
   if (url) shareLink(url);
+});
+
+// ---------------- ANALYTICS BUTTON----------------
+document.querySelectorAll(".qr-analytics-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    const qrId = button.dataset.qrid;
+    if (!qrId) return;
+    window.location.href = `/analytics?type=qr&id=${encodeURIComponent(qrId)}`;
+  });
+});
+
+// ---------------- QR EDIT BUTTON ----------------
+document.querySelectorAll(".edit-qr-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    const qrId = button.dataset.qrid;
+    if (!qrId) return;
+    window.location.href = `/qr/${qrId}/edit`;
+  });
 });
 
 // ---------------- FILTER MODAL TRIGGER + SEARCH ----------------
@@ -317,15 +335,6 @@ document.querySelectorAll(".qr-thumb-clickable img").forEach((img) => {
   img.addEventListener("click", () => {
     document.getElementById("qrPreviewImage").src = img.src;
     openModal(document.getElementById("qrPreviewModal"));
-  });
-});
-
-// ---------------- QR EDIT BUTTON ----------------
-document.querySelectorAll(".edit-qr-btn").forEach((button) => {
-  button.addEventListener("click", () => {
-    const qrId = button.dataset.qrid;
-    if (!qrId) return;
-    window.location.href = `/qr/${qrId}/edit`;
   });
 });
 

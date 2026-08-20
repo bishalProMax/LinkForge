@@ -102,3 +102,11 @@ document.querySelectorAll(".edit-link-btn").forEach((button) => {
     window.location.href = `/url/${shortId}/edit`;
   });
 });
+
+document.querySelectorAll(".analytics-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    const shortId = button.dataset.shortid;
+    if (!shortId) return;
+    window.location.href = `/analytics?type=url&id=${encodeURIComponent(shortId)}`;
+  });
+});

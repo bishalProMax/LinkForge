@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import { findURLByShortId, getURLIdsByUserId } from "../url/url.repository.js";
-import { findQRById, getQRIdsByUserId } from "../qr/qr.repository.js";
+import { findURLByShortId, getURLIdsByUserId, countURLStatusByIds } from "../url/url.repository.js";
+import { findQRById, getQRIdsByUserId, countQRStatusByIds } from "../qr/qr.repository.js";
 import { getTimeSeries, getTopItems, getFieldBreakdown, getScopedStats } from "./analytics.repository.js";
-import type { AnalyticsQueryParams, AnalyticsOverview, Requester } from "./analytics.types.js";
+import type { AnalyticsQueryParams, AnalyticsOverview, Requester, ExportMetric } from "./analytics.types.js";
 
 interface ResolvedScope {
   ids: mongoose.Types.ObjectId[] | null;
@@ -50,9 +50,11 @@ const getAnalyticsOverview = async (params: AnalyticsQueryParams, requester: Req
 
   const range = buildRange(params);
   const granularity = params.granularity ?? "day";
+  const countStatus = params.type === "url" ? countURLStatusByIds : countQRStatusByIds;
 
-  const [stats, timeSeries, geoCountry, geoRegion, geoCity, browsers, os, devices, referrers, topItems] = await Promise.all([
+  const [stats, statusSummary, timeSeries, geoCountry, geoRegion, geoCity, browsers, os, devices, referrers, topItems] = await Promise.all([
     getScopedStats(params.type, scope.ids, range),
+    countStatus(scope.ids),
     getTimeSeries(params.type, scope.ids, range, granularity),
     getFieldBreakdown(params.type, scope.ids, range, "country"),
     getFieldBreakdown(params.type, scope.ids, range, "region"),
@@ -65,7 +67,9 @@ const getAnalyticsOverview = async (params: AnalyticsQueryParams, requester: Req
   ]);
 
   return {
+    isSingleItem: scope.isSingleItem,
     stats,
+    statusSummary,
     timeSeries,
     geo: { country: geoCountry, region: geoRegion, city: geoCity },
     device: { browsers, os, devices },
@@ -74,8 +78,26 @@ const getAnalyticsOverview = async (params: AnalyticsQueryParams, requester: Req
   };
 };
 
+const getExportData = async (metric: ExportMetric, params: AnalyticsQueryParams, requester: Requester) => {
+  const scope = await resolveScope(params, requester);
+  if (!scope) return null;
+
+  const range = buildRange(params);
+
+  if (metric === "timeseries") {
+    return getTimeSeries(params.type, scope.ids, range, params.granularity ?? "day");
+  }
+
+  if (metric === "topItems") {
+    return getTopItems(params.type, scope.ids, range);
+  }
+
+  return getFieldBreakdown(params.type, scope.ids, range, metric);
+};
+
 export { 
   getAnalyticsOverview, 
+  getExportData, 
   resolveScope, 
   buildRange 
   };

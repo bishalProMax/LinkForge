@@ -130,6 +130,17 @@ const updateURLBasicInfo = (id: string, data: { shortId?: string; redirectURL?: 
   return urls.map((u) => u._id as mongoose.Types.ObjectId);
 };
 
+const countURLStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promise<{ active: number; expired: number }> => {
+  const now = new Date();
+  const baseMatch: Record<string, unknown> = ids ? { _id: { $in: ids } } : {};
+
+  const [active, expired] = await Promise.all([
+    URL.countDocuments({ ...baseMatch, isDisabled: false, $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }),
+    URL.countDocuments({ ...baseMatch, expiresAt: { $ne: null, $lte: now } }),
+  ]);
+
+  return { active, expired };
+};
 
 export { 
   checkShortIdExists, 
@@ -142,5 +153,6 @@ export {
   createURL,
   countURLsNewerThan,
   updateURLBasicInfo,
-  getURLIdsByUserId
+  getURLIdsByUserId,
+  countURLStatusByIds
   };

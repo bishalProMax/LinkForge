@@ -21,6 +21,11 @@ export interface ScopedStats {
   lastActivity: Date | null;
 }
 
+export interface StatusSummary {
+  active: number;
+  expired: number;
+}
+
 export interface AnalyticsQueryParams {
   type: AnalyticsSourceType;
   id?: string;        
@@ -30,8 +35,14 @@ export interface AnalyticsQueryParams {
   granularity?: "hour" | "day";
 }
 
+export type BreakdownMetric = "country" | "region" | "city" | "browser" | "os" | "device" | "referrer";
+
+export type ExportMetric = "timeseries" | "topItems" | BreakdownMetric;
+
 export interface AnalyticsOverview {
+  isSingleItem: boolean;
   stats: ScopedStats;
+  statusSummary: StatusSummary;
   timeSeries: TimeSeriesPoint[];
   geo: {
     country: BreakdownPoint[];
