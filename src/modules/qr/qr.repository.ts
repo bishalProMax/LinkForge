@@ -155,6 +155,10 @@ const updateQRDesignFields = (qrId: string, design: Partial<import("../../models
   return QRCode.findOneAndUpdate({ qrId }, { $set: setFields }, { returnDocument: "after" });
 };
 
+const getQRIdsByUserId = async (userId: string): Promise<mongoose.Types.ObjectId[]> => {
+  const qrs = await QRCode.find({ createdBy: userId }).select("_id").lean();
+  return qrs.map((q) => q._id as mongoose.Types.ObjectId);
+};
 
 export { 
   checkQrIdExists, 
@@ -168,5 +172,6 @@ export {
   getQRsByUserId, 
   countQRsNewerThan,
   updateQRBasicInfo,
-  updateQRDesignFields
+  updateQRDesignFields,
+  getQRIdsByUserId
   };

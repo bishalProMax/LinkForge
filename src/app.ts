@@ -13,6 +13,7 @@ import pageRouter from "./modules/page/page.route.js";
 import authRoute from "./modules/auth/auth.route.js";
 import userRoute from "./modules/user/user.route.js";
 import qrRoute from "./modules/qr/qr.route.js";
+import analyticsRoute from "./modules/analytics/analytics.route.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -87,6 +88,7 @@ app.use("/", pageRouter)
 app.use("/auth", authRoute)
 app.use("/user", userRoute)
 app.use("/qr", qrRoute);
+app.use("/analytics", analyticsRoute);
 app.use(notFound)
 
 app.use(errorHandler)

@@ -125,6 +125,10 @@ const countURLsNewerThan = (userId: string, createdAt: Date) => {
 const updateURLBasicInfo = (id: string, data: { shortId?: string; redirectURL?: string; title?: string; expiresAt?: Date }) => { 
   return URL.findByIdAndUpdate(id, data, { returnDocument: "after" }); }; 
 
+  const getURLIdsByUserId = async (userId: string): Promise<mongoose.Types.ObjectId[]> => {
+  const urls = await URL.find({ createdBy: userId }).select("_id").lean();
+  return urls.map((u) => u._id as mongoose.Types.ObjectId);
+};
 
 
 export { 
@@ -137,5 +141,6 @@ export {
   findURLById,
   createURL,
   countURLsNewerThan,
-  updateURLBasicInfo
+  updateURLBasicInfo,
+  getURLIdsByUserId
   };
