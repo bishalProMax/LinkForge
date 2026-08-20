@@ -6,7 +6,7 @@ export interface TimeSeriesPoint {
 }
 
 export interface TopItemPoint {
-  id: string;
+  label: string;
   count: number;
 }
 

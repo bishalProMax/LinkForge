@@ -1,7 +1,11 @@
 import type { Request, Response } from "express";
+import { format } from "fast-csv";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import { getAnalyticsOverview } from "./analytics.service.js";
-import type { AnalyticsQueryParams } from "./analytics.types.js";
+import { getAnalyticsOverview, getExportData } from "./analytics.service.js";
+import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
+import type { AnalyticsQueryParams, ExportMetric } from "./analytics.types.js";
+
+const VALID_EXPORT_METRICS: ExportMetric[] = ["timeseries", "topItems", "country", "region", "city", "browser", "os", "device", "referrer"];
 
 const parseParams = (req: Request): AnalyticsQueryParams => ({
   type: req.query.type === "qr" ? "qr" : "url",
@@ -12,7 +16,7 @@ const parseParams = (req: Request): AnalyticsQueryParams => ({
   granularity: req.query.granularity === "hour" ? "hour" : "day",
 });
 
-// It powers the analytics page's stat cards + charts.
+// It powers the analytics stats cards
 const handleGetAnalyticsOverview = asyncHandler(async (req: Request, res: Response) => {
   const params = parseParams(req);
   const requester = { id: req.user!.id, role: req.user!.role };
@@ -26,4 +30,50 @@ const handleGetAnalyticsOverview = asyncHandler(async (req: Request, res: Respon
   return res.status(200).json({ success: true, ...result });
 });
 
-export { handleGetAnalyticsOverview };
+const handleExportAnalyticsCSV = asyncHandler(async (req: Request, res: Response) => {
+  const metric = req.params.metric as ExportMetric;
+
+  if (!VALID_EXPORT_METRICS.includes(metric)) {
+    return res.status(400).json({ success: false, message: "Unsupported export metric." });
+  }
+
+  const params = parseParams(req);
+  const requester = { id: req.user!.id, role: req.user!.role };
+
+  const data = await getExportData(metric, params, requester);
+
+  if (!data) {
+    return res.status(404).json({ success: false, message: "Not found, or you don't have access to this item." });
+  }
+
+  const filename = `analytics-${params.type}-${metric}-${new Date().toISOString().slice(0, 10)}.csv`;
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+  const csvStream = format({ headers: true });
+  csvStream.pipe(res);
+  data.forEach((row) => csvStream.write(row));
+  csvStream.end();
+});
+
+const handleExportAnalyticsPDF = asyncHandler(async (req: Request, res: Response) => {
+  const { imageBase64, filename } = req.body;
+
+  if (typeof imageBase64 !== "string" || !imageBase64.startsWith("data:image/png;base64,")) {
+    return res.status(400).json({ success: false, message: "A PNG image is required for PDF export." });
+  }
+
+  const pngBuffer = Buffer.from(imageBase64.split(",")[1], "base64");
+  const pdfBuffer = await buildPdfFromPng(pngBuffer);
+  const safeName = typeof filename === "string" && filename ? filename : "chart";
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="${safeName}.pdf"`);
+  return res.status(200).send(pdfBuffer);
+});
+
+export { 
+  handleGetAnalyticsOverview,
+  handleExportAnalyticsCSV,
+  handleExportAnalyticsPDF
+  };

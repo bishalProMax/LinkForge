@@ -102,7 +102,7 @@ if (typeToggleContainer) {
       toggleTopItemsCard(data.isSingleItem);
 
       renderLineChart("chart-timeSeries", data.timeSeries);
-      if (!data.isSingleItem) renderBarChart("chart-topItems", data.topItems, "id", "count");
+      if (!data.isSingleItem) renderBarChart("chart-topItems", data.topItems, "label", "count");
       renderBarChart("chart-country", data.geo.country, "label", "count");
       renderBarChart("chart-region", data.geo.region, "label", "count");
       renderBarChart("chart-city", data.geo.city, "label", "count");

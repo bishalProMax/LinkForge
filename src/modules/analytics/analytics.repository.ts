@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import Visit from "../../models/visit.model.js";
 import QRScan from "../../models/qrScan.model.js";
+import URL from "../../models/url.model.js";
+import QRCode from "../../models/qrCode.model.js";
 import type { AnalyticsSourceType, TimeSeriesPoint, TopItemPoint, BreakdownPoint, ScopedStats, DateRange } from "./analytics.types.js";
 
 const getModel = (source: AnalyticsSourceType): mongoose.Model<any> => (source === "url" ? Visit : QRScan);
@@ -20,6 +22,20 @@ const buildMatch = (idField: string, ids: mongoose.Types.ObjectId[] | null, rang
   }
 
   return match;
+};
+
+const resolveHumanReadableIds = async (source: AnalyticsSourceType, mongoIds: mongoose.Types.ObjectId[]): Promise<Map<string, string>> => {
+  const map = new Map<string, string>();
+
+  if (source === "url") {
+    const urls = await URL.find({ _id: { $in: mongoIds } }).select("shortId").lean();
+    urls.forEach((u) => map.set(u._id.toString(), u.shortId));
+  } else {
+    const qrs = await QRCode.find({ _id: { $in: mongoIds } }).select("qrId").lean();
+    qrs.forEach((q) => map.set(q._id.toString(), q.qrId));
+  }
+
+  return map;
 };
 
 const getTimeSeries = async (
@@ -59,7 +75,14 @@ const getTopItems = async (
     { $limit: limit },
   ]);
 
-  return results.map((r) => ({ id: r._id.toString(), count: r.count }));
+  if (results.length === 0) return [];
+
+  const labelMap = await resolveHumanReadableIds(source, results.map((r) => r._id));
+
+  return results.map((r) => ({
+    label: labelMap.get(r._id.toString()) ?? "Deleted item",
+    count: r.count,
+  }));
 };
 
 const getFieldBreakdown = async (
@@ -106,6 +129,7 @@ const getScopedStats = async (source: AnalyticsSourceType, ids: mongoose.Types.O
   };
 };
 
+// Raw event rows for CSV export. includeIp must only ever be passed as true for an admin/super-admin requester.
 const getRawEvents = (source: AnalyticsSourceType, ids: mongoose.Types.ObjectId[] | null, range: DateRange, includeIp: boolean) => {
   const model = getModel(source);
   const idField = getIdField(source);
