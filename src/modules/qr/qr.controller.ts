@@ -1,6 +1,6 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { createStandaloneQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, getQRAnalytics, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg } from "./qr.service.js";
+import { createStandaloneQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg } from "./qr.service.js";
 import type { DashboardQRQueryParams } from "./qr.types.js";
 
 // Create a standalone QR code
@@ -165,18 +165,6 @@ const handleDeleteQR = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-// ANALYTICS OF QR 
-const handleGetQRAnalytics = asyncHandler(async (req: Request, res: Response) => {
-  const qrId = req.params.qrId as string;
-  const result = await getQRAnalytics(qrId);
-
-  if (!result) {
-    return res.status(404).json({ message: "QR code not found" });
-  }
-
-  return res.status(200).json({ totalScans: result.totalScans, analytics: result.analytics });
-});
-
 //DOWNLOAD ASSET
 const handleDownloadQRAsset = asyncHandler(async (req: Request, res: Response) => {
   const qrId = req.params.qrId as string;
@@ -258,7 +246,6 @@ export {
   handleGetAllQRs,
   handleToggleDisableQR,
   handleDeleteQR,
-  handleGetQRAnalytics,
   handleDownloadQRAsset,
   handleShowEditQRPage, 
   handleEditQR, 

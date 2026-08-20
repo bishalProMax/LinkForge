@@ -16,3 +16,4 @@ import "./showQr.js";
 import "./editForm.js";
 import "./standaloneQr.js";
 import "./createdLinkModal.js";
+import "./analyticsNav.js";

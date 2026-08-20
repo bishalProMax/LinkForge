@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import QRCode from "../../models/qrCode.model.js";
 import { buildQRSvg, rasterizeSvgToPng } from "../../shared/services/qrRenderer.service.js";
 import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, deleteQRByQrId,getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields } from "./qr.repository.js";
-import { deleteQRScansByQrId, countQRScans, getQRScans } from "./qrScan.repository.js";
+import { deleteQRScansByQrId } from "./qrScan.repository.js";
 import { deleteVisitsByLinkId } from "../url/visit.repository.js";
 import { findURLByShortId, updateURLDisabledStatus, deleteURLByShortId, findURLById, createURL, updateURLBasicInfo } from "../url/url.repository.js";
 import qrGenerationQueue from "../../infrastructure/queues/qrGeneration.queue.js";
@@ -251,17 +251,6 @@ const getQRStatus = async (qrId: string) => {
   return findQRById(qrId);
 };
 
-// GET ANALYTICS OF QR
-const getQRAnalytics = async (qrId: string): Promise<{ totalScans: number; analytics: any[] } | null> => {
-  const qr = await findQRById(qrId);
-  if (!qr) return null;
-
-  const totalScans = await countQRScans(qr._id.toString());
-  const analytics = await getQRScans(qr._id.toString());
-
-  return { totalScans, analytics };
-};
-
 //FOCUS WHEN CLICKED ON SHOW URL
 const resolveQRFocusPage = async (userId: string, qrId: string): Promise<number | null> => {
   const target = await findQRById(qrId);
@@ -376,7 +365,6 @@ export {
   resolveQRRedirectTarget,
   recordQRScan,
   getQRStatus,
-  getQRAnalytics,
   resolveQRFocusPage,
   getQRDownloadAsset,
   toggleQRDisabledByMongoId,

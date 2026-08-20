@@ -1,7 +1,7 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
-import { generateShortURL, redirectToOriginalURL, getURLAnalytics, getUserURLs, deleteURL, toggleDisableURL, findURLDocByShortId, resolveFocusPage, editLink } from "./url.service.js";
+import { generateShortURL, redirectToOriginalURL, getUserURLs, deleteURL, toggleDisableURL, findURLDocByShortId, resolveFocusPage, editLink } from "./url.service.js";
 import { createLinkedQR } from "../qr/qr.service.js";
 import type { DashboardQueryParams, DashboardURL } from "./url.types.js";
 
@@ -72,21 +72,6 @@ const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => 
   });
 
   return res.redirect(entry.redirectURL);
-});
-
-// get analytics of a short URL
-const handleGetAnalytics = asyncHandler(async (req: Request, res: Response) => {
-  const shortId = req.params.shortId as string;
-  const result = await getURLAnalytics(shortId);
-
-  if (!result) {
-    return res.status(404).json({ message: "URL not found" });
-  }
-
-  return res.status(200).json({
-    totalClicks: result.totalClicks,
-    analytics: result.analytics,
-  });
 });
 
 //get all URLs created by a user
@@ -240,7 +225,6 @@ const handleEditURL = asyncHandler(async (req: Request, res: Response) => {
 export { 
   handleGenerateShortURL, 
   handleRedirectToURL, 
-  handleGetAnalytics, 
   handleGetAllURL, 
   handleDeleteURL, 
   handleToggleDisableURL,

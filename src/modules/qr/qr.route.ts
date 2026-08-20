@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {handleCreateStandaloneQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleGetQRAnalytics, handleDownloadQRAsset, handleShowEditQRPage, handleEditQR, handleUpdateQRDesign, handlePreviewQRDesign } from "./qr.controller.js";
+import {handleCreateStandaloneQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleDownloadQRAsset, handleShowEditQRPage, handleEditQR, handleUpdateQRDesign, handlePreviewQRDesign } from "./qr.controller.js";
 import { createStandaloneQRSchema, editQRSchema, updateDesignSchema } from "./qr.schemas.js";
 import { validateRedirectDynamic, validateJSON } from "../../shared/middlewares/validation.middleware.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
@@ -14,9 +14,6 @@ router.route("/:qrId/link").post(authenticateUser, handleLinkQRToNewUrl);
 
 // Poll generation status
 router.route("/:qrId/status").get(authenticateUser, handleGetQRStatus);
-
-// Analytics
-router.route("/:qrId/analytics").get(authenticateUser, handleGetQRAnalytics);
 
 // edit page
 router.route("/:qrId/edit").get(authenticateUser, handleShowEditQRPage).post(authenticateUser,validateRedirectDynamic(editQRSchema, "qrId", "/qr"), handleEditQR);

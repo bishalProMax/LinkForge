@@ -263,25 +263,6 @@ shareCreatedShortLinkBtn?.addEventListener("click", () => {
   if (url) shareLink(url);
 });
 
-// ---------------- ANALYTICS  ----------------
-
-document.querySelectorAll(".qr-analytics-btn").forEach((button) => {
-  button.addEventListener("click", async () => {
-    const qrId = button.dataset.qrid;
-
-    try {
-      const response = await fetch(`/qr/${qrId}/analytics`);
-      const result = await response.json();
-
-      if (!response.ok) throw new Error(result.message);
-
-      showToast(`Total scans: ${result.totalScans}`);
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : "Unable to load analytics.");
-    }
-  });
-});
-
 // ---------------- FILTER MODAL TRIGGER + SEARCH ----------------
 
 document.addEventListener("DOMContentLoaded", () => {

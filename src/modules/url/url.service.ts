@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { toggleDisableQR as toggleQRDisabledByMongoId, deleteQRByLinkedUrl } from "../qr/qr.service.js";
 import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus, countURLsNewerThan, updateURLBasicInfo } from "./url.repository.js";
-import { countVisits, getVisits, deleteVisitsByLinkId } from "./visit.repository.js";
+import { deleteVisitsByLinkId } from "./visit.repository.js";
 import visitEnrichmentQueue from "../../infrastructure/queues/visitEnrichment.queue.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
@@ -75,22 +75,6 @@ const redirectToOriginalURL = async (shortId: string, visitContext: VisitContext
   });
 
   return url;
-};
-
-// Get analytics for a short URL
-const getURLAnalytics = async (shortId: string): Promise<any> => {
-  const url = await findURLByShortId(shortId);
-
-  if (!url) {
-    return null;
-  }
-  const totalClicks = await countVisits(url._id.toString());
-  const analytics = await getVisits(url._id.toString());
-
-  return {
-    totalClicks,
-    analytics,
-  };
 };
 
 // Get all URLs created by a user with pagination
@@ -184,7 +168,6 @@ const editLink = async (shortId: string, userId: string, data: { url: string; al
 export { 
   generateShortURL, 
   redirectToOriginalURL, 
-  getURLAnalytics, 
   getUserURLs, 
   deleteURL, 
   toggleDisableURL, 
