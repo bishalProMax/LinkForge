@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { format } from "fast-csv";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import { getAuditReport, exportAuditReport } from "./report.service.js";
 import type { AuditQueryParams } from "./report.types.js";
@@ -26,14 +27,6 @@ const handleGetAuditReport = asyncHandler(async (req: Request, res: Response) =>
   return res.render("adminReports", {events: data, filters, currentPage: page, totalPages, total, startIndex, endIndex, viewerRole})
 });
 
-const csvEscape = (value: unknown): string => {
-  const str = value === undefined || value === null ? "" : String(value);
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-};
-
 const handleExportAuditCSV = asyncHandler(async (req: Request, res: Response) => {
   const filters: AuditQueryParams = {
     event: typeof req.query.event === "string" ? (req.query.event as any) : "all",
@@ -45,17 +38,27 @@ const handleExportAuditCSV = asyncHandler(async (req: Request, res: Response) =>
   };
 
   const viewerRole = req.user!.role as "ADMIN" | "SUPER_ADMIN";
-  const events = await exportAuditReport(viewerRole,req.user!.id, req.ip ?? "", req.user!.email, filters);
+  const events = await exportAuditReport(viewerRole, req.user!.id, req.ip ?? "", req.user!.email, filters);
 
-  const header = ["Event", "Role", "Email", "UserId", "IP", "CreatedAt"];
-  const rows = events.map((e) => [csvEscape(e.event), csvEscape(e.role), csvEscape(e.email), csvEscape(e.userId), csvEscape(e.ip), csvEscape(new Date(e.createdAt).toISOString())].join(","));
-
-  const csv = [header.join(","), ...rows].join("\n");
   const filename = `audit-report-${new Date().toISOString().slice(0, 10)}.csv`;
-
   res.setHeader("Content-Type", "text/csv");
   res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-  return res.status(200).send(csv);
+
+  const csvStream = format({ headers: ["Event", "Role", "Email", "UserId", "IP", "CreatedAt"] });
+  csvStream.pipe(res);
+
+  events.forEach((e) => {
+    csvStream.write({
+      Event: e.event,
+      Role: e.role ?? "",
+      Email: e.email ?? "",
+      UserId: e.userId ?? "",
+      IP: e.ip ?? "",
+      CreatedAt: new Date(e.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }),
+    });
+  });
+
+  csvStream.end();
 });
 
 export { 
