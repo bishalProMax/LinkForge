@@ -2,7 +2,12 @@ import mongoose from "mongoose";
 import { findURLByShortId, getURLIdsByUserId, countURLStatusByIds } from "../url/url.repository.js";
 import { findQRById, getQRIdsByUserId, countQRStatusByIds } from "../qr/qr.repository.js";
 import { getTimeSeries, getTopItems, getFieldBreakdown, getScopedStats, getRawEvents } from "./analytics.repository.js";
-import type { AnalyticsQueryParams, AnalyticsOverview, Requester, ExportMetric } from "./analytics.types.js";
+import type { AnalyticsQueryParams, AnalyticsOverview, ExportMetric, WatchScope } from "./analytics.types.js";
+
+interface Requester {
+  id: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
+}
 
 interface ResolvedScope {
   ids: mongoose.Types.ObjectId[] | null;
@@ -112,10 +117,40 @@ const getRawEventsExport = async (params: AnalyticsQueryParams, requester: Reque
   return getRawEvents(params.type, scope.ids, range, includeIp);
 };
 
+// Resolves what a live SSE connection should be considered "watching" — used only to filter incoming real-time events, never to fetch data (that's still resolveScope's job).
+const resolveWatchScope = async (params: AnalyticsQueryParams, requester: Requester): Promise<WatchScope | null> => {
+  const isAdmin = isAdminRole(requester.role);
+
+  if (params.id) {
+    if (params.type === "url") {
+      const url = await findURLByShortId(params.id);
+      if (!url) return null;
+      if (!isAdmin && url.createdBy.toString() !== requester.id) return null;
+      return { watchItemId: url._id.toString(), watchOwnerId: null, watchEverything: false };
+    }
+
+    const qr = await findQRById(params.id);
+    if (!qr) return null;
+    if (!isAdmin && qr.createdBy.toString() !== requester.id) return null;
+    return { watchItemId: qr._id.toString(), watchOwnerId: null, watchEverything: false };
+  }
+
+  if (isAdmin && params.userId) {
+    return { watchItemId: null, watchOwnerId: params.userId, watchEverything: false };
+  }
+
+  if (isAdmin) {
+    return { watchItemId: null, watchOwnerId: null, watchEverything: true };
+  }
+
+  return { watchItemId: null, watchOwnerId: requester.id, watchEverything: false };
+};
+
 export { 
   getAnalyticsOverview, 
   getExportData, 
+  getRawEventsExport, 
   resolveScope, 
   buildRange,
-  getRawEventsExport
+  resolveWatchScope
   };

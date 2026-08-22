@@ -67,3 +67,9 @@ export interface Requester {
   id: string;
   role: "USER" | "ADMIN" | "SUPER_ADMIN";
 }
+
+export interface WatchScope {
+  watchItemId: string | null;
+  watchOwnerId: string | null;
+  watchEverything: boolean;
+}

@@ -5,6 +5,8 @@ const typeToggleContainer = document.querySelector(".analytics-type-toggle");
 // Guard: this file is bundled into every page via main.js, but only runs its logic on /analytics.
 if (typeToggleContainer) {
   let activeCharts = {};
+  let eventSource = null;
+  let streamRefreshTimer = null;
 
   const destroyExistingCharts = () => {
     Object.values(activeCharts).forEach((chart) => chart.destroy());
@@ -83,6 +85,12 @@ if (typeToggleContainer) {
     if (card) card.style.display = isSingleItem ? "none" : "";
   };
 
+  // Builds the full param set for the current view, including the admin-scoped user id if set.
+  const getFullParams = (baseParams) => {
+    const adminUserId = window.__analyticsAdminUserId;
+    return adminUserId ? { ...baseParams, userId: adminUserId } : baseParams;
+  };
+
   const loadAnalytics = async (params) => {
     const adminUserId = window.__analyticsAdminUserId;
     const fullParams = adminUserId ? { ...params, userId: adminUserId } : params;
@@ -116,6 +124,24 @@ if (typeToggleContainer) {
     }
   };
 
+  // Opens (or re-opens) the live-update stream for the current view. Reconnecting on every view
+  // change is simpler and more reliable than trying to re-scope one long-lived connection.
+  const connectStream = (params) => {
+    eventSource?.close();
+
+    const query = new URLSearchParams(params).toString();
+    eventSource = new EventSource(`/analytics/stream?${query}`);
+
+    eventSource.onmessage = () => {
+      // Debounced: a burst of clicks (e.g. a link going viral) shouldn't trigger a refetch per click.
+      clearTimeout(streamRefreshTimer);
+      streamRefreshTimer = setTimeout(() => loadAnalytics(window.__analyticsCurrentParams), 1500);
+    };
+
+    // EventSource auto-reconnects on transient network errors — nothing to do here.
+    eventSource.onerror = () => {};
+  };
+
   const typeToggleButtons = document.querySelectorAll(".analytics-type-btn");
   const searchInput = document.getElementById("analyticsSearchInput");
   const searchForm = document.getElementById("analyticsSearchForm");
@@ -130,11 +156,17 @@ if (typeToggleContainer) {
 
   const refresh = () => {
     setActiveTypeButton();
-    loadAnalytics({ type: currentType, ...(currentId ? { id: currentId } : {}) });
+
+    const baseParams = { type: currentType, ...(currentId ? { id: currentId } : {}) };
+    const fullParams = getFullParams(baseParams);
+
+    window.__analyticsCurrentParams = fullParams;
+
+    loadAnalytics(fullParams);
+    connectStream(fullParams);
+
     clearSearchBtn.classList.toggle("is-hidden", !currentId);
   };
-
-  window.addEventListener("analytics:admin-scope-changed", () => refresh());
 
   typeToggleButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -157,9 +189,8 @@ if (typeToggleContainer) {
     refresh();
   });
 
-  if (currentId && searchInput) searchInput.value = currentId;
-
-  refresh();
+  // Admin user-scope changes (from analyticsAdmin.js).
+  window.addEventListener("analytics:admin-scope-changed", () => refresh());
 
   document.getElementById("exportRawCsvBtn")?.addEventListener("click", (e) => {
     e.preventDefault();
@@ -168,4 +199,10 @@ if (typeToggleContainer) {
     const query = new URLSearchParams(params).toString();
     window.location.href = `/analytics/export/raw?${query}`;
   });
+
+  window.addEventListener("beforeunload", () => eventSource?.close());
+
+  if (currentId && searchInput) searchInput.value = currentId;
+
+  refresh();
 }

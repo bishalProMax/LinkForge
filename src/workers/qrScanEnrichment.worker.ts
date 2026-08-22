@@ -1,9 +1,12 @@
 import { Worker, Job } from "bullmq";
+import mongoose from "mongoose";
 import redis from "../infrastructure/configs/redis.config.js";
 import { createQRScan } from "../modules/qr/qrScan.repository.js";
+import QRCode from "../models/qrCode.model.js";
 import { lookupGeoIP } from "../shared/services/geoip.service.js";
 import { parseUserAgent } from "../shared/services/uaParser.service.js";
 import { isBotTraffic } from "../shared/utils/botDetection.js";
+import { publishAnalyticsEvent } from "../shared/services/analyticsEvents.service.js";
 import type { QRScanEnrichmentJob } from "../shared/types/queue.types.js";
 import logger from "../infrastructure/configs/logger.config.js";
 
@@ -19,7 +22,7 @@ const qrScanEnrichmentWorker = new Worker<QRScanEnrichmentJob>("qrScanEnrichment
     const ua = parseUserAgent(userAgent ?? "");
 
     await createQRScan({
-      qrId: qrId as unknown as import("mongoose").Types.ObjectId,
+      qrId: qrId as unknown as mongoose.Types.ObjectId,
       ip,
       country: geo.country,
       region: geo.region,
@@ -29,6 +32,16 @@ const qrScanEnrichmentWorker = new Worker<QRScanEnrichmentJob>("qrScanEnrichment
       device: ua.device,
       referrer,
     });
+    
+    // as soon as user clicks, analytics are written in db and also published in redis for live SSE connections
+    try {
+      const qr = await QRCode.findById(qrId).select("createdBy").lean();
+      if (qr) {
+        await publishAnalyticsEvent({ type: "qr", itemId: qrId, ownerId: qr.createdBy.toString() });
+      }
+    } catch (error) {
+      logger.error({ err: error, qrId }, "Failed to publish real-time analytics event for scan");
+    }
   },
   {
     connection: redis,

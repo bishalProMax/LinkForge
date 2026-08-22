@@ -19,6 +19,7 @@ import qrScanEnrichmentQueue from "./infrastructure/queues/qrScanEnrichment.queu
 import redis from "./infrastructure/configs/redis.config.js";
 import connectToMongoDB from "./infrastructure/configs/db.config.js";
 import { loadGeoIPReader } from "./infrastructure/configs/geoip.config.js";
+import redisSubscriber from "./infrastructure/configs/redisSubscriber.config.js";
 import logger from "./infrastructure/configs/logger.config.js";
 
 let server: ReturnType<typeof app.listen>;
@@ -78,6 +79,9 @@ const gracefulShutdown = async (signal: string): Promise<void> => {
 
     await redis.quit();
     logger.info("Redis disconnected");
+
+    await redisSubscriber.quit();
+    logger.info("Redis subscriber disconnected");
 
     await mongoose.connection.close();
     logger.info("MongoDB connection closed");

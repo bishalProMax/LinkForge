@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import { format } from "fast-csv";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
+import { resolveWatchScope } from "./analytics.service.js";
+import { analyticsEventBus, type AnalyticsEvent } from "../../shared/services/analyticsEvents.service.js";
 import { getAnalyticsOverview, getExportData, getRawEventsExport } from "./analytics.service.js";
 import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
 import type { AnalyticsQueryParams, ExportMetric } from "./analytics.types.js";
@@ -93,9 +95,57 @@ const handleExportRawEventsCSV = asyncHandler(async (req: Request, res: Response
   csvStream.end();
 });
 
+// Server-Sent Events stream. 
+const handleAnalyticsStream = asyncHandler(async (req: Request, res: Response) => {
+  const params = parseParams(req);
+  const requester = { id: req.user!.id, role: req.user!.role };
+
+  const watchScope = await resolveWatchScope(params, requester);
+
+  if (!watchScope) {
+    return res.status(404).end();
+  }
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders(); //Sends the HTTP response headers to the browser immediately, instead of waiting for Express/Node.js to send them later.
+
+  // Tells the browser's EventSource how long to wait before auto-reconnecting if this connection drops.
+  const retryDelayMs = 5000 + Math.floor(Math.random() * 10000);
+  res.write(`retry: ${retryDelayMs}\n\n`);
+
+  const isRelevant = (event: AnalyticsEvent): boolean => {
+    if (event.type !== params.type) return false;
+    if (watchScope.watchItemId) return event.itemId === watchScope.watchItemId;
+    if (watchScope.watchOwnerId) return event.ownerId === watchScope.watchOwnerId;
+    return watchScope.watchEverything;
+  };
+
+  const onEvent = (event: AnalyticsEvent): void => {
+    if (isRelevant(event)) {
+      res.write(`data: ${JSON.stringify({ changed: true })}\n\n`);
+    }
+  };
+
+  //when analyticsEventsBus emits catch it.
+  analyticsEventBus.on("event", onEvent);
+
+  // Keep the SSE connection alive by sending a small comment every 25 seconds as some proxies, load balancers, or network infrastructure may consider a completely idle connection dead and close it.
+  const heartbeat = setInterval(() => res.write(": heartbeat\n\n"), 25000); // ' : ' this is an sse comment sent to browser
+
+  req.on("close", () => {
+    clearInterval(heartbeat);
+    analyticsEventBus.off("event", onEvent);
+    res.end();
+  });
+});
+
+
 export { 
   handleGetAnalyticsOverview,
   handleExportAnalyticsCSV,
   handleExportAnalyticsPDF,
-  handleExportRawEventsCSV
+  handleExportRawEventsCSV,
+  handleAnalyticsStream
   };
