@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
+import redis from "../../infrastructure/configs/redis.config.js";
 import { findURLByShortId, getURLIdsByUserId, countURLStatusByIds } from "../url/url.repository.js";
 import { findQRById, getQRIdsByUserId, countQRStatusByIds } from "../qr/qr.repository.js";
 import { getTimeSeries, getTopItems, getFieldBreakdown, getScopedStats, getRawEvents } from "./analytics.repository.js";
-import type { AnalyticsQueryParams, AnalyticsOverview, Requester, ExportMetric } from "./analytics.types.js";
+import type { AnalyticsQueryParams, AnalyticsOverview, Requester, ExportMetric, ScopedStats, StatusSummary, DateRange } from "./analytics.types.js";
 
 interface ResolvedScope {
   ids: mongoose.Types.ObjectId[] | null;
   isSingleItem: boolean;
 }
 
+const STATS_CACHE_TTL_SECONDS = 10;
 const isAdminRole = (role: Requester["role"]): boolean => role === "ADMIN" || role === "SUPER_ADMIN";
 
 const resolveScope = async (params: AnalyticsQueryParams, requester: Requester): Promise<ResolvedScope | null> => {
@@ -28,26 +30,43 @@ const resolveScope = async (params: AnalyticsQueryParams, requester: Requester):
     return { ids: [qr._id], isSingleItem: true };
   }
 
-  // Admin/Super Admin searching one specific user's aggregate
   if (isAdmin && params.userId) {
     const ids = params.type === "url" ? await getURLIdsByUserId(params.userId) : await getQRIdsByUserId(params.userId);
     return { ids, isSingleItem: false };
   }
 
-  // Admin/Super Admin platform-wide aggregate — no user searched, no id restriction at all
   if (isAdmin) {
     return { ids: null, isSingleItem: false };
   }
 
-  // Regular user's own "all my links" / "all my QRs" aggregate
   const ids = params.type === "url" ? await getURLIdsByUserId(requester.id) : await getQRIdsByUserId(requester.id);
   return { ids, isSingleItem: false };
 };
 
-const buildRange = (params: AnalyticsQueryParams) => ({
+const buildRange = (params: AnalyticsQueryParams): DateRange => ({
   from: params.from ? new Date(params.from) : undefined,
   to: params.to ? new Date(params.to) : undefined,
 });
+
+const buildStatsCacheKey = (params: AnalyticsQueryParams, requester: Requester): string => {
+  return `analytics:stats:${params.type}:${params.id ?? ""}:${params.userId ?? ""}:${requester.id}:${requester.role}:${params.from ?? ""}:${params.to ?? ""}`;
+};
+
+const getCachedScopedStats = async ( params: AnalyticsQueryParams, requester: Requester, ids: mongoose.Types.ObjectId[] | null, range: DateRange, countStatus: (ids: mongoose.Types.ObjectId[] | null) => Promise<StatusSummary> ): Promise<{ stats: ScopedStats; statusSummary: StatusSummary }> => {
+  const cacheKey = buildStatsCacheKey(params, requester);
+
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  const [stats, statusSummary] = await Promise.all([getScopedStats(params.type, ids, range), countStatus(ids)]);
+
+  const payload = { stats, statusSummary };
+  await redis.set(cacheKey, JSON.stringify(payload), "EX", STATS_CACHE_TTL_SECONDS);
+
+  return payload;
+};
 
 const getAnalyticsOverview = async (params: AnalyticsQueryParams, requester: Requester): Promise<AnalyticsOverview | null> => {
   const scope = await resolveScope(params, requester);
@@ -57,9 +76,8 @@ const getAnalyticsOverview = async (params: AnalyticsQueryParams, requester: Req
   const granularity = params.granularity ?? "day";
   const countStatus = params.type === "url" ? countURLStatusByIds : countQRStatusByIds;
 
-  const [stats, statusSummary, timeSeries, geoCountry, geoRegion, geoCity, browsers, os, devices, referrers, topItems] = await Promise.all([
-    getScopedStats(params.type, scope.ids, range),
-    countStatus(scope.ids),
+  const [{ stats, statusSummary }, timeSeries, geoCountry, geoRegion, geoCity, browsers, os, devices, referrers, topItems] = await Promise.all([
+    getCachedScopedStats(params, requester, scope.ids, range, countStatus),
     getTimeSeries(params.type, scope.ids, range, granularity),
     getFieldBreakdown(params.type, scope.ids, range, "country"),
     getFieldBreakdown(params.type, scope.ids, range, "region"),
@@ -100,8 +118,6 @@ const getExportData = async (metric: ExportMetric, params: AnalyticsQueryParams,
   return getFieldBreakdown(params.type, scope.ids, range, metric);
 };
 
-// Raw per-event rows for export. IP is only ever included when the requester is Admin/Super Admin —
-// never reachable by a plain USER role, even indirectly (see design spec, Section 5).
 const getRawEventsExport = async (params: AnalyticsQueryParams, requester: Requester) => {
   const scope = await resolveScope(params, requester);
   if (!scope) return null;
@@ -112,10 +128,11 @@ const getRawEventsExport = async (params: AnalyticsQueryParams, requester: Reque
   return getRawEvents(params.type, scope.ids, range, includeIp);
 };
 
+
 export { 
   getAnalyticsOverview, 
   getExportData, 
   resolveScope, 
   buildRange,
-  getRawEventsExport
+  getRawEventsExport,
   };
