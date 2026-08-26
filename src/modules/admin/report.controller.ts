@@ -38,7 +38,7 @@ const handleExportAuditCSV = asyncHandler(async (req: Request, res: Response) =>
   };
 
   const viewerRole = req.user!.role as "ADMIN" | "SUPER_ADMIN";
-  const events = await exportAuditReport(viewerRole, req.user!.id, req.ip ?? "", req.user!.email, filters);
+  const cursor = exportAuditReport(viewerRole, req.user!.id, req.ip ?? "", req.user!.email, filters);
 
   const filename = `audit-report-${new Date().toISOString().slice(0, 10)}.csv`;
   res.setHeader("Content-Type", "text/csv");
@@ -47,7 +47,7 @@ const handleExportAuditCSV = asyncHandler(async (req: Request, res: Response) =>
   const csvStream = format({ headers: ["Event", "Role", "Email", "UserId", "IP", "CreatedAt"] });
   csvStream.pipe(res);
 
-  events.forEach((e) => {
+  for await (const e of cursor) {
     csvStream.write({
       Event: e.event,
       Role: e.role ?? "",
@@ -56,7 +56,7 @@ const handleExportAuditCSV = asyncHandler(async (req: Request, res: Response) =>
       IP: e.ip ?? "",
       CreatedAt: new Date(e.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }),
     });
-  });
+  }
 
   csvStream.end();
 });

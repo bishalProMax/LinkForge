@@ -58,15 +58,12 @@ const getAuditEvents = async (viewerRole: "ADMIN" | "SUPER_ADMIN", page: number,
 };
 
 //for csv export of audit events
-const getAuditEventsForExport = async (viewerRole: "ADMIN" | "SUPER_ADMIN", filters: AuditQueryParams = {}): Promise<AuditListItem[]> => {
+const getAuditEventsCursorForExport = (viewerRole: "ADMIN" | "SUPER_ADMIN", filters: AuditQueryParams = {}) => {
   const match = buildMatch(viewerRole, filters);
-
-  const data = await SecurityEvent.find(match).sort({ createdAt: -1 }).limit(5000).lean();
-
-  return data as unknown as AuditListItem[];
+  return SecurityEvent.find(match).sort({ createdAt: -1 }).cursor();
 };
 
 export { 
   getAuditEvents, 
-  getAuditEventsForExport 
+  getAuditEventsCursorForExport 
   };
