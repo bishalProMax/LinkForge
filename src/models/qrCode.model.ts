@@ -52,6 +52,8 @@ export interface IQRCode {
   imageUrl?: string;
   cloudinaryPublicId?: string;
   svgSource?: string;
+  deletedAt: Date | null;
+  deletedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -126,6 +128,17 @@ const qrCodeSchema = new mongoose.Schema<IQRCode, QRCodeModel>(
 
     cloudinaryPublicId: {
       type: String,
+    },
+
+    deletedAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
+
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {

@@ -11,7 +11,7 @@ const createShortURL = (data: CreateShortURLData) => {
 };
 
 const findURLByShortId = (shortId: string) => {
-  return URL.findOne({ shortId });
+  return URL.findOne({ shortId, deletedAt: null });
 };
 
 const getSortStage = (sortBy?: string): Record<string, 1 | -1> => {
@@ -31,6 +31,7 @@ const getSortStage = (sortBy?: string): Record<string, 1 | -1> => {
 const getURLsByUserId = (userId: string, page: number, limit: number, filters: DashboardQueryParams = {}) => {
   const matchStage: Record<string, unknown> = {
     createdBy: new mongoose.Types.ObjectId(userId),
+    deletedAt: null,
   };
 
   if (filters.search) {
@@ -119,7 +120,7 @@ const createURL = (data: { shortId: string, redirectURL: string, title: string, 
 };
 
 const countURLsNewerThan = (userId: string, createdAt: Date) => {
-  return URL.countDocuments({ createdBy: userId, createdAt: { $gt: createdAt } });
+  return URL.countDocuments({ createdBy: userId, createdAt: { $gt: createdAt }, deletedAt: null });
 };
 
 const updateURLBasicInfo = (id: string, data: { shortId?: string; redirectURL?: string; title?: string; expiresAt?: Date }) => { 

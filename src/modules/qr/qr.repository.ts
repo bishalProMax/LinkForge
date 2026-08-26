@@ -12,7 +12,7 @@ const createQRCode = (data: CreateQRCodeData) => {
 };
 
 const findQRById = (qrId: string) => {
-  return QRCode.findOne({ qrId });
+  return QRCode.findOne({ qrId, deletedAt: null });
 };
 
 const updateQRStatus = (qrId: string, status: "READY" | "FAILED", imageUrl?: string, cloudinaryPublicId?: string) => {
@@ -52,6 +52,7 @@ const getSortStage = (sortBy?: string): Record<string, 1 | -1> => {
 const getQRsByUserId = (userId: string, page: number, limit: number, filters: DashboardQRQueryParams = {}) => {
   const matchStage: Record<string, unknown> = {
     createdBy: new mongoose.Types.ObjectId(userId),
+    deletedAt: null,
   };
 
   if (filters.linked === "linked") {
@@ -140,7 +141,7 @@ const getQRsByUserId = (userId: string, page: number, limit: number, filters: Da
 };
 
 const countQRsNewerThan = (userId: string, createdAt: Date) => {
-  return QRCode.countDocuments({ createdBy: new mongoose.Types.ObjectId(userId), createdAt: { $gt: createdAt } });
+  return QRCode.countDocuments({ createdBy: new mongoose.Types.ObjectId(userId), createdAt: { $gt: createdAt }, deletedAt: null });
 };
 
 const updateQRBasicInfo = (qrId: string, data: { title?: string; destinationURL?: string }) => {

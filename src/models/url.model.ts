@@ -11,6 +11,8 @@ export interface IURL {
   isDisabled: boolean;
   title: string; 
   linkedQRId: mongoose.Types.ObjectId | null;
+  deletedAt: Date | null;
+  deletedBy?: mongoose.Types.ObjectId;
   createdAt: Date;    
   updatedAt: Date;
 }
@@ -64,6 +66,17 @@ const urlSchema = new mongoose.Schema<IURL, URLModel>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "QRCode",
       default: null,
+    },
+    
+    deletedAt: {
+      type: Date,
+      default: null,
+      index: true, 
+    },
+
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {
