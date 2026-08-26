@@ -30,9 +30,14 @@ const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) 
 // redirect to original URL
 const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => {
   const shortId = req.params.shortId as string;
-  const url = await findURLDocByShortId(shortId);
 
-  if (!url) {
+  const result = await redirectToOriginalURL(shortId, {
+    ip: req.ip ?? "",
+    userAgent: req.headers["user-agent"],
+    referrer: req.headers["referer"] as string | undefined,
+  });
+
+  if (result.type === "NOT_FOUND") {
     return res.status(404).render("linkNotFound", {
       reason: "notfound",
       icon: "ri-link-unlink-m",
@@ -43,7 +48,7 @@ const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => 
     });
   }
 
-  if (url.isDisabled) {
+  if (result.type === "DISABLED") {
     return res.status(403).render("linkNotFound", {
       reason: "disabled",
       icon: "ri-forbid-2-line",
@@ -54,7 +59,7 @@ const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => 
     });
   }
 
-  if (url.expiresAt && url.expiresAt <= new Date()) {
+  if (result.type === "EXPIRED") {
     return res.status(410).render("linkNotFound", {
       reason: "expired",
       icon: "ri-time-line",
@@ -65,13 +70,7 @@ const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => 
     });
   }
 
-  const entry = await redirectToOriginalURL(shortId, {
-    ip: req.ip ?? "",
-    userAgent: req.headers["user-agent"],
-    referrer: req.headers["referer"] as string | undefined,
-  });
-
-  return res.redirect(entry.redirectURL);
+  return res.redirect(result.redirectURL);
 });
 
 //get all URLs created by a user

@@ -47,3 +47,9 @@ export interface VisitContext {
   userAgent?: string;
   referrer?: string;
 }
+
+export type RedirectResult =
+  | { type: "NOT_FOUND" }
+  | { type: "DISABLED" }
+  | { type: "EXPIRED" }
+  | { type: "SUCCESS"; redirectURL: string };

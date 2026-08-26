@@ -6,7 +6,7 @@ import visitEnrichmentQueue from "../../infrastructure/queues/visitEnrichment.qu
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
 import logger from "../../infrastructure/configs/logger.config.js";
-import type { DashboardQueryParams, GenerateShortURLProps, VisitContext } from "./url.types.js";
+import type { DashboardQueryParams, GenerateShortURLProps, VisitContext, RedirectResult } from "./url.types.js";
 
 const RESERVED_ALIASES = ["generate","analytics"]
 const DASHBOARD_LIMIT = 6;
@@ -52,19 +52,19 @@ const generateShortURL = async ({ originalURL, userId, customAlias, expiration, 
 };
 
 // Redirect to the original URL based on the short ID
-const redirectToOriginalURL = async (shortId: string, visitContext: VisitContext): Promise<any> => {
+const redirectToOriginalURL = async (shortId: string, visitContext: VisitContext): Promise<RedirectResult> => {
   const url = await findURLByShortId(shortId);
 
   if (!url) {
-    return null;
+    return { type: "NOT_FOUND" };
   }
 
   if (url.isDisabled) {
-    return null;
+    return { type: "DISABLED" };
   }
 
   if (url.expiresAt && url.expiresAt <= new Date()) {
-    return null;
+    return { type: "EXPIRED" };
   }
 
   await visitEnrichmentQueue.add("enrich-visit", {
@@ -74,7 +74,7 @@ const redirectToOriginalURL = async (shortId: string, visitContext: VisitContext
     referrer: visitContext.referrer,
   });
 
-  return url;
+  return { type: "SUCCESS", redirectURL: url.redirectURL };
 };
 
 // Get all URLs created by a user with pagination
