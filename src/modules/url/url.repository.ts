@@ -147,6 +147,10 @@ const softDeleteURLById = (id: string, deletedBy: string) => {
   return URL.findByIdAndUpdate(id, { deletedAt: new Date(), deletedBy }, { returnDocument: "after" });
 };
 
+const findURLByShortIdAdmin = (shortId: string) => {
+  return URL.findOne({ shortId });
+};
+
 export { 
   checkShortIdExists, 
   createShortURL, 
@@ -160,5 +164,6 @@ export {
   updateURLBasicInfo,
   getURLIdsByUserId,
   countURLStatusByIds,
-  softDeleteURLById
+  softDeleteURLById,
+  findURLByShortIdAdmin
   };

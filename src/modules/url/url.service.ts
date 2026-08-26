@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import { toggleDisableQR as toggleQRDisabledByMongoId, deleteQRByLinkedUrl } from "../qr/qr.service.js";
-import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, updateURLDisabledStatus, countURLsNewerThan, updateURLBasicInfo, softDeleteURLById } from "./url.repository.js";
+import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, updateURLDisabledStatus, countURLsNewerThan, updateURLBasicInfo, softDeleteURLById, findURLByShortIdAdmin } from "./url.repository.js";
 import visitEnrichmentQueue from "../../infrastructure/queues/visitEnrichment.queue.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
@@ -162,6 +162,11 @@ const editLink = async (shortId: string, userId: string, data: { url: string; al
   return data.alias;
 };
 
+const URLByShortIdAdmin = async (shortId: string) => {
+  return findURLByShortIdAdmin(shortId)
+}
+
+
 export { 
   generateShortURL, 
   redirectToOriginalURL, 
@@ -170,5 +175,6 @@ export {
   toggleDisableURL, 
   findURLDocByShortId,
   resolveFocusPage,
-  editLink
+  editLink,
+  URLByShortIdAdmin
   };

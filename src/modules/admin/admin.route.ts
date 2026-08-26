@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { handleCreateRoleInvite, handleBanUser, handleUnbanUser, handlePromoteUser, handleDemoteUser, handleGetAllUsers, handleSearchUsers } from "./admin.controller.js";
+import { handleCreateRoleInvite, handleBanUser, handleUnbanUser, handlePromoteUser, handleDemoteUser, handleGetAllUsers, handleSearchUsers, handleGetLinkAdmin, handleGetQRAdmin } from "./admin.controller.js";
 import { handleGetAuditReport, handleExportAuditCSV } from "./report.controller.js";
 import { createInviteSchema } from "./admin.schemas.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
@@ -29,5 +29,9 @@ router.route("/reports").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN
 router.route("/reports/export").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN"), handleExportAuditCSV);
 
 router.route("/users/search").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN"), handleSearchUsers);
+
+router.route("/links/:shortId").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN"), handleGetLinkAdmin);
+
+router.route("/qr/:qrId").get(authenticateUser, requireRole("ADMIN", "SUPER_ADMIN"), handleGetQRAdmin);
 
 export default router;

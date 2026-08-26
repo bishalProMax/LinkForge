@@ -177,6 +177,10 @@ const softDeleteQRById = (id: string, deletedBy: string) => {
   return QRCode.findByIdAndUpdate(id, { deletedAt: new Date(), deletedBy }, { returnDocument: "after" });
 };
 
+const findQRByIdAdmin = (qrId: string) => {
+  return QRCode.findOne({ qrId });
+};
+
 export { 
   checkQrIdExists, 
   createQRCode, 
@@ -192,5 +196,6 @@ export {
   updateQRDesignFields,
   getQRIdsByUserId,
   countQRStatusByIds,
-  softDeleteQRById
+  softDeleteQRById,
+  findQRByIdAdmin
   };

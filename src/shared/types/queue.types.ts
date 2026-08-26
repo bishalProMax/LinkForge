@@ -85,3 +85,7 @@ export interface QRScanEnrichmentJob {
   userAgent?: string;
   referrer?: string;
 }
+
+export interface RetentionCleanupJob {
+  triggeredBy: "cron";
+}

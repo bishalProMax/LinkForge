@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import QRCode from "../../models/qrCode.model.js";
 import { buildQRSvg, rasterizeSvgToPng } from "../../shared/services/qrRenderer.service.js";
-import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields, softDeleteQRById } from "./qr.repository.js";
+import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields, softDeleteQRById, findQRByIdAdmin } from "./qr.repository.js";
 import { findURLByShortId, updateURLDisabledStatus, findURLById, createURL, updateURLBasicInfo, softDeleteURLById } from "../url/url.repository.js";
 import qrGenerationQueue from "../../infrastructure/queues/qrGeneration.queue.js";
 import qrScanEnrichmentQueue from "../../infrastructure/queues/qrScanEnrichment.queue.js";
@@ -336,6 +336,10 @@ const previewQRSvg = (redirectTarget: string, design: QRDesignInput): string => 
   return buildQRSvg(redirectTarget, { ...DEFAULT_DESIGN, ...design });
 };
 
+const QRByIdAdmin = async (qrId: string) => {
+  return findQRByIdAdmin(qrId);
+}
+
 export {
   createStandaloneQR,
   createLinkedQR,
@@ -354,4 +358,5 @@ export {
   editQR,
   updateQRDesign,
   previewQRSvg,
+  QRByIdAdmin
 };

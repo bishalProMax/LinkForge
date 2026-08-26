@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import { createInvite, banUser, unbanUser, promoteToSuperAdmin, demoteToAdmin, getAllUsers, searchUsers } from "./admin.service.js";
-
+import { QRByIdAdmin } from "../qr/qr.service.js";
+import { URLByShortIdAdmin } from "../url/url.service.js"
 
 const handleCreateRoleInvite = asyncHandler(async (req: Request, res: Response) => {
   const { email, role } = req.body;
@@ -125,6 +126,28 @@ const handleSearchUsers = asyncHandler(async (req: Request, res: Response) => {
   return res.status(200).json({ success: true, users });
 });
 
+//get soft deleted links too in links page
+const handleGetLinkAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const url = await URLByShortIdAdmin(req.params.shortId as string);
+
+  if (!url) {
+    return res.status(404).json({ success: false, message: "Link not found." });
+  }
+
+  return res.status(200).json({ success: true, url });
+});
+
+///get soft deleted QR too in QR page
+const handleGetQRAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const qr = await QRByIdAdmin(req.params.qrId as string);
+
+  if (!qr) {
+    return res.status(404).json({ success: false, message: "QR code not found." });
+  }
+
+  return res.status(200).json({ success: true, qr });
+});
+
 export { 
   handleCreateRoleInvite, 
   handleBanUser, 
@@ -132,6 +155,8 @@ export {
   handlePromoteUser, 
   handleDemoteUser, 
   handleGetAllUsers,
-  handleSearchUsers 
+  handleSearchUsers,
+  handleGetLinkAdmin,
+  handleGetQRAdmin
   };
 
