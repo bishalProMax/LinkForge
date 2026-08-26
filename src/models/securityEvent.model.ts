@@ -8,6 +8,8 @@ export interface ISecurityEvent {
   ip?: string;
   role?: "USER" | "ADMIN" | "SUPER_ADMIN";
   metadata?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type SecurityEventDocument = HydratedDocument<ISecurityEvent>;
@@ -52,6 +54,8 @@ const securityEventSchema = new mongoose.Schema<ISecurityEvent, SecurityEventMod
     timestamps: true 
   }
 );
+
+securityEventSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 90 });
 
 const SecurityEvent = mongoose.model<ISecurityEvent, SecurityEventModel>("SecurityEvent", securityEventSchema);
 
