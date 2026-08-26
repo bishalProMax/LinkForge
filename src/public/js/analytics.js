@@ -110,15 +110,23 @@ if (typeToggleContainer) {
       updateStatCards(data);
       toggleTopItemsCard(data.isSingleItem);
 
-      renderLineChart("chart-timeSeries", data.timeSeries);
-      if (!data.isSingleItem) renderBarChart("chart-topItems", data.topItems, "label", "count");
-      renderBarChart("chart-country", data.geo.country, "label", "count");
-      renderBarChart("chart-region", data.geo.region, "label", "count");
-      renderBarChart("chart-city", data.geo.city, "label", "count");
-      renderDonutChart("chart-browsers", data.device.browsers);
-      renderDonutChart("chart-os", data.device.os);
-      renderDonutChart("chart-devices", data.device.devices);
-      renderReferrerTable(data.referrers);
+      const renderSafely = (fn) => {
+        try {
+          fn();
+        } catch (err) {
+          console.error("Chart render failed:", err);
+        }
+      };
+
+      renderSafely(() => renderLineChart("chart-timeSeries", data.timeSeries));
+      if (!data.isSingleItem) renderSafely(() => renderBarChart("chart-topItems", data.topItems, "label", "count"));
+      renderSafely(() => renderBarChart("chart-country", data.geo.country, "label", "count"));
+      renderSafely(() => renderBarChart("chart-region", data.geo.region, "label", "count"));
+      renderSafely(() => renderBarChart("chart-city", data.geo.city, "label", "count"));
+      renderSafely(() => renderDonutChart("chart-browsers", data.device.browsers));
+      renderSafely(() => renderDonutChart("chart-os", data.device.os));
+      renderSafely(() => renderDonutChart("chart-devices", data.device.devices));
+      renderSafely(() => renderReferrerTable(data.referrers));
     } catch {
       showToast("Unable to load analytics right now.");
     }

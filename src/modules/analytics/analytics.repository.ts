@@ -130,16 +130,27 @@ const getScopedStats = async (source: AnalyticsSourceType, ids: mongoose.Types.O
 };
 
 // Raw event rows for CSV export. includeIp must only ever be passed as true for an admin/super-admin requester.
-const getRawEvents = (source: AnalyticsSourceType, ids: mongoose.Types.ObjectId[] | null, range: DateRange, includeIp: boolean) => {
+const getRawEvents = async (source: AnalyticsSourceType, ids: mongoose.Types.ObjectId[] | null, range: DateRange, includeIp: boolean) => {
   const model = getModel(source);
   const idField = getIdField(source);
   const match = buildMatch(idField, ids, range);
 
   const selection = includeIp
-    ? "+ip country region city browser os device referrer timestamp"
-    : "country region city browser os device referrer timestamp";
+    ? `+ip ${idField} country region city browser os device referrer timestamp`
+    : `${idField} country region city browser os device referrer timestamp`;
 
-  return model.find(match).select(selection).sort({ timestamp: -1 }).lean();
+  const events = await model.find(match).select(selection).sort({ timestamp: -1 }).lean();
+
+  if (events.length === 0) return [];
+
+  const uniqueItemIds = [...new Set(events.map((e: any) => e[idField].toString()))].map((id) => new mongoose.Types.ObjectId(id));
+  const labelMap = await resolveHumanReadableIds(source, uniqueItemIds);
+  const labelKey = source === "url" ? "shortId" : "qrId";
+
+  return events.map((e: any) => {
+    const { _id, [idField]: rawItemId, ...rest } = e;
+    return { [labelKey]: labelMap.get(rawItemId.toString()) ?? "Deleted item", ...rest };
+  });
 };
 
 export { 

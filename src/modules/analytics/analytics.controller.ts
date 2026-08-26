@@ -91,7 +91,12 @@ const handleExportRawEventsCSV = asyncHandler(async (req: Request, res: Response
 
   const csvStream = format({ headers: true });
   csvStream.pipe(res);
-  data.forEach((row) => csvStream.write(row));
+  data.forEach((row) => {
+    csvStream.write({
+      ...row,
+      timestamp: new Date(row.timestamp).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }),
+    });
+  });
   csvStream.end();
 });
 
