@@ -143,6 +143,10 @@ const countURLStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promi
   return { active, expired };
 };
 
+const softDeleteURLById = (id: string, deletedBy: string) => {
+  return URL.findByIdAndUpdate(id, { deletedAt: new Date(), deletedBy }, { returnDocument: "after" });
+};
+
 export { 
   checkShortIdExists, 
   createShortURL, 
@@ -155,5 +159,6 @@ export {
   countURLsNewerThan,
   updateURLBasicInfo,
   getURLIdsByUserId,
-  countURLStatusByIds
+  countURLStatusByIds,
+  softDeleteURLById
   };

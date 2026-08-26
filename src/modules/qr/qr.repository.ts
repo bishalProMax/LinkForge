@@ -172,6 +172,11 @@ const countQRStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promis
 
   return { active, expired };
 };
+
+const softDeleteQRById = (id: string, deletedBy: string) => {
+  return QRCode.findByIdAndUpdate(id, { deletedAt: new Date(), deletedBy }, { returnDocument: "after" });
+};
+
 export { 
   checkQrIdExists, 
   createQRCode, 
@@ -186,5 +191,6 @@ export {
   updateQRBasicInfo,
   updateQRDesignFields,
   getQRIdsByUserId,
-  countQRStatusByIds
+  countQRStatusByIds,
+  softDeleteQRById
   };

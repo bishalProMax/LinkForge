@@ -1,12 +1,9 @@
 import { nanoid } from "nanoid";
 import QRCode from "../../models/qrCode.model.js";
 import { buildQRSvg, rasterizeSvgToPng } from "../../shared/services/qrRenderer.service.js";
-import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, deleteQRByQrId,getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields } from "./qr.repository.js";
-import { deleteQRScansByQrId } from "./qrScan.repository.js";
-import { deleteVisitsByLinkId } from "../url/visit.repository.js";
-import { findURLByShortId, updateURLDisabledStatus, deleteURLByShortId, findURLById, createURL, updateURLBasicInfo } from "../url/url.repository.js";
+import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields, softDeleteQRById } from "./qr.repository.js";
+import { findURLByShortId, updateURLDisabledStatus, findURLById, createURL, updateURLBasicInfo, softDeleteURLById } from "../url/url.repository.js";
 import qrGenerationQueue from "../../infrastructure/queues/qrGeneration.queue.js";
-import qrAssetCleanupQueue from "../../infrastructure/queues/qrAssetCleanup.queue.js";
 import qrScanEnrichmentQueue from "../../infrastructure/queues/qrScanEnrichment.queue.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
@@ -170,13 +167,8 @@ const deleteQRByLinkedUrl = async (qrMongoId: string, userId: string): Promise<v
   const qr = await QRCode.findById(qrMongoId);
   if (!qr || qr.createdBy.toString() !== userId) return;
 
-  await deleteQRByQrId(qr.qrId);
-  await deleteQRScansByQrId(qr._id.toString());
-
-  if (qr.cloudinaryPublicId) {
-    await qrAssetCleanupQueue.add("cleanup-qr-asset", { cloudinaryPublicId: qr.cloudinaryPublicId });
+  await softDeleteQRById(qr._id.toString(), userId);
   }
-};
 
 // Delete standalone qr, also check if URL linked delete url also
 const deleteQR = async (qrId: string, userId: string): Promise<boolean> => {
@@ -190,21 +182,10 @@ const deleteQR = async (qrId: string, userId: string): Promise<boolean> => {
   if (qr.linkedUrlId) {
     const linkedUrl = await findURLById(qr.linkedUrlId.toString());
     if (linkedUrl) {
-      const deletedLinkedUrl = await deleteURLByShortId(linkedUrl.shortId);
-      if (deletedLinkedUrl) {
-        await deleteVisitsByLinkId(deletedLinkedUrl._id.toString());
+      await softDeleteURLById(linkedUrl._id.toString(), userId);
     }
   }
-  }
-
-  const deleted = await deleteQRByQrId(qrId);
-  if (!deleted) return false;
-
-  await deleteQRScansByQrId(qr._id.toString());
-
-  if (deleted.cloudinaryPublicId) {
-    await qrAssetCleanupQueue.add("cleanup-qr-asset", { cloudinaryPublicId: deleted.cloudinaryPublicId });
-  }
+  await softDeleteQRById(qr._id.toString(), userId);
 
   logger.info({ qrId, userId, cascaded: Boolean(qr.linkedUrlId) }, "QR deleted");
   return true;

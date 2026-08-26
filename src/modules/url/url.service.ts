@@ -1,7 +1,6 @@
 import { nanoid } from "nanoid";
 import { toggleDisableQR as toggleQRDisabledByMongoId, deleteQRByLinkedUrl } from "../qr/qr.service.js";
-import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, deleteURLByShortId, updateURLDisabledStatus, countURLsNewerThan, updateURLBasicInfo } from "./url.repository.js";
-import { deleteVisitsByLinkId } from "./visit.repository.js";
+import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, updateURLDisabledStatus, countURLsNewerThan, updateURLBasicInfo, softDeleteURLById } from "./url.repository.js";
 import visitEnrichmentQueue from "../../infrastructure/queues/visitEnrichment.queue.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
@@ -95,10 +94,8 @@ const deleteURL = async (shortId: string, userId: string): Promise<boolean> => {
     await deleteQRByLinkedUrl(url.linkedQRId.toString(), userId);
   }
 
-  const deletedURL = await deleteURLByShortId(shortId);
-  if (!deletedURL) return false;
+  await softDeleteURLById(url._id.toString(), userId);
 
-  await deleteVisitsByLinkId(deletedURL._id.toString());
   logger.info({ shortId, userId, cascaded: Boolean(url.linkedQRId) }, "Short URL deleted");
   return true;
 };
