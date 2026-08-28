@@ -2,6 +2,7 @@ import crypto from "crypto";
 import redis from "../../infrastructure/configs/redis.config.js";
 import emailQueue from "../../infrastructure/queues/email.queue.js";
 import { createToken, createRefreshSession, revokeRefreshSession } from "../../shared/services/jwt.service.js"
+import { cancelPendingDeletionIfSet } from "../user/user.service.js";
 import verifyTurnstile from "../../shared/services/turnstile.service.js";
 import { findUserByEmail, createUser, findUserByVerificationToken, saveUser } from "../user/user.repository.js";
 import { findRoleInviteByEmail, deleteRoleInviteByEmail } from "../admin/admin.repository.js";
@@ -186,6 +187,8 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
 
   await redis.del(`login:${email}`);
 
+  await cancelPendingDeletionIfSet(user, ip);
+
   logSecurityEvent({ event: "LOGIN_SUCCESS", email, ip, userId: user._id.toString(), role: user.role }, "info");
   const accessToken = createToken(user);
   const refreshToken = await createRefreshSession(user);
@@ -207,6 +210,8 @@ const logoutUser = async ({ refreshCookie, userId, role, email, ip }: LogoutUser
 
 //----------------------------GOOGLE LOGIN SERVICE------------------------------------
 const handleGoogleLogin = async (googleUser: UserPayload, ip: string): Promise<{ accessToken: string; refreshToken: string }> => {
+  await cancelPendingDeletionIfSet(googleUser as any, ip ?? "");
+
   const accessToken = createToken(googleUser);
   const refreshToken = await createRefreshSession(googleUser);
 

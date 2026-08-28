@@ -2,8 +2,8 @@ import { Worker, Job } from "bullmq";
 import redis from "../infrastructure/configs/redis.config.js";
 import URL from "../models/url.model.js";
 import QRCode from "../models/qrCode.model.js";
-import Visit from "../models/visit.model.js";
-import QRScan from "../models/qrScan.model.js";
+import { deleteVisitsByLinkId } from "../modules/url/visit.repository.js";
+import { deleteQRScansByQrId } from "../modules/qr/qrScan.repository.js";
 import qrAssetCleanupQueue from "../infrastructure/queues/qrAssetCleanup.queue.js";
 import type { RetentionCleanupJob } from "../shared/types/queue.types.js";
 import logger from "../infrastructure/configs/logger.config.js";
@@ -15,14 +15,14 @@ const linkQrHardDeleteWorker = new Worker<RetentionCleanupJob>("linkQrHardDelete
     const expiredUrls = await URL.find({ deletedAt: { $ne: null, $lte: cutoff } });
 
     for (const url of expiredUrls) {
-      await Visit.deleteMany({ linkId: url._id });
+      await deleteVisitsByLinkId(url._id.toString());
       await URL.deleteOne({ _id: url._id });
     }
 
     const expiredQrs = await QRCode.find({ deletedAt: { $ne: null, $lte: cutoff } });
 
     for (const qr of expiredQrs) {
-      await QRScan.deleteMany({ qrId: qr._id });
+      await deleteQRScansByQrId(qr._id.toString());
 
       if (qr.cloudinaryPublicId) {
         await qrAssetCleanupQueue.add("cleanup-qr-asset", { cloudinaryPublicId: qr.cloudinaryPublicId });

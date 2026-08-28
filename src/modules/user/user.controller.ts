@@ -2,8 +2,7 @@ import type { Request, Response } from "express";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../../shared/utils/cookieOptions.js";
 import { findUserById } from "./user.repository.js";
-import { updateUsername, changePassword, updateDetails } from "./user.service.js";
-import { usernameSchema, changePasswordSchema, updateDetailsSchema, deleteAccountSchema } from "./user.schemas.js";
+import { updateUsername, changePassword, updateDetails, requestAccountDeletion } from "./user.service.js";
 
 // -----------------------------SHOW PROFILE PAGE-----------------------------
 const handleShowProfilePage = asyncHandler(async (req: Request, res: Response) => {
@@ -25,12 +24,7 @@ const handleShowProfilePage = asyncHandler(async (req: Request, res: Response) =
 
 // -----------------------------UPDATE USERNAME-----------------------------
 const handleUpdateUsername = asyncHandler(async (req: Request, res: Response) => {
-  const parsed = usernameSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ success: false, message: parsed.error.issues[0]?.message ?? "Invalid input" });
-  }
-
-  const result = await updateUsername(req.user!.id, parsed.data.name);
+  const result = await updateUsername(req.user!.id, req.body.name);
 
   if (result.type === "NOT_FOUND") {
     return res.status(404).json({ success: false, message: "User not found" });
@@ -43,12 +37,7 @@ const handleUpdateUsername = asyncHandler(async (req: Request, res: Response) =>
 
 // -----------------------------CHANGE PASSWORD-----------------------------
 const handleChangePassword = asyncHandler(async (req: Request, res: Response) => {
-  const parsed = changePasswordSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ success: false, message: parsed.error.issues[0]?.message ?? "Invalid input" });
-  }
-
-  const result = await changePassword(req.user!.id, req.user!.email, parsed.data.oldPassword, parsed.data.newPassword);
+  const result = await changePassword(req.user!.id, req.user!.email, req.body.oldPassword, req.body.newPassword);
 
   if (result.type === "NOT_FOUND") {
     return res.status(404).json({ success: false, message: "User not found" });
@@ -70,12 +59,7 @@ const handleChangePassword = asyncHandler(async (req: Request, res: Response) =>
 
 // -----------------------------UPDATE DETAILS-----------------------------
 const handleUpdateDetails = asyncHandler(async (req: Request, res: Response) => {
-  const parsed = updateDetailsSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ success: false, message: parsed.error.issues[0]?.message ?? "Invalid input" });
-  }
-
-  const result = await updateDetails(req.user!.id, parsed.data.organization, parsed.data.designation);
+  const result = await updateDetails(req.user!.id, req.body.organization, req.body.designation);
 
   if (result.type === "NOT_FOUND") {
     return res.status(404).json({ success: false, message: "User not found" });
@@ -89,15 +73,18 @@ const handleUpdateDetails = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
-// -----------------------------DELETE ACCOUNT (STUB)-----------------------------
-const handleDeleteAccountStub = asyncHandler(async (req: Request, res: Response) => {
-  const parsed = deleteAccountSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ success: false, message: "Please type CONFIRM DELETE exactly to proceed." });
+// -----------------------------REQUEST ACCOUNT DELETION-----------------------------
+const handleRequestAccountDeletion = asyncHandler(async (req: Request, res: Response) => {
+  const result = await requestAccountDeletion(req.user!.id, req.user!.email, req.user!.role, req.ip ?? "", req.cookies?.refreshToken);
+
+  if (result.type === "NOT_ALLOWED_FOR_ROLE") {
+    return res.status(403).json({ success: false, message: "Admin and Super Admin accounts cannot be self-deleted through this flow." });
   }
 
-  // TODO: implement actual account deletion logic here (cascade delete URLs, visits, sessions, etc.)
-  return res.status(501).json({ success: false, message: "Account deletion is not implemented yet." });
+  res.clearCookie("accessToken", accessTokenCookieOptions);
+  res.clearCookie("refreshToken", refreshTokenCookieOptions);
+
+  return res.status(200).json({ success: true, message: "Your account is scheduled for deletion in 30 days. Logging back in before then cancels it." });
 });
 
 export {
@@ -105,5 +92,5 @@ export {
   handleUpdateUsername,
   handleChangePassword,
   handleUpdateDetails,
-  handleDeleteAccountStub,
+  handleRequestAccountDeletion,
 };

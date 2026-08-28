@@ -34,6 +34,10 @@ const updateUserRole = (userId: string, role: "ADMIN" | "SUPER_ADMIN") => {
   return User.findByIdAndUpdate(userId, { role }, { returnDocument: "after" });
 };
 
+const setDeletionRequestedAt = (userId: string, value: Date | null) => {
+  return User.findByIdAndUpdate(userId, { deletionRequestedAt: value }, { returnDocument: "after" });
+};
+
 export { 
   findUserByEmail, 
   createUser, 
@@ -42,4 +46,5 @@ export {
   findUserById,
   setUserBannedStatus,
   updateUserRole,
+  setDeletionRequestedAt
   };

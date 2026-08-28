@@ -37,7 +37,9 @@ export type SecurityEventType =
   | "ROLE_DEMOTED"
   | "AUDIT_REPORT_EXPORTED"
   | "PROFILE_USERNAME_CHANGED"
-  | "PROFILE_PASSWORD_CHANGED";
+  | "PROFILE_PASSWORD_CHANGED"
+  | "ACCOUNT_DELETION_REQUESTED"
+  | "ACCOUNT_DELETION_CANCELLED";
 
 export interface SecurityEventPayload {
   event: SecurityEventType;

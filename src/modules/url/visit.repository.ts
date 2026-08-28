@@ -14,13 +14,6 @@ const countVisits = (linkId: string) => {
   });
 };
 
-const getVisits = (linkId: string) => {
-  return Visit.find({
-    linkId,
-  }).select("timestamp -_id")
-    .sort({ timestamp: -1 });
-};
-
 const deleteVisitsByLinkId = (linkId: string) => {  
   return Visit.deleteMany({
     linkId,
@@ -29,7 +22,6 @@ const deleteVisitsByLinkId = (linkId: string) => {
 
 export { 
   createVisit, 
-  countVisits, 
-  getVisits, 
+  countVisits,
   deleteVisitsByLinkId 
   };

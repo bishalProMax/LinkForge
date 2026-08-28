@@ -25,3 +25,7 @@ export interface UpdateDetailsResult {
   organization?: string;
   designation?: string;
 }
+
+export interface RequestAccountDeletionResult {
+  type: "SUCCESS" | "NOT_ALLOWED_FOR_ROLE";
+}

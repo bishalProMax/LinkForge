@@ -1,8 +1,9 @@
-import { findUserById, findUserByEmail, saveUser } from "./user.repository.js";
-import { revokeAllUserSessions, createToken, createRefreshSession } from "../../shared/services/jwt.service.js";
+import mongoose from "mongoose";
+import { findUserById, findUserByEmail, saveUser, setDeletionRequestedAt  } from "./user.repository.js";
+import { revokeAllUserSessions, revokeRefreshSession, createToken, createRefreshSession } from "../../shared/services/jwt.service.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 import type { UserPayload } from "../../shared/types/jwt.types.js";
-import type { UpdateUsernameResult, ChangePasswordResult, UpdateDetailsResult } from "./user.types.js";
+import type { UpdateUsernameResult, ChangePasswordResult, UpdateDetailsResult, RequestAccountDeletionResult } from "./user.types.js";
 
 // -----------------------------UPDATE USERNAME-----------------------------
 const updateUsername = async (userId: string, name: string): Promise<UpdateUsernameResult> => {
@@ -72,8 +73,39 @@ const updateDetails = async (userId: string, organization?: string, designation?
   return { type: "SUCCESS", organization: user.organization, designation: user.designation };
 };
 
+// ---------------------------- ACCOUNT DELETION --------------------------
+const requestAccountDeletion = async (userId: string, email: string, role: "USER"| "ADMIN" | "SUPER_ADMIN" , ip: string, refreshCookie?: string): Promise<RequestAccountDeletionResult> => {
+
+  if (role !== "USER") {
+    return { type: "NOT_ALLOWED_FOR_ROLE" };
+  }
+
+  await setDeletionRequestedAt(userId, new Date());
+
+  if (refreshCookie) {
+    await revokeRefreshSession(refreshCookie);
+  }
+
+  logSecurityEvent({ event: "ACCOUNT_DELETION_REQUESTED", userId, email, ip, role }, "warn");
+
+  return { type: "SUCCESS" };
+};
+
+// ---------------------------- CANCEL ACCOUNT DELETION -------------------
+const cancelPendingDeletionIfSet = async ( user: { _id: mongoose.Types.ObjectId ; deletionRequestedAt?: Date | null; email: string; role: "USER" | "ADMIN" | "SUPER_ADMIN" },ip: string): Promise<void> => {
+
+  if (!user.deletionRequestedAt) return;
+
+  const userId = user._id.toString()
+
+  await setDeletionRequestedAt(userId, null);
+  logSecurityEvent({ event: "ACCOUNT_DELETION_CANCELLED", userId, email: user.email, ip, role: user.role }, "info");
+};
+
 export { 
     updateUsername, 
     changePassword, 
-    updateDetails
+    updateDetails,
+    requestAccountDeletion,
+    cancelPendingDeletionIfSet
     };

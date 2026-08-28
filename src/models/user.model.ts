@@ -16,6 +16,7 @@ export interface IUser {
   isBanned: boolean;
   organization?: string;
   designation?: string;
+  deletionRequestedAt?: Date | null;
 }
 
 // -----------------------------USER METHODS-----------------------
@@ -115,7 +116,13 @@ const userSchema = new mongoose.Schema<
       type: String,
       trim: true,
       maxlength: 100,
-    }
+    },
+
+    deletionRequestedAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,

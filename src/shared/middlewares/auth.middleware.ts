@@ -1,9 +1,10 @@
 import asyncHandler from "../utils/asyncHandler.js";
-import { verifyToken, createToken, rotateRefreshSession, revokeAllUserSessions } from "../services/jwt.service.js";
-import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../utils/cookieOptions.js";
-import { findUserById } from "../../modules/user/user.repository.js";
 import type { Request, Response, NextFunction } from "express";
+import { verifyToken, createToken, rotateRefreshSession, revokeAllUserSessions } from "../services/jwt.service.js";
+import { cancelPendingDeletionIfSet } from "../../modules/user/user.service.js";
 import { logSecurityEvent } from "../services/securityLogger.service.js";
+import { findUserById } from "../../modules/user/user.repository.js";
+import { accessTokenCookieOptions, refreshTokenCookieOptions } from "../utils/cookieOptions.js";
 
 const authenticateUser = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
@@ -26,6 +27,8 @@ const authenticateUser = asyncHandler(async (req: Request, res: Response, next: 
         }
         return res.redirect("/login");
       }
+
+      await cancelPendingDeletionIfSet(currentUser, req.ip ?? "");
 
       req.user = user;
       return next();
@@ -54,6 +57,8 @@ const rotated = await rotateRefreshSession(refreshCookie);
     }
     return res.redirect("/login");
   }
+
+  await cancelPendingDeletionIfSet(currentUser, req.ip ?? "");
 
   const newAccessToken = createToken(rotated.user);
 
