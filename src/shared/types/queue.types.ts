@@ -89,3 +89,10 @@ export interface QRScanEnrichmentJob {
 export interface RetentionCleanupJob {
   triggeredBy: "cron";
 }
+
+export interface SendAccountDeletionWarningEmailJob {
+  email: string;
+  name: string;
+  deletionDate: string;
+  loginLink: string;
+}

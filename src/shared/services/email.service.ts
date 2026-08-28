@@ -3,7 +3,7 @@ import path from "path";
 import handlebars from "handlebars";
 import transporter from "../../infrastructure/configs/email.config.js";
 import { fileURLToPath } from "url";
-import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob, SendAccountBannedEmailJob, SendAccountReinstatedEmailJob } from "../types/queue.types.js";
+import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob, SendAccountBannedEmailJob, SendAccountReinstatedEmailJob, SendAccountDeletionWarningEmailJob } from "../types/queue.types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -105,11 +105,23 @@ const sendAccountReinstatedEmail = async ({ email, name, loginLink }: SendAccoun
   });
 };
 
+const sendAccountDeletionWarningEmail = async ({ email, name, deletionDate, loginLink }: SendAccountDeletionWarningEmailJob): Promise<void> => {
+  const html = renderTemplate("accountDeletionWarning", { name, deletionDate, loginLink });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your LinkForge Account Is Scheduled for Deletion",
+    html,
+  });
+};
+
 export { sendVerificationEmail, 
   sendWelcomeEmail, 
   sendPasswordResetOTP, 
   sendPasswordChangedEmail, 
   sendRoleInviteEmail,
   sendAccountBannedEmail,
-  sendAccountReinstatedEmail
+  sendAccountReinstatedEmail,
+  sendAccountDeletionWarningEmail
   };

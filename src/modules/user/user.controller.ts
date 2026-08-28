@@ -75,7 +75,7 @@ const handleUpdateDetails = asyncHandler(async (req: Request, res: Response) => 
 
 // -----------------------------REQUEST ACCOUNT DELETION-----------------------------
 const handleRequestAccountDeletion = asyncHandler(async (req: Request, res: Response) => {
-  const result = await requestAccountDeletion(req.user!.id, req.user!.email, req.user!.role, req.ip ?? "", req.cookies?.refreshToken);
+  const result = await requestAccountDeletion(req.user!.id, req.user!.name, req.user!.email, req.user!.role, req.ip ?? "", req.cookies?.refreshToken);
 
   if (result.type === "NOT_ALLOWED_FOR_ROLE") {
     return res.status(403).json({ success: false, message: "Admin and Super Admin accounts cannot be self-deleted through this flow." });

@@ -39,8 +39,9 @@ const accountHardDeleteWorker = new Worker<RetentionCleanupJob>( "accountHardDel
       await revokeAllUserSessions(userId.toString());
       await User.deleteOne({ _id: userId });
 
-      logger.info({ jobId: job.id, userId: userId.toString(), linksDeleted: urls.length, qrsDeleted: qrs.length }, "Account hard-deleted after 30-day grace period — email now free for reuse");
+      logger.info({ jobId: job.id, userId: userId.toString(), linksDeleted: urls.length, qrsDeleted: qrs.length }, "Account hard-deleted — 30-day grace period elapsed");
     }
+    logger.info( { jobId: job.id, usersFound: usersToDelete.length }, "Account hard-delete cleanup job completed" );
   },
   {
     connection: redis,

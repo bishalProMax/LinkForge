@@ -1,7 +1,7 @@
 import { Worker, Job } from "bullmq";
 import redis from "../infrastructure/configs/redis.config.js";
-import { sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail, sendRoleInviteEmail, sendAccountBannedEmail, sendAccountReinstatedEmail } from "../shared/services/email.service.js";
-import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob, SendAccountBannedEmailJob, SendAccountReinstatedEmailJob } from "../shared/types/queue.types.js";
+import { sendVerificationEmail,sendWelcomeEmail,sendPasswordResetOTP, sendPasswordChangedEmail, sendRoleInviteEmail, sendAccountBannedEmail, sendAccountReinstatedEmail, sendAccountDeletionWarningEmail } from "../shared/services/email.service.js";
+import type { SendVerificationEmailJob, SendWelcomeEmailJob, SendPasswordResetOTPJob, SendPasswordChangedEmailJob, SendRoleInviteEmailJob, SendAccountBannedEmailJob, SendAccountReinstatedEmailJob, SendAccountDeletionWarningEmailJob } from "../shared/types/queue.types.js";
 import logger from "../infrastructure/configs/logger.config.js";
 import type { EmailJobData } from "../shared/types/queue.types.js"
 
@@ -32,6 +32,10 @@ import type { EmailJobData } from "../shared/types/queue.types.js"
 
       if (job.name === "sendAccountReinstatedEmail") { 
         await sendAccountReinstatedEmail(job.data as SendAccountReinstatedEmailJob); 
+      }
+
+      if (job.name === "sendAccountDeletionWarningEmail") { 
+        await sendAccountDeletionWarningEmail(job.data as SendAccountDeletionWarningEmailJob); 
       }
     },
 

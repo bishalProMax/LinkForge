@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import emailQueue from "../../infrastructure/queues/email.queue.js";
 import { findUserById, findUserByEmail, saveUser, setDeletionRequestedAt  } from "./user.repository.js";
 import { revokeAllUserSessions, revokeRefreshSession, createToken, createRefreshSession } from "../../shared/services/jwt.service.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
@@ -74,8 +75,9 @@ const updateDetails = async (userId: string, organization?: string, designation?
 };
 
 // ---------------------------- ACCOUNT DELETION --------------------------
-const requestAccountDeletion = async (userId: string, email: string, role: "USER"| "ADMIN" | "SUPER_ADMIN" , ip: string, refreshCookie?: string): Promise<RequestAccountDeletionResult> => {
-
+const requestAccountDeletion = async (userId: string, username: string, email: string, role: "USER"| "ADMIN" | "SUPER_ADMIN" , ip: string, refreshCookie?: string): Promise<RequestAccountDeletionResult> => {
+  
+  const ACCOUNT_DELETION_GRACE_DAYS = 30;
   if (role !== "USER") {
     return { type: "NOT_ALLOWED_FOR_ROLE" };
   }
@@ -87,6 +89,19 @@ const requestAccountDeletion = async (userId: string, email: string, role: "USER
   }
 
   logSecurityEvent({ event: "ACCOUNT_DELETION_REQUESTED", userId, email, ip, role }, "warn");
+
+  const deletionDate = new Date(Date.now() + ACCOUNT_DELETION_GRACE_DAYS * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  await emailQueue.add("sendAccountDeletionWarningEmail", {
+    email,
+    name: username, 
+    deletionDate,
+    loginLink: `${process.env.BASE_URL}/login`,
+  });
 
   return { type: "SUCCESS" };
 };
