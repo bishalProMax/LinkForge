@@ -41,7 +41,7 @@
         <form action="/auth/logout" method="POST">
           <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
         </form>
-        </div>
+      </div>
     </header>
 
     <!-- Create URL -->
@@ -91,88 +91,106 @@
       </p>
       <% } %>
 
-            <h2>My Links</h2>
-            <!-- Search Form -->
-            <% const todayStr=new Date().toISOString().split('T')[0]; %>
-              <% const hasActiveFilters=(filters.status && filters.status !=="all" ) || filters.createdFrom ||
-                filters.createdTo || (filters.expiry && filters.expiry !=="all" ) || (filters.sortBy && filters.sortBy
-                !=="newest" ); %>
+        <h2>My Links</h2>
+        <!-- Search Form -->
+        <% const todayStr=new Date().toISOString().split('T')[0]; %>
+          <% const hasActiveFilters=(filters.status && filters.status !=="all" ) || filters.createdFrom ||
+            filters.createdTo || (filters.expiry && filters.expiry !=="all" ) || (filters.sortBy && filters.sortBy
+            !=="newest" ); %>
 
-                <form class="url-toolbar" method="GET" action="/dashboard" id="urlToolbarForm">
-                  <div class="search-input-wrap">
-                    <i class="ri-search-line search-icon"></i>
-                    <input type="text" name="search" id="searchInput" placeholder="Search Links"
-                      value="<%= filters.search || '' %>" autocomplete="off" />
-                    <button type="button" class="clear-search-btn <%= filters.search ? '' : 'is-hidden' %>"
-                      id="clearSearchBtn">
-                      <i class="ri-close-line"></i>
-                    </button>
-                  </div>
+            <form class="url-toolbar" method="GET" action="/dashboard" id="urlToolbarForm">
+              <div class="search-input-wrap">
+                <i class="ri-search-line search-icon"></i>
+                <input type="text" name="search" id="searchInput" placeholder="Search Links"
+                  value="<%= filters.search || '' %>" autocomplete="off" />
+                <button type="button" class="clear-search-btn <%= filters.search ? '' : 'is-hidden' %>"
+                  id="clearSearchBtn">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
 
-                  <button type="button" class="filter-trigger-btn" id="filterTriggerBtn">
-                    <i class="ri-equalizer-3-line"></i>
-                    <% if (hasActiveFilters) { %>
-                      <span class="filter-badge-dot" id="filterBadgeDot"></span>
-                      <% } %>
-                  </button>
-                </form>
+              <button type="button" class="filter-trigger-btn" id="filterTriggerBtn">
+                <i class="ri-equalizer-3-line"></i>
+                <% if (hasActiveFilters) { %>
+                  <span class="filter-badge-dot" id="filterBadgeDot"></span>
+                  <% } %>
+              </button>
+            </form>
 
-                <!-- table section -->
-                <section class="table-section">
-                  <% if(urls && urls.length>0){ %>
+            <!-- BULK DELETE -->
+            <div id="bulkActionBar" class="bulk-action-bar" style="display:none;">
+              <label class="bulk-select-all-label">
+                <input type="checkbox" id="selectAllCheckbox" />
+                <span id="selectAllLabel">Select all</span>
+              </label>
 
-                    <div class="table-wrapper" data-focus-id="<%= focusId || '' %>">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Title</th>
-                            <th>Short Link</th>
-                            <th>Destination URL</th>
-                            <th>Status</th>
-                            <th>Clicks</th>
-                            <th>Created</th>
-                            <th>Expiry</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
+              <span id="bulkSelectedCount">0 selected</span>
 
-                        <tbody>
-                          <% urls.forEach((url)=> { %>
-                            <tr data-shortid="<%= url.shortId %>">
-                              <!-- Title -->
-                              <td class="title-cell" title="<%= url.title %>">
-                                <%= url.title %>
-                              </td>
+              <button type="button" id="bulkDeleteBtn" class="danger">
+                <i class="ri-delete-bin-line"></i>
+                Delete Selected
+              </button>
+            </div>
 
-                              <!-- Short Link -->
-                              <td class="short-link-cell">
-                                <a href="/url/<%= url.shortId %>" target="_blank" class="short-link">
-                                  <%= `${baseUrl}/url/${url.shortId}` %>
-                                </a>
-                              </td>
+            <!-- table section -->
+            <section class="table-section">
+              <% if(urls && urls.length>0){ %>
 
-                              <!-- Destination -->
-                              <td class="destination-cell">
-                                <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"
-                                  title="<%= url.redirectURL %>">
-                                  <%= url.redirectURL %>
-                                </a>
-                              </td>
+                <div class="table-wrapper" data-focus-id="<%= focusId || '' %>">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>Title</th>
+                        <th>Short Link</th>
+                        <th>Destination URL</th>
+                        <th>Status</th>
+                        <th>Clicks</th>
+                        <th>Created</th>
+                        <th>Expiry</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
 
-                              <!-- Status -->
-                              <td>
-                                <span class="status-badge status-<%= url.status %>">
-                                  <%= url.status.charAt(0).toUpperCase() + url.status.slice(1) %>
-                                </span>
-                              </td>
+                    <tbody>
+                      <% urls.forEach((url)=> { %>
+                        <tr data-shortid="<%= url.shortId %>">
+                          <td><input type="checkbox" class="row-select-checkbox" data-shortid="<%= url.shortId %>" />
+                          </td>
+                          <!-- Title -->
+                          <td class="title-cell" title="<%= url.title %>">
+                            <%= url.title %>
+                          </td>
 
-                              <!-- Clicks -->
-                              <td class="click-count">
-                                <%= url.totalClicks || 0 %>
-                              </td>
+                          <!-- Short Link -->
+                          <td class="short-link-cell">
+                            <a href="/url/<%= url.shortId %>" target="_blank" class="short-link">
+                              <%= `${baseUrl}/url/${url.shortId}` %>
+                            </a>
+                          </td>
 
-                              <!-- Created -->
-                              <td title="<%= url.createdAt.toLocaleString('en-IN', {
+                          <!-- Destination -->
+                          <td class="destination-cell">
+                            <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"
+                              title="<%= url.redirectURL %>">
+                              <%= url.redirectURL %>
+                            </a>
+                          </td>
+
+                          <!-- Status -->
+                          <td>
+                            <span class="status-badge status-<%= url.status %>">
+                              <%= url.status.charAt(0).toUpperCase() + url.status.slice(1) %>
+                            </span>
+                          </td>
+
+                          <!-- Clicks -->
+                          <td class="click-count">
+                            <%= url.totalClicks || 0 %>
+                          </td>
+
+                          <!-- Created -->
+                          <td title="<%= url.createdAt.toLocaleString('en-IN', {
                                 day: 'numeric',
                                 month: 'long',
                                 year: 'numeric',
@@ -180,168 +198,167 @@
                                 minute: '2-digit',
                                 hour12: true,
                                 }) %>">
-                                <%= url.createdAt.toLocaleDateString('en-IN', { day: 'numeric' , month: 'numeric' ,
-                                  year: 'numeric' , }) %>
-                              </td>
+                            <%= url.createdAt.toLocaleDateString('en-IN', { day: 'numeric' , month: 'numeric' ,
+                              year: 'numeric' , }) %>
+                          </td>
 
-                              <!-- Expires -->
-                              <td title="<%= url.expiryDisplay.title %>">
-                                <%= url.expiryDisplay.text %>
-                              </td>
+                          <!-- Expires -->
+                          <td title="<%= url.expiryDisplay.title %>">
+                            <%= url.expiryDisplay.text %>
+                          </td>
 
-                              <!-- Actions -->
-                              <td>
-                                <div class="action-dropdown">
-                                  <button class="action-btn" type="button">
-                                    <i class="ri-more-2-fill"></i>
+                          <!-- Actions -->
+                          <td>
+                            <div class="action-dropdown">
+                              <button class="action-btn" type="button">
+                                <i class="ri-more-2-fill"></i>
+                              </button>
+
+                              <div class="action-menu">
+                                <button class="analytics-btn" data-shortid="<%= url.shortId %>">
+                                  <i class="ri-line-chart-line"></i>
+                                  Analytics
+                                </button>
+
+                                <button class="edit-link-btn" data-shortid="<%= url.shortId %>">
+                                  <i class="ri-edit-line"></i>
+                                  Edit Link
+                                </button>
+
+                                <button class="copy-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>">
+                                  <i class="ri-file-copy-line"></i>
+                                  Copy Link
+                                </button>
+
+                                <% if (url.linkedQRId) { %>
+                                  <button class="show-qr-tab-btn" data-qrid="<%= url.linkedQrSlug %>">
+                                    <i class="ri-qr-code-line"></i>
+                                    Show QR
                                   </button>
-
-                                  <div class="action-menu">
-                                    <button class="analytics-btn" data-shortid="<%= url.shortId %>">
-                                      <i class="ri-line-chart-line"></i>
-                                      Analytics
+                                  <% } else { %>
+                                    <button class="create-qr-btn" data-shortid="<%= url.shortId %>">
+                                      <i class="ri-qr-code-line"></i>
+                                      Create QR
                                     </button>
+                                    <% } %>
 
-                                    <button class="edit-link-btn" data-shortid="<%= url.shortId %>">
-                                      <i class="ri-edit-line"></i>
-                                      Edit Link
-                                    </button>
+                                      <hr />
 
-                                    <button class="copy-btn" data-url="<%= `${baseUrl}/url/${url.shortId}` %>">
-                                      <i class="ri-file-copy-line"></i>
-                                      Copy Link
-                                    </button>
-
-                                    <% if (url.linkedQRId) { %>
-                                      <button class="show-qr-tab-btn" data-qrid="<%= url.linkedQrSlug %>">
-                                        <i class="ri-qr-code-line"></i>
-                                        Show QR
+                                      <button class="disable-btn" data-shortid="<%= url.shortId %>"
+                                        data-disabled="<%= url.isDisabled %>"
+                                        data-linked="<%= Boolean(url.linkedQRId) %>">
+                                        <i class="ri-forbid-line"></i>
+                                        <%= url.isDisabled ? "Enable" : "Disable" %>
                                       </button>
-                                      <% } else { %>
-                                        <button class="create-qr-btn" data-shortid="<%= url.shortId %>">
-                                          <i class="ri-qr-code-line"></i>
-                                          Create QR
-                                        </button>
-                                        <% } %>
 
-                                          <hr />
+                                      <hr />
 
-                                          <button class="disable-btn" data-shortid="<%= url.shortId %>"
-                                            data-disabled="<%= url.isDisabled %>"
-                                            data-linked="<%= Boolean(url.linkedQRId) %>">
-                                            <i class="ri-forbid-line"></i>
-                                            <%= url.isDisabled ? "Enable" : "Disable" %>
-                                          </button>
+                                      <button class="delete-btn danger" data-shortid="<%= url.shortId %>"
+                                        data-url="<%= url.redirectURL %>" data-linked="<%= Boolean(url.linkedQRId) %>">
+                                        <i class="ri-delete-bin-line"></i>
+                                        Delete
+                                      </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                  </table>
+                </div>
 
-                                          <hr />
+                <!-- urls links length shown -->
+                <div class="table-header">
+                  <span>
+                    Showing
+                    <%= startIndex %>–<%= endIndex %>
+                        of
+                        <%= totalUrls %>
+                          links
+                  </span>
+                </div>
 
-                                          <button class="delete-btn danger" data-shortid="<%= url.shortId %>"
-                                            data-url="<%= url.redirectURL %>"
-                                            data-linked="<%= Boolean(url.linkedQRId) %>">
-                                            <i class="ri-delete-bin-line"></i>
-                                            Delete
-                                          </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                            <% }) %>
-                        </tbody>
-                      </table>
-                    </div>
+                <% const buildPageUrl=(pageNum)=> {
+                  const params = new URLSearchParams();
+                  if (filters.search) params.set('search', filters.search);
+                  if (filters.status && filters.status !== 'all') params.set('status', filters.status);
+                  if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
+                  if (filters.createdTo) params.set('createdTo', filters.createdTo);
+                  if (filters.expiry && filters.expiry !== 'all') params.set('expiry', filters.expiry);
+                  if (filters.sortBy && filters.sortBy !== 'newest') params.set('sortBy', filters.sortBy);
+                  params.set('page', pageNum);
+                  return `/dashboard?${params.toString()}`;
+                  };
+                  %>
+                  <!-- PAGINATION -->
 
-                    <!-- urls links length shown -->
-                    <div class="table-header">
-                      <span>
-                        Showing
-                        <%= startIndex %>–<%= endIndex %>
-                            of
-                            <%= totalUrls %>
-                              links
-                      </span>
-                    </div>
+                  <% if (totalPages> 1) { %>
 
-                    <% const buildPageUrl=(pageNum)=> {
-                      const params = new URLSearchParams();
-                      if (filters.search) params.set('search', filters.search);
-                      if (filters.status && filters.status !== 'all') params.set('status', filters.status);
-                      if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
-                      if (filters.createdTo) params.set('createdTo', filters.createdTo);
-                      if (filters.expiry && filters.expiry !== 'all') params.set('expiry', filters.expiry);
-                      if (filters.sortBy && filters.sortBy !== 'newest') params.set('sortBy', filters.sortBy);
-                      params.set('page', pageNum);
-                      return `/dashboard?${params.toString()}`;
-                      };
-                      %>
-                      <!-- PAGINATION -->
+                    <div class="pagination">
+                      <% if (currentPage> 1) { %>
 
-                      <% if (totalPages> 1) { %>
+                        <a href="<%= buildPageUrl(currentPage - 1) %>" class="pagination-btn nav"> ← Prev </a>
 
-                        <div class="pagination">
-                          <% if (currentPage> 1) { %>
+                        <% } else { %>
 
-                            <a href="<%= buildPageUrl(currentPage - 1) %>" class="pagination-btn nav"> ← Prev </a>
+                          <span class="pagination-btn nav disabled"> ← Prev </span>
 
-                            <% } else { %>
+                          <% } %>
 
-                              <span class="pagination-btn nav disabled"> ← Prev </span>
+                            <% const pages=new Set(); pages.add(1); pages.add(totalPages); for ( let
+                              i=Math.max(1,currentPage-1); i <=Math.min(totalPages,currentPage+1); i++ ){ pages.add(i);
+                              } const sorted=[...pages].sort((a,b)=>a-b); let prev=0; for(const p of
+                              sorted){
+                              if(p-prev>1){
+                              %>
+
+                              <span class="pagination-dots"> ··· </span>
 
                               <% } %>
 
-                                <% const pages=new Set(); pages.add(1); pages.add(totalPages); for ( let
-                                  i=Math.max(1,currentPage-1); i <=Math.min(totalPages,currentPage+1); i++ ){
-                                  pages.add(i); } const sorted=[...pages].sort((a,b)=>a-b); let prev=0; for(const p of
-                                  sorted){
-                                  if(p-prev>1){
-                                  %>
+                                <a href="<%= buildPageUrl(p) %>"
+                                  class="pagination-btn <%= currentPage===p?'active':'' %>">
+                                  <%= p %>
+                                </a>
 
-                                  <span class="pagination-dots"> ··· </span>
+                                <% prev=p; } %>
 
-                                  <% } %>
+                                  <% if(currentPage<totalPages){ %>
 
-                                    <a href="<%= buildPageUrl(p) %>"
-                                      class="pagination-btn <%= currentPage===p?'active':'' %>">
-                                      <%= p %>
+                                    <a href="<%= buildPageUrl(currentPage+1) %>" class="pagination-btn nav"> Next →
                                     </a>
 
-                                    <% prev=p; } %>
+                                    <% } else { %>
 
-                                      <% if(currentPage<totalPages){ %>
+                                      <span class="pagination-btn nav disabled"> Next → </span>
 
-                                        <a href="<%= buildPageUrl(currentPage+1) %>" class="pagination-btn nav"> Next →
-                                        </a>
+                                      <% } %>
+                    </div>
 
-                                        <% } else { %>
+                    <% } %>
 
-                                          <span class="pagination-btn nav disabled"> Next → </span>
+                      <% } else { %>
 
-                                          <% } %>
+                        <div class="empty-state">
+                          <% if (hasActiveFilters) { %>
+                            <i class="ri-search-line"></i>
+                            <h3>No results found</h3>
+                            <% if (filters.search) { %>
+                              <p>No links match "<strong>
+                                  <%= filters.search %>
+                                </strong>". Try a different search term or adjust your filters.</p>
+                              <% } else { %>
+                                <p>No links match the selected filters. Try adjusting or resetting them.</p>
+                                <% } %>
+                                  <% } else { %>
+                                    <i class="ri-links-line"></i>
+                                    <h3>No links yet</h3>
+                                    <p>Create your first short URL to start managing links.</p>
+                                    <% } %>
                         </div>
 
                         <% } %>
-
-                          <% } else { %>
-
-                            <div class="empty-state">
-                              <% if (hasActiveFilters) { %>
-                                <i class="ri-search-line"></i>
-                                <h3>No results found</h3>
-                                <% if (filters.search) { %>
-                                  <p>No links match "<strong>
-                                      <%= filters.search %>
-                                    </strong>". Try a different search term or adjust your filters.</p>
-                                  <% } else { %>
-                                    <p>No links match the selected filters. Try adjusting or resetting them.</p>
-                                    <% } %>
-                                      <% } else { %>
-                                        <i class="ri-links-line"></i>
-                                        <h3>No links yet</h3>
-                                        <p>Create your first short URL to start managing links.</p>
-                                        <% } %>
-                            </div>
-
-                            <% } %>
-                </section>
+            </section>
   </div>
 
   <!-- FILTER MODAL -->
@@ -450,12 +467,12 @@
       <h3>QR Code Created</h3>
 
       <div class="qr-loading-state" id="createQrLoadingState">
-      <div id="createQrLoader" class="dots-loader">
-        <span></span><span></span><span></span>
+        <div id="createQrLoader" class="dots-loader">
+          <span></span><span></span><span></span>
+        </div>
+        <p class="dots-loader-label" id="createQrLoaderLabel">Generating your QR code…</p>
       </div>
-      <p class="dots-loader-label" id="createQrLoaderLabel">Generating your QR code…</p>
-      </div>
-      
+
       <img id="createQrImage" src="" style="max-width: 220px; display: none;" />
 
       <div class="created-destination-row" id="createQrDestinationRow" style="display: none;">
@@ -470,31 +487,43 @@
   </div>
 
   <!-- SHORT LINK GENERATED MODAL (main dashboard) -->
-<div id="createdLinkModal" class="modal">
-  <div class="modal-content modal-content--link">
-    <span class="close" data-close-modal>&times;</span>
-    <h3 link-modal>Short Link Created</h3>
+  <div id="createdLinkModal" class="modal">
+    <div class="modal-content modal-content--link">
+      <span class="close" data-close-modal>&times;</span>
+      <h3 link-modal>Short Link Created</h3>
 
-    <div class="created-link-pill-row">
-      <span class="created-link-pill">
-        <i class="ri-link"></i>
-        <span id="createdLinkUrl"></span>
-      </span>
-      <button class="created-link-copy-btn copy-btn" id="copyCreatedLinkBtn" title="Copy">
-        <i class="ri-file-copy-line"></i>
+      <div class="created-link-pill-row">
+        <span class="created-link-pill">
+          <i class="ri-link"></i>
+          <span id="createdLinkUrl"></span>
+        </span>
+        <button class="created-link-copy-btn copy-btn" id="copyCreatedLinkBtn" title="Copy">
+          <i class="ri-file-copy-line"></i>
+        </button>
+      </div>
+
+      <div class="created-link-destination-row">
+        <i class="ri-arrow-right-up-line"></i>
+        <span id="createdLinkDestination"></span>
+      </div>
+
+      <button id="shareCreatedLink" class="share-full-btn">
+        <i class="ri-share-line"></i>
       </button>
     </div>
-
-    <div class="created-link-destination-row">
-      <i class="ri-arrow-right-up-line"></i>
-      <span id="createdLinkDestination"></span>
-    </div>
-
-    <button id="shareCreatedLink" class="share-full-btn">
-      <i class="ri-share-line"></i>
-    </button>
   </div>
-</div>
+
+  <!-- BULK DELETE MODAL -->
+  <div id="bulkDeleteModal" class="modal">
+    <div class="modal-content modal-content--delete">
+      <h3>Delete Selected Items?</h3>
+      <p id="bulkDeleteMessage"></p>
+      <div class="delete-actions">
+        <button id="cancelBulkDeleteBtn" data-close-modal type="button">Cancel</button>
+        <button id="confirmBulkDeleteBtn" type="button" class="danger">Delete</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 

@@ -197,6 +197,18 @@
             </button>
           </form>
 
+          <!-- BULK DELETE -->
+          <div id="bulkActionBar" class="bulk-action-bar" style="display:none;">
+            <label class="bulk-select-all-label">
+              <input type="checkbox" id="selectAllCheckbox" /> 
+              <span id="selectAllLabel">Select all</span>
+            </label>
+            <span id="bulkSelectedCount">0 selected</span>
+            <button type="button" id="bulkDeleteBtn" class="danger">
+              <i class="ri-delete-bin-line"></i> Delete Selected
+            </button>
+          </div>
+
           <!-- QR GRID -->
           <section class="table-section">
             <% if (qrs && qrs.length> 0) { %>
@@ -204,6 +216,7 @@
               <div class="qr-grid" data-focus-id="<%= focusId || '' %>">
                 <% qrs.forEach((qr)=> { %>
                   <div class="qr-card" data-qrid="<%= qr.qrId %>">
+                    <input type="checkbox" class="row-select-checkbox qr-card-checkbox" data-shortid="<%= qr.qrId %>" />
 
                     <!-- thumbnail -->
                     <div class="qr-thumb">
@@ -584,6 +597,18 @@
       </button>
     </div>
   </div>
+
+  <!-- BULK DELETE MODAL -->
+  <div id="bulkDeleteModal" class="modal">
+  <div class="modal-content modal-content--delete">
+    <h3>Delete Selected Items?</h3>
+    <p id="bulkDeleteMessage"></p>
+    <div class="delete-actions">
+      <button id="cancelBulkDeleteBtn" data-close-modal type="button">Cancel</button>
+      <button id="confirmBulkDeleteBtn" type="button" class="danger">Delete</button>
+    </div>
+  </div>
+</div>
 
 </body>
 

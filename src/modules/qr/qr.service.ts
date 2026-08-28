@@ -10,6 +10,7 @@ import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
 import logger from "../../infrastructure/configs/logger.config.js";
 import type { CreateStandaloneQRProps, CreateLinkedQRProps, DashboardQRQueryParams, ResolvedQRTarget, EditQRProps, QRDesignInput, ScanContext } from "./qr.types.js";
+import type { BulkDeleteResult } from "../url/url.types.js";
 
 const DEFAULT_DESIGN = { fgColor: "#000000", bgColor: "#ffffff", dotStyle: "square" as const, frameShape: "sharp" as const };
 const QR_DASHBOARD_LIMIT = 9;
@@ -340,6 +341,27 @@ const QRByIdAdmin = async (qrId: string) => {
   return findQRByIdAdmin(qrId);
 }
 
+const bulkDeleteQRs = async (qrIds: string[], userId: string): Promise<BulkDeleteResult> => {
+  const succeeded: string[] = [];
+  const failed: { shortId: string; reason: string }[] = [];
+
+  for (const qrId of qrIds) {
+    try {
+      const deleted = await deleteQR(qrId, userId);
+      if (deleted) {
+        succeeded.push(qrId);
+      } else {
+        failed.push({ shortId: qrId, reason: "QR code not found." });
+      }
+    } catch (error) {
+      failed.push({ shortId: qrId, reason: error instanceof Error ? error.message : "Something went wrong." });
+    }
+  }
+
+  logger.info({ userId, succeeded: succeeded.length, failed: failed.length }, "Bulk QR delete completed");
+  return { succeeded, failed };
+};
+
 export {
   createStandaloneQR,
   createLinkedQR,
@@ -358,5 +380,6 @@ export {
   editQR,
   updateQRDesign,
   previewQRSvg,
-  QRByIdAdmin
+  QRByIdAdmin,
+  bulkDeleteQRs
 };

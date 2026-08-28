@@ -1,6 +1,6 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { createStandaloneQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg } from "./qr.service.js";
+import { createStandaloneQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg, bulkDeleteQRs } from "./qr.service.js";
 import type { DashboardQRQueryParams } from "./qr.types.js";
 
 // Create a standalone QR code
@@ -238,6 +238,12 @@ const handlePreviewQRDesign = asyncHandler(async (req: Request, res: Response) =
   return res.status(200).send(svg);
 });
 
+//BUL DELETE QR
+const handleBulkDeleteQR = asyncHandler(async (req: Request, res: Response) => {
+  const result = await bulkDeleteQRs(req.body.qrIds, req.user!.id);
+  return res.status(200).json({ success: true, ...result });
+});
+
 export {
   handleCreateStandaloneQR,
   handleLinkQRToNewUrl,
@@ -250,5 +256,6 @@ export {
   handleShowEditQRPage, 
   handleEditQR, 
   handleUpdateQRDesign,
-  handlePreviewQRDesign
+  handlePreviewQRDesign,
+  handleBulkDeleteQR
 };

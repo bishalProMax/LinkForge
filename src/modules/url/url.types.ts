@@ -53,3 +53,8 @@ export type RedirectResult =
   | { type: "DISABLED" }
   | { type: "EXPIRED" }
   | { type: "SUCCESS"; redirectURL: string };
+
+  export interface BulkDeleteResult {
+  succeeded: string[];
+  failed: { shortId: string; reason: string }[];
+}

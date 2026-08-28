@@ -128,3 +128,11 @@ export const createUrlSchema = z
   }
 });
 
+//BULK DELETE
+export const bulkDeleteURLSchema = z.object({
+  shortIds: z
+  .array(z.string().trim().min(1))
+  .min(1, "Select at least one link.")
+  .max(500, "You can delete up to 500 links at once."),
+});
+

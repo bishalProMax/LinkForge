@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { handleGenerateShortURL, handleRedirectToURL, handleDeleteURL, handleToggleDisableURL, handleCreateQRForURL, handleShowEditLinkPage, handleEditURL } from "./url.controller.js";
-import { createUrlSchema, editUrlSchema } from "./url.schemas.js";
-import { validateRedirect, validateRedirectDynamic } from "../../shared/middlewares/validation.middleware.js";
+import { handleGenerateShortURL, handleRedirectToURL, handleDeleteURL, handleToggleDisableURL, handleCreateQRForURL, handleShowEditLinkPage, handleEditURL, handleBulkDeleteURL } from "./url.controller.js";
+import { createUrlSchema, editUrlSchema, bulkDeleteURLSchema } from "./url.schemas.js";
+import { validateRedirect, validateRedirectDynamic, validateJSON } from "../../shared/middlewares/validation.middleware.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
 
 const router = Router();
@@ -20,5 +20,8 @@ router.route("/:shortId/create-qr").post(authenticateUser, handleCreateQRForURL)
 
 //EDIT LINK PAGE
 router.route("/:shortId/edit").get(authenticateUser, handleShowEditLinkPage).post(authenticateUser, validateRedirectDynamic(editUrlSchema, "shortId", "/url"), handleEditURL);
+
+//BULK DELETE
+router.route("/bulk-delete").post(authenticateUser, validateJSON(bulkDeleteURLSchema), handleBulkDeleteURL);
 
 export default router;

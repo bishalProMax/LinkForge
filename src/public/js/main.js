@@ -19,3 +19,4 @@ import "./createdLinkModal.js";
 import "./analytics.js";
 import "./analyticsExport.js";
 import "./analyticsAdmin.js";
+import "./bulkSelect.js";

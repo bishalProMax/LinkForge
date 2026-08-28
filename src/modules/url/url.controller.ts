@@ -1,7 +1,7 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
-import { generateShortURL, redirectToOriginalURL, getUserURLs, deleteURL, toggleDisableURL, findURLDocByShortId, resolveFocusPage, editLink } from "./url.service.js";
+import { generateShortURL, redirectToOriginalURL, getUserURLs, deleteURL, toggleDisableURL, findURLDocByShortId, resolveFocusPage, editLink, bulkDeleteURLs } from "./url.service.js";
 import { createLinkedQR } from "../qr/qr.service.js";
 import type { DashboardQueryParams, DashboardURL } from "./url.types.js";
 
@@ -221,6 +221,11 @@ const handleEditURL = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+const handleBulkDeleteURL = asyncHandler(async (req: Request, res: Response) => {
+  const result = await bulkDeleteURLs(req.body.shortIds, req.user!.id);
+  return res.status(200).json({ success: true, ...result });
+});
+
 export { 
   handleGenerateShortURL, 
   handleRedirectToURL, 
@@ -229,5 +234,6 @@ export {
   handleToggleDisableURL,
   handleCreateQRForURL,
   handleShowEditLinkPage,
-  handleEditURL
+  handleEditURL,
+  handleBulkDeleteURL
   };

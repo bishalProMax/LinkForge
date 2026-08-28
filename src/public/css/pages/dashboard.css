@@ -207,3 +207,73 @@ button.generated-close-btn:hover {
 .pending{
   color: #111827;
 }
+
+.bulk-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  background: #eef2ff;
+  border: 1px solid #c7cdfb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4338ca;
+}
+
+.bulk-action-bar button.danger {
+  margin-left: auto;
+  background: #dc2626 !important;
+  color: #fff;
+}
+
+.bulk-action-bar button.danger:hover {
+  background: #b91c1c !important;
+}
+
+/* Bulk-delete confirmation modal */
+#bulkDeleteModal .delete-actions button.danger {
+  background: #dc2626 !important;
+  color: #fff;
+}
+
+#bulkDeleteModal .delete-actions button.danger:hover {
+  background: #b91c1c !important;
+}
+
+.bulk-select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.qr-card-checkbox {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  z-index: 5;
+  cursor: pointer;
+}
+
+#bulkDeleteModal .delete-actions button.danger {
+  background: #dc2626 !important;
+  color: #fff;
+}
+
+#bulkDeleteModal .delete-actions button.danger:hover {
+  background: #b91c1c !important;
+}
+
+/* Single QR delete confirmation */
+#qrDeleteModal .delete-actions button.danger {
+  background: #dc2626 !important;
+  color: #fff;
+}
+
+#qrDeleteModal .delete-actions button.danger:hover {
+  background: #b91c1c !important;
+}

@@ -5,7 +5,7 @@ import visitEnrichmentQueue from "../../infrastructure/queues/visitEnrichment.qu
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
 import { getDefaultTitle, normalizeTitle } from "../../shared/utils/defaultTitle.js";
 import logger from "../../infrastructure/configs/logger.config.js";
-import type { DashboardQueryParams, GenerateShortURLProps, VisitContext, RedirectResult } from "./url.types.js";
+import type { DashboardQueryParams, GenerateShortURLProps, VisitContext, RedirectResult, BulkDeleteResult } from "./url.types.js";
 
 const RESERVED_ALIASES = ["generate","analytics"]
 const DASHBOARD_LIMIT = 6;
@@ -166,6 +166,28 @@ const URLByShortIdAdmin = async (shortId: string) => {
   return findURLByShortIdAdmin(shortId)
 }
 
+//BULK DELETE
+const bulkDeleteURLs = async (shortIds: string[], userId: string): Promise<BulkDeleteResult> => {
+  const succeeded: string[] = [];
+  const failed: { shortId: string; reason: string }[] = [];
+
+  for (const shortId of shortIds) {
+    try {
+      const deleted = await deleteURL(shortId, userId);
+      if (deleted) {
+        succeeded.push(shortId);
+      } else {
+        failed.push({ shortId, reason: "Link not found." });
+      }
+    } catch (error) {
+      failed.push({ shortId, reason: error instanceof Error ? error.message : "Something went wrong." });
+    }
+  }
+
+  logger.info({ userId, succeeded: succeeded.length, failed: failed.length }, "Bulk URL delete completed");
+  return { succeeded, failed };
+};
+
 
 export { 
   generateShortURL, 
@@ -176,5 +198,6 @@ export {
   findURLDocByShortId,
   resolveFocusPage,
   editLink,
-  URLByShortIdAdmin
+  URLByShortIdAdmin,
+  bulkDeleteURLs
   };

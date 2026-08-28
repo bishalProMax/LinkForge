@@ -1,6 +1,6 @@
 import { Router } from "express";
-import {handleCreateStandaloneQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleDownloadQRAsset, handleShowEditQRPage, handleEditQR, handleUpdateQRDesign, handlePreviewQRDesign } from "./qr.controller.js";
-import { createStandaloneQRSchema, editQRSchema, updateDesignSchema } from "./qr.schemas.js";
+import {handleCreateStandaloneQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleDownloadQRAsset, handleShowEditQRPage, handleEditQR, handleUpdateQRDesign, handlePreviewQRDesign, handleBulkDeleteQR } from "./qr.controller.js";
+import { createStandaloneQRSchema, editQRSchema, updateDesignSchema, bulkDeleteQRSchema } from "./qr.schemas.js";
 import { validateRedirectDynamic, validateJSON } from "../../shared/middlewares/validation.middleware.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
 
@@ -35,5 +35,8 @@ router.route("/:qrId").get(handleRedirectQR);
 
 // PREVIEW QR CHANGES
 router.route("/preview").post(authenticateUser, handlePreviewQRDesign);
+
+//BULK DELETE
+router.route("/bulk-delete").post(authenticateUser, validateJSON(bulkDeleteQRSchema), handleBulkDeleteQR);
 
 export default router;

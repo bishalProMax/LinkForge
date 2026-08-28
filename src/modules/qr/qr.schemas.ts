@@ -121,3 +121,9 @@ export const updateDesignSchema = z.object({
   design: designSchema,
 });
 
+export const bulkDeleteQRSchema = z.object({
+  qrIds: z.array(z.string().trim().min(1))
+  .min(1, "Select at least one QR code.")
+  .max(500, "You can delete up to 500 QR codes at once."),
+});
+
