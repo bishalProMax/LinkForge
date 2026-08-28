@@ -37,7 +37,7 @@ export interface AnalyticsQueryParams {
 
 export type BreakdownMetric = "country" | "region" | "city" | "browser" | "os" | "device" | "referrer";
 
-export type ExportMetric = "timeseries" | "topItems" | BreakdownMetric;
+export type ExportMetric = "timeSeries" | "topItems" | BreakdownMetric;
 
 export interface AnalyticsOverview {
   isSingleItem: boolean;

@@ -94,7 +94,7 @@ const getExportData = async (metric: ExportMetric, params: AnalyticsQueryParams,
 
   const range = buildRange(params);
 
-  if (metric === "timeseries") {
+  if (metric === "timeSeries") {
     return getTimeSeries(params.type, scope.ids, range, params.granularity ?? "day");
   }
 

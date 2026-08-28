@@ -24,7 +24,7 @@ export default defineConfig([
     },
     rules: {
       "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^next$" }],
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^next$", varsIgnorePattern: "^_"  }],
       "@typescript-eslint/no-explicit-any": "off",
     },
   },

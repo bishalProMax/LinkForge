@@ -7,7 +7,7 @@ import { getAnalyticsOverview, getExportData, getRawEventsExport } from "./analy
 import { buildPdfFromPng } from "../../shared/utils/qrPdf.js";
 import type { AnalyticsQueryParams, ExportMetric } from "./analytics.types.js";
 
-const VALID_EXPORT_METRICS: ExportMetric[] = ["timeseries", "topItems", "country", "region", "city", "browser", "os", "device", "referrer"];
+const VALID_EXPORT_METRICS: ExportMetric[] = ["timeSeries", "topItems", "country", "region", "city", "browser", "os", "device", "referrer"];
 
 const parseParams = (req: Request): AnalyticsQueryParams => ({
   type: req.query.type === "qr" ? "qr" : "url",
