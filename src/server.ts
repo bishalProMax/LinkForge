@@ -10,6 +10,8 @@ import qrAssetCleanupWorker from "./workers/qrAssetCleanup.worker.js";
 import visitEnrichmentWorker from "./workers/visitEnrichment.worker.js";
 import qrScanEnrichmentWorker from "./workers/qrScanEnrichment.worker.js";
 import linkQrHardDeleteWorker from "./workers/linkQrHardDelete.worker.js";
+import accountHardDeleteWorker from "./workers/accountHardDelete.worker.js";
+import accountHardDeleteQueue from "./infrastructure/queues/accountHardDelete.queue.js";
 import linkQrHardDeleteQueue from "./infrastructure/queues/linkQrHardDelete.queue.js";
 import qrGenerationQueue from "./infrastructure/queues/qrGeneration.queue.js";
 import qrAssetCleanupQueue from "./infrastructure/queues/qrAssetCleanup.queue.js";
@@ -30,6 +32,7 @@ const sockets = new Set<Socket>();
 (async (): Promise<void> => {
   await cleanupQueue.add("cleanup-unverified-users", { triggeredBy: "cron" }, { jobId: "cleanup-unverified-users", repeat: { every: 1000 * 60 * 60 } });
   await linkQrHardDeleteQueue.add("hard-delete-expired-links-qr", { triggeredBy: "cron" }, { jobId: "hard-delete-expired-links-qr", repeat: { every: 1000 * 60 * 60 * 24 } });
+  await accountHardDeleteQueue.add("hard-delete-expired-accounts", { triggeredBy: "cron" }, { jobId: "hard-delete-expired-accounts", repeat: { every: 1000 * 60 * 60 * 24 } });
 })();
 
 loadGeoIPReader()
@@ -74,10 +77,10 @@ const gracefulShutdown = async (signal: string): Promise<void> => {
       logger.info("HTTP server closed");
     }
 
-    await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close(), qrGenerationWorker.close(), qrAssetCleanupWorker.close(), visitEnrichmentWorker.close(), qrScanEnrichmentWorker.close(), linkQrHardDeleteWorker.close()]);
+    await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close(), qrGenerationWorker.close(), qrAssetCleanupWorker.close(), visitEnrichmentWorker.close(), qrScanEnrichmentWorker.close(), linkQrHardDeleteWorker.close(), accountHardDeleteWorker.close()]);
     logger.info("BullMQ workers closed");
 
-    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close(), qrGenerationQueue.close(), qrAssetCleanupQueue.close(), visitEnrichmentQueue.close(), qrScanEnrichmentQueue.close(), linkQrHardDeleteQueue.close()]);
+    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close(), qrGenerationQueue.close(), qrAssetCleanupQueue.close(), visitEnrichmentQueue.close(), qrScanEnrichmentQueue.close(), linkQrHardDeleteQueue.close(), accountHardDeleteQueue.close()]);
     logger.info("BullMQ queues closed");
 
     await redis.quit();
