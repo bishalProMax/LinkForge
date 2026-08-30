@@ -2,6 +2,8 @@ import { Worker, Job } from "bullmq";
 import redis from "../infrastructure/configs/redis.config.js";
 import URL from "../models/url.model.js";
 import QRCode from "../models/qrCode.model.js";
+import { deleteURLByShortId } from "../modules/url/url.repository.js";
+import { deleteQRByQrId } from "../modules/qr/qr.repository.js";
 import { deleteVisitsByLinkId } from "../modules/url/visit.repository.js";
 import { deleteQRScansByQrId } from "../modules/qr/qrScan.repository.js";
 import qrAssetCleanupQueue from "../infrastructure/queues/qrAssetCleanup.queue.js";
@@ -16,7 +18,7 @@ const linkQrHardDeleteWorker = new Worker<RetentionCleanupJob>("linkQrHardDelete
 
     for (const url of expiredUrls) {
       await deleteVisitsByLinkId(url._id.toString());
-      await URL.deleteOne({ _id: url._id });
+      await deleteURLByShortId(url.shortId);
     }
 
     const expiredQrs = await QRCode.find({ deletedAt: { $ne: null, $lte: cutoff } });
@@ -28,7 +30,7 @@ const linkQrHardDeleteWorker = new Worker<RetentionCleanupJob>("linkQrHardDelete
         await qrAssetCleanupQueue.add("cleanup-qr-asset", { cloudinaryPublicId: qr.cloudinaryPublicId });
       }
 
-      await QRCode.deleteOne({ _id: qr._id });
+      await deleteQRByQrId(qr.qrId);
     }
 
     logger.info( { jobId: job.id, urlsHardDeleted: expiredUrls.length, qrsHardDeleted: expiredQrs.length },

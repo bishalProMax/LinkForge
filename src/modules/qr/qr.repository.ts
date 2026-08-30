@@ -31,10 +31,6 @@ const updateQRDisabledStatus = (qrId: string, isDisabled: boolean) => {
   return QRCode.findOneAndUpdate({ qrId }, { isDisabled }, { returnDocument: "after" });
 };
 
-const deleteQRByQrId = (qrId: string) => {
-  return QRCode.findOneAndDelete({ qrId });
-};
-
 const getSortStage = (sortBy?: string): Record<string, 1 | -1> => {
   switch (sortBy) {
     case "oldest":
@@ -173,6 +169,17 @@ const countQRStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promis
   return { active, expired };
 };
 
+//used by worker for hard delete single QR
+const deleteQRByQrId = (qrId: string) => {
+  return QRCode.findOneAndDelete({ qrId });
+};
+
+//used by worker for hard delete all QR in an Account
+const deleteAllQRCodesByUserId = (userId: string) => {
+  return QRCode.deleteMany({ createdBy: userId });
+};
+
+//soft delete QR before hard delete
 const softDeleteQRById = (id: string, deletedBy: string) => {
   return QRCode.findByIdAndUpdate(id, { deletedAt: new Date(), deletedBy }, { returnDocument: "after" });
 };
@@ -197,5 +204,6 @@ export {
   getQRIdsByUserId,
   countQRStatusByIds,
   softDeleteQRById,
-  findQRByIdAdmin
+  findQRByIdAdmin,
+  deleteAllQRCodesByUserId
   };

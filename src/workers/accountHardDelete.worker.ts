@@ -3,6 +3,8 @@ import redis from "../infrastructure/configs/redis.config.js";
 import User from "../models/user.model.js";
 import URL from "../models/url.model.js";
 import QRCode from "../models/qrCode.model.js";
+import { deleteAllURLsByUserId } from "../modules/url/url.repository.js";
+import { deleteAllQRCodesByUserId } from "../modules/qr/qr.repository.js";
 import { deleteVisitsByLinkId } from "../modules/url/visit.repository.js";
 import { deleteQRScansByQrId } from "../modules/qr/qrScan.repository.js";
 import qrAssetCleanupQueue from "../infrastructure/queues/qrAssetCleanup.queue.js";
@@ -24,7 +26,7 @@ const accountHardDeleteWorker = new Worker<RetentionCleanupJob>( "accountHardDel
       for (const url of urls) {
         await deleteVisitsByLinkId(url._id.toString());
       }
-      await URL.deleteMany({ createdBy: userId });
+      await deleteAllURLsByUserId(userId.toString());
 
       const qrs = await QRCode.find({ createdBy: userId });
       for (const qr of qrs) {
@@ -34,7 +36,7 @@ const accountHardDeleteWorker = new Worker<RetentionCleanupJob>( "accountHardDel
           await qrAssetCleanupQueue.add("cleanup-qr-asset", { cloudinaryPublicId: qr.cloudinaryPublicId });
         }
       }
-      await QRCode.deleteMany({ createdBy: userId });
+      await deleteAllQRCodesByUserId(userId.toString());
 
       await revokeAllUserSessions(userId.toString());
       await User.deleteOne({ _id: userId });

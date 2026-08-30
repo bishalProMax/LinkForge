@@ -101,12 +101,6 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
   return URL.aggregate(pipeline);
 };
 
-const deleteURLByShortId = (shortId: string) => {
-  return URL.findOneAndDelete({
-    shortId,
-  });
-};
-
 const updateURLDisabledStatus = (shortId: string, isDisabled: boolean) => {
   return URL.findOneAndUpdate({ shortId }, { isDisabled }, { returnDocument: "after" });
 };
@@ -143,6 +137,19 @@ const countURLStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promi
   return { active, expired };
 };
 
+//used by worker for hard delete single URL
+const deleteURLByShortId = (shortId: string) => {
+  return URL.findOneAndDelete({
+    shortId,
+  });
+};
+
+//used by worker for hard delete all URL in an Account
+const deleteAllURLsByUserId = (userId: string) => {
+  return URL.deleteMany({ createdBy: userId });
+};
+
+//soft delete URL before hard delete
 const softDeleteURLById = (id: string, deletedBy: string) => {
   return URL.findByIdAndUpdate(id, { deletedAt: new Date(), deletedBy }, { returnDocument: "after" });
 };
@@ -165,5 +172,6 @@ export {
   getURLIdsByUserId,
   countURLStatusByIds,
   softDeleteURLById,
-  findURLByShortIdAdmin
+  findURLByShortIdAdmin,
+  deleteAllURLsByUserId
   };
