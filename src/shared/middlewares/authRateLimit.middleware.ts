@@ -14,7 +14,7 @@ const signupLimiter = rateLimit({
 
   windowMs: 15 * 60 * 1000, // 15 min
 
-  max: 5,
+  max: 10,
 
   standardHeaders: true,
 

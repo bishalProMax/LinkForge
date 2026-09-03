@@ -40,8 +40,9 @@ const handleUserSignup = asyncHandler(async (req: Request, res: Response) => {
     }
 
     if (result.type === "COOLDOWN_ACTIVE") {
+      const mins = Math.ceil((result.cooldown ?? 3600) / 60);
       return res.status(429).render("signup", {
-        error: `Please wait ${result.cooldown}s before requesting another verification email.`,
+        error: `Maximum verification email requests reached. Please try again in ${mins} minute(s).`,
         old,
       });
     }

@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import redis from "../../infrastructure/configs/redis.config.js";
 import emailQueue from "../../infrastructure/queues/email.queue.js";
-import { createToken, createRefreshSession, revokeRefreshSession } from "../../shared/services/jwt.service.js"
+import { createToken, createRefreshSession, revokeRefreshSession } from "../../shared/services/jwt.service.js";
 import { cancelPendingDeletionIfSet } from "../user/user.service.js";
 import verifyTurnstile from "../../shared/services/turnstile.service.js";
 import { findUserByEmail, createUser, findUserByVerificationToken, saveUser } from "../user/user.repository.js";
@@ -42,6 +42,13 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
       };
     }
 
+    const sendCount = Number(await redis.get(`signup-resend-count:${email}`)) || 0;
+    if (sendCount >= 2) {
+      const limitTtl = await redis.ttl(`signup-resend-count:${email}`);
+      logSecurityEvent({ event: "SIGNUP_RESEND_LIMIT_REACHED", email, ip, role: existedUser.role });
+      return { type: "RESEND_LIMIT_REACHED", cooldown: limitTtl > 0 ? limitTtl : 3600 };
+    }
+
     // EMAIL RESEND COOLDOWN
     const cooldown = await redis.ttl(`signup-resend-cooldown:${email}`);
     if (cooldown > 0) {
@@ -49,14 +56,6 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
       return {
         type: "COOLDOWN_ACTIVE",
         cooldown,
-      };
-    }
-
-    const sendCount = Number(await redis.get(`signup-resend-count:${email}`)) || 0;
-    if (sendCount >= 2) {
-      logSecurityEvent({ event: "SIGNUP_RESEND_LIMIT_REACHED", email, ip, role: existedUser.role });
-      return {
-        type: "RESEND_LIMIT_REACHED",
       };
     }
 
@@ -108,9 +107,8 @@ const signupUser = async ({ name, email, password, captchaToken, ip }: SignupUse
     logSecurityEvent({ event: "INVITE_ACCEPTED", email, ip, userId: user._id.toString(), role: assignedRole }, "info");
     return {
       type: "INVITE_ACCEPTED",
-    }
-  }
-  else {
+    };
+  } else {
     const verificationLink = `${process.env.BASE_URL}/auth/verify-email/${token}`;
 
     await emailQueue.add("sendVerificationEmail", {
@@ -155,17 +153,17 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
       type: "ACCOUNT_BANNED",
     };
   }
-  
+
   //if local account is not made but user trying to login with local account
   if (!user.authProviders.includes("local")) {
-    logSecurityEvent({ event: "GOOGLE_LOGIN_REQUIRED", email, ip, userId: user._id.toString(), reason:"LOCAL_AUTH_NOT_ENABLED", role: user.role });
+    logSecurityEvent({ event: "GOOGLE_LOGIN_REQUIRED", email, ip, userId: user._id.toString(), reason: "LOCAL_AUTH_NOT_ENABLED", role: user.role });
     return {
       type: "GOOGLE_LOGIN_REQUIRED",
     };
   }
 
   if (!user.isVerified) {
-    logSecurityEvent({ event: "LOGIN_BLOCKED_UNVERIFIED", email, ip,reason:"EMAIL_NOT VERIFIED", userId: user._id.toString(), role: user.role });
+    logSecurityEvent({ event: "LOGIN_BLOCKED_UNVERIFIED", email, ip, reason: "EMAIL_NOT VERIFIED", userId: user._id.toString(), role: user.role });
     return {
       type: "NOT_VERIFIED",
     };
@@ -195,7 +193,7 @@ const loginUser = async ({ email, password, ip }: LoginUserProps): Promise<Login
   return {
     type: "SUCCESS",
     accessToken,
-    refreshToken
+    refreshToken,
   };
 };
 
@@ -249,10 +247,4 @@ const verifyUserEmail = async (token: string): Promise<VerifyEmailResult> => {
   };
 };
 
-export { 
-  signupUser, 
-  loginUser, 
-  verifyUserEmail, 
-  logoutUser, 
-  handleGoogleLogin 
-  };
+export { signupUser, loginUser, verifyUserEmail, logoutUser, handleGoogleLogin };
