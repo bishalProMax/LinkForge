@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, type Profile, type VerifyCallback } from "passport-google-oauth20";
 import User from "../../models/user.model.js";
+import { findRoleInviteByEmail, deleteRoleInviteByEmail } from "../../modules/admin/admin.repository.js";
 import emailQueue from "../queues/email.queue.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 
@@ -34,14 +35,23 @@ passport.use(
 
           // Completely new user
           if (!user) {
+            const pendingInvite = await findRoleInviteByEmail(email);
+            const assignedRole = pendingInvite ? pendingInvite.role : "USER";
             user = await User.create({
               name: profile.displayName,
               email,
               isVerified: true,
               authProviders: ["google"],
               googleId: profile.id,
+              role: assignedRole,
             });
-            logSecurityEvent({ event: "GOOGLE_ACCOUNT_CREATED", email, userId: user._id.toString(), role: user.role }, "info");
+            
+            if (pendingInvite) {
+              await deleteRoleInviteByEmail(email);
+              logSecurityEvent({ event: "INVITE_ACCEPTED", email, userId: user._id.toString(), role: assignedRole }, "info");
+            } else {
+              logSecurityEvent({ event: "GOOGLE_ACCOUNT_CREATED", email, userId: user._id.toString(), role: user.role }, "info");
+            }
 
             await emailQueue.add("sendWelcomeEmail", {
               email: user.email,
