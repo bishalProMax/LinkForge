@@ -129,6 +129,9 @@ const userSchema = new mongoose.Schema<
   }
 );
 
+//24hrs cleanup for unverified users
+userSchema.index({ createdAt: 1 },{ expireAfterSeconds: 60 * 60 * 24, partialFilterExpression: { isVerified: false } });
+
 // -----------------------------PRE SAVE HOOK-----------------------------
 userSchema.pre("save", async function () {
   if (!this.password || !this.isModified("password")) return;

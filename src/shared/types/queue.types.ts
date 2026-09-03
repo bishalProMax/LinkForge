@@ -44,10 +44,6 @@ export type EmailJobData =
 | SendAccountBannedEmailJob
 | SendAccountReinstatedEmailJob;
 
-export interface CleanupJob {
-  triggeredBy: "cron";
-};
-
 export interface SecurityEventJob {
   event: SecurityEventType;
   email?: string;
