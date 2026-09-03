@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, type Profile, type VerifyCallback } from "passport-google-oauth20";
 import User from "../../models/user.model.js";
+import emailQueue from "../queues/email.queue.js";
 import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 
 passport.use(
@@ -41,6 +42,12 @@ passport.use(
               googleId: profile.id,
             });
             logSecurityEvent({ event: "GOOGLE_ACCOUNT_CREATED", email, userId: user._id.toString(), role: user.role }, "info");
+
+            await emailQueue.add("sendWelcomeEmail", {
+              email: user.email,
+              name: user.name,
+              loginLink: `${process.env.BASE_URL}/login`,
+            });
           } else {
             // Existing local account
             // Link Google provider
