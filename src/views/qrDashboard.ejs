@@ -18,7 +18,7 @@
   <title>QR Codes — Dashboard</title>
 </head>
 
-<body>
+<body data-bulk-type="qr">
   <div class="dashboard-container">
     <!-- Header -->
     <header class="dashboard-header">
@@ -31,9 +31,14 @@
 
       <div style="display:flex; gap:10px; align-items:center;">
         <a href="/dashboard" class="pagination-btn nav" style="text-decoration:none;"><i class="ri-links-line"></i>
-          Links</a>
+          Links
+        </a>
         <a href="/analytics" class="pagination-btn nav" style="text-decoration:none;"><i class="ri-line-chart-line"></i>
-          Analytics</a>
+          Analytics
+        </a>
+        <a href="#" id="openBulkUploadBtn" class="pagination-btn nav" style="text-decoration:none;">
+          <i class="ri-upload-2-line"></i> Bulk Create
+        </a>
         <form action="/auth/logout" method="POST">
           <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
         </form>
@@ -200,7 +205,7 @@
           <!-- BULK DELETE -->
           <div id="bulkActionBar" class="bulk-action-bar" style="display:none;">
             <label class="bulk-select-all-label">
-              <input type="checkbox" id="selectAllCheckbox" /> 
+              <input type="checkbox" id="selectAllCheckbox" />
               <span id="selectAllLabel">Select all</span>
             </label>
             <span id="bulkSelectedCount">0 selected</span>
@@ -600,15 +605,51 @@
 
   <!-- BULK DELETE MODAL -->
   <div id="bulkDeleteModal" class="modal">
-  <div class="modal-content modal-content--delete">
-    <h3>Delete Selected Items?</h3>
-    <p id="bulkDeleteMessage"></p>
-    <div class="delete-actions">
-      <button id="cancelBulkDeleteBtn" data-close-modal type="button">Cancel</button>
-      <button id="confirmBulkDeleteBtn" type="button" class="danger">Delete</button>
+    <div class="modal-content modal-content--delete">
+      <h3>Delete Selected Items?</h3>
+      <p id="bulkDeleteMessage"></p>
+      <div class="delete-actions">
+        <button id="cancelBulkDeleteBtn" data-close-modal type="button">Cancel</button>
+        <button id="confirmBulkDeleteBtn" type="button" class="danger">Delete</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- BULK CREATION MODAL -->
+  <div id="bulkUploadModal" class="modal">
+    <div class="modal-content modal-content--bulk">
+      <span class="close" data-close-modal>&times;</span>
+      <h3>Bulk Create Links</h3>
+      <p>Upload a CSV (columns: url, customAlias, title, expiration) or paste one URL per line.</p>
+
+      <div class="bulk-tabs">
+        <button type="button" class="bulk-tab-btn active" data-mode="file">Upload CSV</button>
+        <button type="button" class="bulk-tab-btn" data-mode="paste">Paste URLs</button>
+      </div>
+
+      <div id="bulkFileSection">
+        <input type="file" id="bulkFileInput" accept=".csv" />
+      </div>
+      <div id="bulkPasteSection" style="display:none;">
+        <textarea id="bulkPasteInput" rows="6" placeholder="https://example.com&#10;https://example.org"></textarea>
+      </div>
+
+      <div id="bulkProgressSection" style="display:none;">
+        <p id="bulkProgressText">0 / 0 processed</p>
+        <div class="bulk-progress-bar">
+          <div class="bulk-progress-fill" id="bulkProgressFill"></div>
+        </div>
+        <a href="#" id="bulkResultsDownload" class="pagination-btn nav" style="display:none; text-decoration:none;">
+          <i class="ri-download-2-line"></i> Download Results
+        </a>
+      </div>
+
+      <div class="delete-actions">
+        <button id="cancelBulkUploadBtn" data-close-modal type="button">Close</button>
+        <button id="startBulkUploadBtn" type="button">Start Upload</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 

@@ -6,25 +6,29 @@ import emailWorker from "./workers/email.worker.js";
 import cleanupWorker from "./workers/cleanup.worker.js";
 import securityEventWorker from "./workers/securityEvent.worker.js";
 import qrGenerationWorker from "./workers/qrGeneration.worker.js";
+import bulkQrCreationWorker from "./workers/bulkQrCreation.worker.js";
 import qrAssetCleanupWorker from "./workers/qrAssetCleanup.worker.js";
 import visitEnrichmentWorker from "./workers/visitEnrichment.worker.js";
 import qrScanEnrichmentWorker from "./workers/qrScanEnrichment.worker.js";
 import linkQrHardDeleteWorker from "./workers/linkQrHardDelete.worker.js";
+import bulkLinkCreationWorker from "./workers/bulkLinkCreation.worker.js";
 import accountHardDeleteWorker from "./workers/accountHardDelete.worker.js";
 import accountHardDeleteQueue from "./infrastructure/queues/accountHardDelete.queue.js";
+import bulkLinkCreationQueue from "./infrastructure/queues/bulkLinkCreation.queue.js";
 import linkQrHardDeleteQueue from "./infrastructure/queues/linkQrHardDelete.queue.js";
-import qrGenerationQueue from "./infrastructure/queues/qrGeneration.queue.js";
+import qrScanEnrichmentQueue from "./infrastructure/queues/qrScanEnrichment.queue.js";
+import visitEnrichmentQueue from "./infrastructure/queues/visitEnrichment.queue.js";
 import qrAssetCleanupQueue from "./infrastructure/queues/qrAssetCleanup.queue.js";
+import bulkQrCreationQueue from "./infrastructure/queues/bulkQrCreation.queue.js";
+import securityEventQueue from "./infrastructure/queues/securityEvent.queue.js";
+import qrGenerationQueue from "./infrastructure/queues/qrGeneration.queue.js";
 import cleanupQueue from "./infrastructure/queues/cleanup.queue.js";
 import emailQueue from "./infrastructure/queues/email.queue.js";
-import securityEventQueue from "./infrastructure/queues/securityEvent.queue.js";
-import visitEnrichmentQueue from "./infrastructure/queues/visitEnrichment.queue.js";
-import qrScanEnrichmentQueue from "./infrastructure/queues/qrScanEnrichment.queue.js";
-import redis from "./infrastructure/configs/redis.config.js";
 import connectToMongoDB from "./infrastructure/configs/db.config.js";
 import { loadGeoIPReader } from "./infrastructure/configs/geoip.config.js";
 import redisSubscriber from "./infrastructure/configs/redisSubscriber.config.js";
 import logger from "./infrastructure/configs/logger.config.js";
+import redis from "./infrastructure/configs/redis.config.js";
 
 let server: ReturnType<typeof app.listen>;
 const sockets = new Set<Socket>();
@@ -77,10 +81,10 @@ const gracefulShutdown = async (signal: string): Promise<void> => {
       logger.info("HTTP server closed");
     }
 
-    await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close(), qrGenerationWorker.close(), qrAssetCleanupWorker.close(), visitEnrichmentWorker.close(), qrScanEnrichmentWorker.close(), linkQrHardDeleteWorker.close(), accountHardDeleteWorker.close()]);
+    await Promise.all([emailWorker.close(), cleanupWorker.close(), securityEventWorker.close(), qrGenerationWorker.close(), qrAssetCleanupWorker.close(), visitEnrichmentWorker.close(), qrScanEnrichmentWorker.close(), linkQrHardDeleteWorker.close(), accountHardDeleteWorker.close(), bulkLinkCreationWorker.close(), bulkQrCreationWorker.close()]);
     logger.info("BullMQ workers closed");
 
-    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close(), qrGenerationQueue.close(), qrAssetCleanupQueue.close(), visitEnrichmentQueue.close(), qrScanEnrichmentQueue.close(), linkQrHardDeleteQueue.close(), accountHardDeleteQueue.close()]);
+    await Promise.all([emailQueue.close(), cleanupQueue.close(), securityEventQueue.close(), qrGenerationQueue.close(), qrAssetCleanupQueue.close(), visitEnrichmentQueue.close(), qrScanEnrichmentQueue.close(), linkQrHardDeleteQueue.close(), accountHardDeleteQueue.close(), bulkLinkCreationQueue.close(), bulkQrCreationQueue.close()]);
     logger.info("BullMQ queues closed");
 
     await redis.quit();

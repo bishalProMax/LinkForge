@@ -36,6 +36,9 @@
         <a href="/qr" class="pagination-btn nav" style="text-decoration: none;">
           <i class="ri-qr-code-line"></i> QR Codes
         </a>
+        <a href="#" id="openBulkUploadBtn" class="pagination-btn nav" style="text-decoration:none;">
+          <i class="ri-upload-2-line"></i> Bulk Create
+        </a>
 
         <!-- logout -->
         <form action="/auth/logout" method="POST">
@@ -524,6 +527,40 @@
       </div>
     </div>
   </div>
+
+  <!-- BULK CREATION MODAL -->
+  <div id="bulkUploadModal" class="modal">
+  <div class="modal-content modal-content--bulk">
+    <span class="close" data-close-modal>&times;</span>
+    <h3>Bulk Create Links</h3>
+    <p>Upload a CSV (columns: url, customAlias, title, expiration) or paste one URL per line.</p>
+
+    <div class="bulk-tabs">
+      <button type="button" class="bulk-tab-btn active" data-mode="file">Upload CSV</button>
+      <button type="button" class="bulk-tab-btn" data-mode="paste">Paste URLs</button>
+    </div>
+
+    <div id="bulkFileSection">
+      <input type="file" id="bulkFileInput" accept=".csv" />
+    </div>
+    <div id="bulkPasteSection" style="display:none;">
+      <textarea id="bulkPasteInput" rows="6" placeholder="https://example.com&#10;https://example.org"></textarea>
+    </div>
+
+    <div id="bulkProgressSection" style="display:none;">
+      <p id="bulkProgressText">0 / 0 processed</p>
+      <div class="bulk-progress-bar"><div class="bulk-progress-fill" id="bulkProgressFill"></div></div>
+      <a href="#" id="bulkResultsDownload" class="pagination-btn nav" style="display:none; text-decoration:none;">
+        <i class="ri-download-2-line"></i> Download Results
+      </a>
+    </div>
+
+    <div class="delete-actions">
+      <button id="cancelBulkUploadBtn" data-close-modal type="button">Close</button>
+      <button id="startBulkUploadBtn" type="button">Start Upload</button>
+    </div>
+  </div>
+</div>
 
 </body>
 

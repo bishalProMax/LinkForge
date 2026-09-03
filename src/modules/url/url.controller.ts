@@ -78,7 +78,7 @@ const handleGetAllURL = asyncHandler(async (req: Request, res: Response) => {
   const focusShortId = typeof req.query.focus === "string" ? req.query.focus : null;
 
   let page = Number(req.query.page) || 1;
-  const limit = 6;
+  const limit = 10;
 
   const filters: DashboardQueryParams = focusShortId
     ? { status: "all", expiry: "all", sortBy: "newest" }   // force defaults so the target is guaranteed present
