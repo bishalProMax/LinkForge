@@ -40,6 +40,10 @@
           <i class="ri-upload-2-line"></i> Bulk Create
         </a>
 
+        <button type="button" id="aiAssistantBtn" class="ai-assistant-btn" title="AI Assistant">
+          <i class="ri-sparkling-2-fill"></i>
+        </button>
+
         <!-- logout -->
         <form action="/auth/logout" method="POST">
           <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
@@ -530,35 +534,55 @@
 
   <!-- BULK CREATION MODAL -->
   <div id="bulkUploadModal" class="modal">
-  <div class="modal-content modal-content--bulk">
-    <span class="close" data-close-modal>&times;</span>
-    <h3>Bulk Create Links</h3>
-    <p>Upload a CSV (columns: url, customAlias, title, expiration) or paste one URL per line.</p>
+    <div class="modal-content modal-content--bulk">
+      <span class="close" data-close-modal>&times;</span>
+      <h3>Bulk Create Links</h3>
+      <p>Upload a CSV (columns: url, customAlias, title, expiration) or paste one URL per line.</p>
 
-    <div class="bulk-tabs">
-      <button type="button" class="bulk-tab-btn active" data-mode="file">Upload CSV</button>
-      <button type="button" class="bulk-tab-btn" data-mode="paste">Paste URLs</button>
-    </div>
+      <div class="bulk-tabs">
+        <button type="button" class="bulk-tab-btn active" data-mode="file">Upload CSV</button>
+        <button type="button" class="bulk-tab-btn" data-mode="paste">Paste URLs</button>
+      </div>
 
-    <div id="bulkFileSection">
-      <input type="file" id="bulkFileInput" accept=".csv" />
-    </div>
-    <div id="bulkPasteSection" style="display:none;">
-      <textarea id="bulkPasteInput" rows="6" placeholder="https://example.com&#10;https://example.org"></textarea>
-    </div>
+      <div id="bulkFileSection">
+        <input type="file" id="bulkFileInput" accept=".csv" />
+      </div>
+      <div id="bulkPasteSection" style="display:none;">
+        <textarea id="bulkPasteInput" rows="6" placeholder="https://example.com&#10;https://example.org"></textarea>
+      </div>
 
-    <div id="bulkProgressSection" style="display:none;">
-      <p id="bulkProgressText">0 / 0 processed</p>
-      <div class="bulk-progress-bar"><div class="bulk-progress-fill" id="bulkProgressFill"></div></div>
-      <a href="#" id="bulkResultsDownload" class="pagination-btn nav" style="display:none; text-decoration:none;">
-        <i class="ri-download-2-line"></i> Download Results
-      </a>
-    </div>
+      <div id="bulkProgressSection" style="display:none;">
+        <p id="bulkProgressText">0 / 0 processed</p>
+        <div class="bulk-progress-bar">
+          <div class="bulk-progress-fill" id="bulkProgressFill"></div>
+        </div>
+        <a href="#" id="bulkResultsDownload" class="pagination-btn nav" style="display:none; text-decoration:none;">
+          <i class="ri-download-2-line"></i> Download Results
+        </a>
+      </div>
 
-    <div class="delete-actions">
-      <button id="cancelBulkUploadBtn" data-close-modal type="button">Close</button>
-      <button id="startBulkUploadBtn" type="button">Start Upload</button>
+      <div class="delete-actions">
+        <button id="cancelBulkUploadBtn" data-close-modal type="button">Close</button>
+        <button id="startBulkUploadBtn" type="button">Start Upload</button>
+      </div>
     </div>
+  </div>
+
+  <!-- AI ASSISTANT SIDEBAR -->
+  <div id="aiSidebar" class="ai-sidebar">
+  <div class="ai-sidebar-header">
+    <h3><i class="ri-sparkling-2-fill"></i> AI Assistant</h3>
+    <button type="button" class="ai-sidebar-close" id="aiSidebarClose">&times;</button>
+  </div>
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-message assistant">Hi! I can summarize your analytics, create links or QR codes, and suggest aliases, titles, or QR designs. What would you like to do?</div>
+  </div>
+  <div class="ai-typing" id="aiTypingIndicator" style="display:none;">Thinking…</div>
+  <div class="ai-input-row">
+    <button type="button" class="ai-attach-btn" id="aiAttachBtn" title="Attach a file"><i class="ri-attachment-2"></i></button>
+    <input type="file" id="aiFileInput" accept=".csv,.pdf,.doc,.docx" style="display:none;" />
+    <textarea id="aiChatInput" rows="1" placeholder="Ask me anything about your links…"></textarea>
+    <button type="button" class="ai-send-btn" id="aiSendBtn"><i class="ri-send-plane-fill"></i></button>
   </div>
 </div>
 

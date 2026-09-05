@@ -21,3 +21,4 @@ import "./analyticsExport.js";
 import "./analyticsAdmin.js";
 import "./bulkSelect.js";
 import "./bulkUpload.js";
+import "./aiChat.js";

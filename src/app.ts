@@ -15,6 +15,7 @@ import userRoute from "./modules/user/user.route.js";
 import qrRoute from "./modules/qr/qr.route.js";
 import analyticsRoute from "./modules/analytics/analytics.route.js";
 import bulkRoute from "./modules/bulk/bulk.route.js";
+import aiRoute from "./modules/ai/ai.route.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,6 +92,7 @@ app.use("/user", userRoute)
 app.use("/qr", qrRoute);
 app.use("/analytics", analyticsRoute);
 app.use("/bulk", bulkRoute);
+app.use("/ai", aiRoute);
 app.use(notFound)
 
 app.use(errorHandler)

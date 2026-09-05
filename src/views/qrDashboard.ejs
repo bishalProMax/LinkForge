@@ -39,6 +39,9 @@
         <a href="#" id="openBulkUploadBtn" class="pagination-btn nav" style="text-decoration:none;">
           <i class="ri-upload-2-line"></i> Bulk Create
         </a>
+        <button type="button" id="aiAssistantBtn" class="ai-assistant-btn" title="AI Assistant">
+          <i class="ri-sparkling-2-fill"></i>
+        </button>
         <form action="/auth/logout" method="POST">
           <button class="logout-btn" type="submit"><i class="ri-logout-box-r-line"></i> Logout</button>
         </form>
@@ -651,6 +654,25 @@
     </div>
   </div>
 
+  <!-- AI ASSISTANT SIDEBAR -->
+  <div id="aiSidebar" class="ai-sidebar">
+    <div class="ai-sidebar-header">
+      <h3><i class="ri-sparkling-2-fill"></i> AI Assistant</h3>
+      <button type="button" class="ai-sidebar-close" id="aiSidebarClose">&times;</button>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-message assistant">Hi! I can summarize your analytics, create links or QR codes, and suggest
+        aliases, titles, or QR designs. What would you like to do?</div>
+    </div>
+    <div class="ai-typing" id="aiTypingIndicator" style="display:none;">Thinking…</div>
+    <div class="ai-input-row">
+      <button type="button" class="ai-attach-btn" id="aiAttachBtn" title="Attach a file"><i
+          class="ri-attachment-2"></i></button>
+      <input type="file" id="aiFileInput" accept=".csv,.pdf,.doc,.docx" style="display:none;" />
+      <textarea id="aiChatInput" rows="1" placeholder="Ask me anything about your links…"></textarea>
+      <button type="button" class="ai-send-btn" id="aiSendBtn"><i class="ri-send-plane-fill"></i></button>
+    </div>
+  </div>
 </body>
 
 </html>
