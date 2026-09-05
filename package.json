@@ -17,6 +17,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@langchain/core": "^0.3.80",
+    "@langchain/google-genai": "^0.2.18",
     "@types/multer": "^2.2.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.76.6",
@@ -32,6 +34,8 @@
     "ioredis": "^5.10.1",
     "isbot": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "langchain": "^0.3.37",
+    "langsmith": "^0.10.1",
     "maxmind": "^5.0.7",
     "mongoose": "^9.4.1",
     "multer": "^2.3.0",
