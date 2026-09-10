@@ -1,5 +1,7 @@
 import passport from "passport";
+import type { Request } from "express";
 import { Strategy as GoogleStrategy, type Profile, type VerifyCallback } from "passport-google-oauth20";
+import redis from "./redis.config.js";
 import User from "../../models/user.model.js";
 import { findRoleInviteByEmail, deleteRoleInviteByEmail } from "../../modules/admin/admin.repository.js";
 import emailQueue from "../queues/email.queue.js";
@@ -11,14 +13,26 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackURL: process.env.GOOGLE_CALLBACK_URL!,
+      passReqToCallback: true,
     },
 
-    async (_accessToken: string, _refreshToken: string, profile: Profile, done: VerifyCallback) => {
+    async (req: Request, _accessToken: string, _refreshToken: string, profile: Profile, done: VerifyCallback) => {
       try {
         const email = profile.emails?.[0].value;
+        const ip = req.ip ?? "";
 
         if (!email) {
           return done(new Error("No email found"));
+        }
+
+        const attemptsKey = `oauth-attempts:${email}`;
+        const attempts = await redis.incr(attemptsKey);
+        if (attempts === 1) {
+          await redis.expire(attemptsKey, 900); 
+        }
+        if (attempts > 10) {
+          logSecurityEvent({ event: "RATE_LIMIT_EXCEEDED", email, ip, limiter: "oauth-email" }, "warn");
+          return done(new Error("Too many attempts for this account. Please try again later."));
         }
 
         // Find existing Google account
@@ -48,9 +62,9 @@ passport.use(
             
             if (pendingInvite) {
               await deleteRoleInviteByEmail(email);
-              logSecurityEvent({ event: "INVITE_ACCEPTED", email, userId: user._id.toString(), role: assignedRole }, "info");
+              logSecurityEvent({ event: "INVITE_ACCEPTED", email, ip, userId: user._id.toString(), role: assignedRole }, "info");
             } else {
-              logSecurityEvent({ event: "GOOGLE_ACCOUNT_CREATED", email, userId: user._id.toString(), role: user.role }, "info");
+              logSecurityEvent({ event: "GOOGLE_ACCOUNT_CREATED", email, ip, userId: user._id.toString(), role: user.role }, "info");
             }
 
             await emailQueue.add("sendWelcomeEmail", {
@@ -68,7 +82,7 @@ passport.use(
             }
 
             await user.save();
-            logSecurityEvent({ event: "GOOGLE_ACCOUNT_LINKED", email, userId: user._id.toString(), role: user.role }, "info");
+            logSecurityEvent({ event: "GOOGLE_ACCOUNT_LINKED", email, ip, userId: user._id.toString(), role: user.role }, "info");
           }
         }
 

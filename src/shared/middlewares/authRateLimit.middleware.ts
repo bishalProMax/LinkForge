@@ -66,7 +66,30 @@ const loginLimiter = rateLimit({
   },
 });
 
+// GOOGLE OAUTH RATE LIMITER
+const googleOAuthLimiter = rateLimit({
+  store: new RedisStore({
+    sendCommand: (...args: [string, ...string[]]) => redis.call(...(args as [string, ...string[]])) as Promise<any>,
+  }),
+  keyGenerator: (req: Request) => `oauth:${ipKeyGenerator(req.ip ?? "")}`,
+
+  windowMs: 15 * 60 * 1000,
+
+  max: 10,
+
+  standardHeaders: true,
+
+  legacyHeaders: false,
+  
+  handler: (req: Request, res: Response) => {
+    const retryAfter = getRateLimitRetryTime(req);
+    logSecurityEvent({ event: "RATE_LIMIT_EXCEEDED", ip: req.ip ?? "", limiter: "oauth" }, "warn");
+    return res.status(429).redirect("/login?error=" + encodeURIComponent(`Too many attempts. Please try again in ${retryAfter}s.`));
+  },
+});
+
 export { 
   signupLimiter, 
-  loginLimiter 
+  loginLimiter,
+  googleOAuthLimiter
 };

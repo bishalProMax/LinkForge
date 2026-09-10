@@ -192,4 +192,10 @@ const handleGoogleCallback = asyncHandler(async (req: Request, res: Response) =>
   return res.redirect("/dashboard");
 });
 
-export { handleUserSignup, handleUserLogin, handleUserLogout, verifyEmail, handleGoogleCallback };
+export { 
+  handleUserSignup, 
+  handleUserLogin, 
+  handleUserLogout, 
+  verifyEmail, 
+  handleGoogleCallback 
+  };
