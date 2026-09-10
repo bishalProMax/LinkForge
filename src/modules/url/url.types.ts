@@ -1,5 +1,5 @@
 export interface GenerateShortURLProps {
-  originalURL: string;
+  destinationURL: string;
   userId: string;
   customAlias?: string;
   title?: string;
@@ -9,7 +9,7 @@ export interface GenerateShortURLProps {
 
 export interface CreateShortURLData {
   shortId: string;
-  redirectURL: string;
+  destinationURL: string;
   title: string;
   createdBy: string;
   expiresAt?: Date;
@@ -23,7 +23,7 @@ export interface ExpiryDisplay {
 export interface DashboardURL {
   _id: string;
   shortId: string;
-  redirectURL: string;
+  destinationURL: string;
   title: string;
   createdAt: Date;
   expiresAt: Date | null;
@@ -39,6 +39,7 @@ export interface DashboardQueryParams {
   createdFrom?: string;
   createdTo?: string;
   expiry?: "all" | "set" | "never";
+  expiringWithinDays?: number;
   sortBy?: "newest" | "oldest" | "mostClicked" | "leastClicked";
 }
 
@@ -52,7 +53,7 @@ export type RedirectResult =
   | { type: "NOT_FOUND" }
   | { type: "DISABLED" }
   | { type: "EXPIRED" }
-  | { type: "SUCCESS"; redirectURL: string };
+  | { type: "SUCCESS"; destinationURL: string };
 
   export interface BulkDeleteResult {
   succeeded: string[];

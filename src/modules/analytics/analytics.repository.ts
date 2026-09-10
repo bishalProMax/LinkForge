@@ -55,14 +55,14 @@ const getTimeSeries = async (
     { $sort: { _id: 1 } },
   ]);
 
-  return results.map((r) => ({ bucket: r._id, count: r.count }));
+  return results.map((r) => ({ Date: r._id, count: r.count }));
 };
 
 const getTopItems = async (
   source: AnalyticsSourceType,
   ids: mongoose.Types.ObjectId[] | null,
   range: DateRange,
-  limit = 10
+  limit = 5
 ): Promise<TopItemPoint[]> => {
   const model = getModel(source);
   const idField = getIdField(source);
@@ -98,7 +98,7 @@ const getFieldBreakdown = async (
 
   const results = await model.aggregate([
     { $match: match },
-    { $group: { _id: { $ifNull: [`$${field}`, "Unknown"] }, count: { $sum: 1 } } },
+    { $group: { _id: { $ifNull: [`$${field}`, field === "referrer" ? "No Referrer" : "Unknown"] }, count: { $sum: 1 } } },
     { $sort: { count: -1 } },
   ]);
 
@@ -145,11 +145,13 @@ const getRawEvents = async (source: AnalyticsSourceType, ids: mongoose.Types.Obj
 
   const uniqueItemIds = [...new Set(events.map((e: any) => e[idField].toString()))].map((id) => new mongoose.Types.ObjectId(id));
   const labelMap = await resolveHumanReadableIds(source, uniqueItemIds);
-  const labelKey = source === "url" ? "shortId" : "qrId";
+  const labelKey = source === "url" ? "Short Link" : "qrId"; 
 
   return events.map((e: any) => {
     const { _id, [idField]: rawItemId, ...rest } = e;
-    return { [labelKey]: labelMap.get(rawItemId.toString()) ?? "Deleted item", ...rest };
+    const rawLabel = labelMap.get(rawItemId.toString()) ?? "Deleted item";
+    const label = source === "url" && rawLabel !== "Deleted item" ? `${process.env.BASE_URL}/url/${rawLabel}` : rawLabel;
+    return { [labelKey]: label, ...rest };
   });
 };
 

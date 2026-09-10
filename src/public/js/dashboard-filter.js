@@ -1,4 +1,5 @@
-import { openModal } from "/js/modal.js";
+import { openModal } from "./modal.js";
+import { stripBaseUrl } from "./stripBaseUrl.js"; 
 
 document.addEventListener("DOMContentLoaded", function () {
   const triggerBtn = document.getElementById("filterTriggerBtn");
@@ -33,15 +34,16 @@ document.addEventListener("DOMContentLoaded", function () {
   let searchDebounce = null;
 
   searchInput.addEventListener("input", () => {
-    clearBtn.classList.toggle("is-hidden", !searchInput.value);
+  clearBtn.classList.toggle("is-hidden", !searchInput.value);
 
-    clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(() => {
-      sessionStorage.setItem("dashboardScrollY", window.scrollY);
-      sessionStorage.setItem("dashboardSearchFocus", "1");
-      searchInput.form.submit();
-    }, searchInput.value ? 1000 : 0);
-  });
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => {
+    searchInput.value = stripBaseUrl(searchInput.value); 
+    sessionStorage.setItem("dashboardScrollY", window.scrollY);
+    sessionStorage.setItem("dashboardSearchFocus", "1");
+    searchInput.form.submit();
+  }, searchInput.value ? 1000 : 0);
+});;
 
   clearBtn.addEventListener("click", () => {
     searchInput.value = "";
@@ -94,4 +96,15 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBtn.addEventListener("click", () => errorBanner.remove());
     errorBanner.appendChild(closeBtn);
   }
+});
+
+// ---------------- FIX MAX DATE FOR CREATED-FROM/TO (avoiding UTC/local mismatch cause due to databse) ----------------
+document.addEventListener("DOMContentLoaded", () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const localToday = now.toISOString().slice(0, 10);
+
+  document.querySelectorAll('input[name="createdFrom"], input[name="createdTo"]').forEach((input) => {
+    input.max = localToday;
+  });
 });

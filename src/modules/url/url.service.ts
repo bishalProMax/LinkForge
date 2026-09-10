@@ -11,7 +11,7 @@ const RESERVED_ALIASES = ["generate","analytics"]
 const DASHBOARD_LIMIT = 6;
 
 // Generate a short URL with optional custom alias and expiration
-const generateShortURL = async ({ originalURL, userId, customAlias, expiration, customExpiry, title }: GenerateShortURLProps): Promise<string> => {
+const generateShortURL = async ({ destinationURL, userId, customAlias, expiration, customExpiry, title }: GenerateShortURLProps): Promise<string> => {
   let shortid: string;
 
   if (customAlias) {
@@ -35,12 +35,12 @@ const generateShortURL = async ({ originalURL, userId, customAlias, expiration, 
   }
 
   const expiresAt = getExpiryDate(expiration, customExpiry);
-  const resolvedTitle = normalizeTitle(title) ?? getDefaultTitle(originalURL);
+  const resolvedTitle = normalizeTitle(title) ?? getDefaultTitle(destinationURL);
 
   // const title = title
   await createShortURL({
     shortId: shortid,
-    redirectURL: originalURL,
+    destinationURL,
     title: resolvedTitle,
     createdBy: userId,
     expiresAt,
@@ -73,7 +73,7 @@ const redirectToOriginalURL = async (shortId: string, visitContext: VisitContext
     referrer: visitContext.referrer,
   });
 
-  return { type: "SUCCESS", redirectURL: url.redirectURL };
+  return { type: "SUCCESS", destinationURL: url.destinationURL };
 };
 
 // Get all URLs created by a user with pagination
@@ -135,7 +135,8 @@ const resolveFocusPage = async (userId: string, shortId: string): Promise<number
 };
 
 // Edit a short URL's basic information (URL, alias, title)
-const editLink = async (shortId: string, userId: string, data: { url: string; alias: string; title?: string; expiration: string; customExpiry?: Date }): Promise<string> => {
+const editLink = async (shortId: string, userId: string, data: { destinationURL: string; alias: string; title?: string; expiration: string; customExpiry?: Date }): Promise<string> => {
+  
   const existing = await findURLByShortId(shortId);
   if (!existing) throw new Error("Link not found.");
 
@@ -148,12 +149,12 @@ const editLink = async (shortId: string, userId: string, data: { url: string; al
     if (conflict) throw new Error("Alias already exists.");
   }
 
-  const resolvedTitle = normalizeTitle(data.title) ?? getDefaultTitle(data.url);
+  const resolvedTitle = normalizeTitle(data.title) ?? getDefaultTitle(data.destinationURL);
   const expiresAt = data.expiration !== "keep" ? getExpiryDate(data.expiration as any, data.customExpiry) : undefined;
 
   await updateURLBasicInfo(existing._id.toString(), {
     shortId: data.alias,
-    redirectURL: data.url,
+    destinationURL: data.destinationURL,
     title: resolvedTitle,
     ...(data.expiration !== "keep" ? { expiresAt } : {}),  
   });

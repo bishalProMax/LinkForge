@@ -2,6 +2,7 @@ import { openModal, closeModal } from "./modal.js";
 import { showToast } from "./toast.js";
 import { shareQRImage, shareLink } from "./share.js";
 import { pollQRStatus } from "./qrPolling.js";
+import { stripBaseUrl } from "./stripBaseUrl.js";
 // ---------------- DISABLE MODAL ----------------
 
 const disableModal = document.getElementById("qrDisableModal");
@@ -243,11 +244,11 @@ document.querySelectorAll(".create-short-link-btn").forEach((button) => {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
-      createdShortLinkUrl.textContent = result.redirectUrl;
+      createdShortLinkUrl.textContent = result.destinationURL;
       createdShortLinkDestination.textContent = destination;
 
-      document.getElementById("copyCreatedShortLinkBtn").dataset.url = result.redirectUrl;
-      shareCreatedShortLinkBtn.dataset.url = result.redirectUrl;
+      document.getElementById("copyCreatedShortLinkBtn").dataset.url = result.destinationURL;
+      shareCreatedShortLinkBtn.dataset.url = result.destinationURL;
 
       openModal(createShortLinkModal);
     } catch (error) {
@@ -309,15 +310,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let qrSearchDebounce = null;
 
   searchInput?.addEventListener("input", () => {
-    clearBtn.classList.toggle("is-hidden", !searchInput.value);
+  clearBtn.classList.toggle("is-hidden", !searchInput.value);
 
-    clearTimeout(qrSearchDebounce);
-    qrSearchDebounce = setTimeout(() => {
-      sessionStorage.setItem("qrScrollY", window.scrollY);
-      sessionStorage.setItem("qrSearchFocus", "1");
-      searchInput.form.submit();
-    }, searchInput.value ? 1000 : 0);
-  });
+  clearTimeout(qrSearchDebounce);
+  qrSearchDebounce = setTimeout(() => {
+    searchInput.value = stripBaseUrl(searchInput.value); 
+    sessionStorage.setItem("qrScrollY", window.scrollY);
+    sessionStorage.setItem("qrSearchFocus", "1");
+    searchInput.form.submit();
+  }, searchInput.value ? 1000 : 0);
+});
 
   clearBtn?.addEventListener("click", () => {
     searchInput.value = "";

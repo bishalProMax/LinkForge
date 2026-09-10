@@ -1,8 +1,8 @@
 import { showToast } from "./toast.js";
+import { stripBaseUrl } from "./stripBaseUrl.js";
 
 const typeToggleContainer = document.querySelector(".analytics-type-toggle");
 
-// Guard: this file is bundled into every page via main.js, but only runs its logic on /analytics.
 if (typeToggleContainer) {
   let activeCharts = {};
   let eventSource = null;
@@ -13,15 +13,15 @@ if (typeToggleContainer) {
     activeCharts = {};
   };
 
-  const renderLineChart = (canvasId, timeSeries) => {
+  const renderLineChart = (canvasId, timeSeries, label) => {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
 
     activeCharts[canvasId] = new Chart(ctx, {
       type: "line",
       data: {
-        labels: timeSeries.map((p) => p.bucket),
-        datasets: [{ label: "Activity", data: timeSeries.map((p) => p.count), borderColor: "#5b6dff", backgroundColor: "rgba(91,109,255,0.1)", fill: true, tension: 0.3 }],
+        labels: timeSeries.map((p) => p.Date),
+        datasets: [{ label, data: timeSeries.map((p) => p.count), borderColor: "#5b6dff", backgroundColor: "rgba(91,109,255,0.1)", fill: true, tension: 0.3 }],
       },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
     });
@@ -78,6 +78,7 @@ if (typeToggleContainer) {
     document.getElementById("statLast").textContent = overview.stats.lastActivity ? new Date(overview.stats.lastActivity).toLocaleDateString("en-IN") : "—";
     document.getElementById("statActive").textContent = overview.statusSummary.active;
     document.getElementById("statExpired").textContent = overview.statusSummary.expired;
+    document.getElementById("statDisabled").textContent = overview.statusSummary.disabled; 
   };
 
   const toggleTopItemsCard = (isSingleItem) => {
@@ -85,7 +86,22 @@ if (typeToggleContainer) {
     if (card) card.style.display = isSingleItem ? "none" : "";
   };
 
-  // Builds the full param set for the current view, including the admin-scoped user id if set.
+  const toggleReferrerCard = (type) => {
+    const card = document.querySelector('[data-metric="referrer"]');
+    if (card) card.style.display = type === "qr" ? "none" : "";
+  };
+
+  const updateTypeLabels = (type) => {
+    const statLabel = document.getElementById("statTotalLabel");
+    if (statLabel) statLabel.textContent = type === "qr" ? "Total Scans" : "Total Clicks";
+
+    const chartTitle = document.querySelector('[data-metric="timeSeries"] h3');
+    if (chartTitle) chartTitle.textContent = type === "qr" ? "Scans Over Time" : "Clicks Over Time";
+
+    const searchInputEl = document.getElementById("analyticsSearchInput");
+    if (searchInputEl) searchInputEl.placeholder = type === "qr" ? "Search by QR ID…" : "Search by short ID…";
+  };
+
   const getFullParams = (baseParams) => {
     const adminUserId = window.__analyticsAdminUserId;
     return adminUserId ? { ...baseParams, userId: adminUserId } : baseParams;
@@ -109,6 +125,7 @@ if (typeToggleContainer) {
       destroyExistingCharts();
       updateStatCards(data);
       toggleTopItemsCard(data.isSingleItem);
+      toggleReferrerCard(fullParams.type);
 
       const renderSafely = (fn) => {
         try {
@@ -118,7 +135,7 @@ if (typeToggleContainer) {
         }
       };
 
-      renderSafely(() => renderLineChart("chart-timeSeries", data.timeSeries));
+      renderSafely(() => renderLineChart("chart-timeSeries", data.timeSeries, fullParams.type === "qr" ? "Scans" : "Clicks"));
       if (!data.isSingleItem) renderSafely(() => renderBarChart("chart-topItems", data.topItems, "label", "count"));
       renderSafely(() => renderBarChart("chart-country", data.geo.country, "label", "count"));
       renderSafely(() => renderBarChart("chart-region", data.geo.region, "label", "count"));
@@ -126,14 +143,12 @@ if (typeToggleContainer) {
       renderSafely(() => renderDonutChart("chart-browsers", data.device.browsers));
       renderSafely(() => renderDonutChart("chart-os", data.device.os));
       renderSafely(() => renderDonutChart("chart-devices", data.device.devices));
-      renderSafely(() => renderReferrerTable(data.referrers));
+      if (fullParams.type !== "qr") renderSafely(() => renderReferrerTable(data.referrers));
     } catch {
       showToast("Unable to load analytics right now.");
     }
   };
 
-  // Opens (or re-opens) the live-update stream for the current view. Reconnecting on every view
-  // change is simpler and more reliable than trying to re-scope one long-lived connection.
   const connectStream = (params) => {
     eventSource?.close();
 
@@ -141,12 +156,10 @@ if (typeToggleContainer) {
     eventSource = new EventSource(`/analytics/stream?${query}`);
 
     eventSource.onmessage = () => {
-      // Debounced: a burst of clicks (e.g. a link going viral) shouldn't trigger a refetch per click.
       clearTimeout(streamRefreshTimer);
       streamRefreshTimer = setTimeout(() => loadAnalytics(window.__analyticsCurrentParams), 1500);
     };
 
-    // EventSource auto-reconnects on transient network errors — nothing to do here.
     eventSource.onerror = () => {};
   };
 
@@ -164,6 +177,7 @@ if (typeToggleContainer) {
 
   const refresh = () => {
     setActiveTypeButton();
+    updateTypeLabels(currentType);
 
     const baseParams = { type: currentType, ...(currentId ? { id: currentId } : {}) };
     const fullParams = getFullParams(baseParams);
@@ -187,8 +201,16 @@ if (typeToggleContainer) {
 
   searchForm?.addEventListener("submit", (e) => {
     e.preventDefault();
-    currentId = searchInput.value.trim();
+    currentId = stripBaseUrl(searchInput.value.trim());
     refresh();
+  });
+
+  searchInput?.addEventListener("input", () => {
+    clearSearchBtn.classList.toggle("is-hidden", !searchInput.value);
+    if (searchInput.value === "" && currentId !== "") {
+      currentId = "";
+      refresh();
+    }
   });
 
   clearSearchBtn?.addEventListener("click", () => {
@@ -197,7 +219,6 @@ if (typeToggleContainer) {
     refresh();
   });
 
-  // Admin user-scope changes (from analyticsAdmin.js).
   window.addEventListener("analytics:admin-scope-changed", () => refresh());
 
   document.getElementById("exportRawCsvBtn")?.addEventListener("click", (e) => {

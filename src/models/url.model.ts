@@ -5,7 +5,7 @@ import type { HydratedDocument } from "mongoose";
 
 export interface IURL {
   shortId: string;
-  redirectURL: string;
+  destinationURL: string;
   createdBy: mongoose.Types.ObjectId;
   expiresAt: Date | null;
   isDisabled: boolean;
@@ -33,7 +33,7 @@ const urlSchema = new mongoose.Schema<IURL, URLModel>(
       unique: true,
     },
     
-    redirectURL: {
+    destinationURL: {
       type: String,
       required: true,
       trim: true,

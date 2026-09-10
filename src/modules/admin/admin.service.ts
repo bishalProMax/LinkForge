@@ -143,8 +143,8 @@ const getAllUsers = async ({ actingUserRole, page, limit }: GetAllUsersProps): P
   return getAllUsersRepo(actingUserRole, page, limit);
 };
 
-const searchUsers = (query: string, actingUserRole: "ADMIN" | "SUPER_ADMIN") => {
-  return searchUsersByQueryRepo(query, actingUserRole);
+const searchUsers = (query: string) => {
+  return searchUsersByQueryRepo(query);
 };
 
 export { 

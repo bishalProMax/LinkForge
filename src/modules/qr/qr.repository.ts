@@ -57,6 +57,12 @@ const getQRsByUserId = (userId: string, page: number, limit: number, filters: Da
     matchStage.linkedUrlId = null;
   }
 
+  if (filters.createdFrom || filters.createdTo) {
+    matchStage.createdAt = {};
+    if (filters.createdFrom) (matchStage.createdAt as any).$gte = new Date(filters.createdFrom);
+    if (filters.createdTo) (matchStage.createdAt as any).$lte = new Date(filters.createdTo);
+  }
+
   const postResolveMatch: Record<string, unknown> = {};
 
   if (filters.status && filters.status !== "all") {
@@ -92,7 +98,7 @@ const getQRsByUserId = (userId: string, page: number, limit: number, filters: Da
     {
       $addFields: {
         effectiveTitle: { $ifNull: ["$linkedUrlDoc.title", "$title"] },
-        effectiveDestination: { $ifNull: ["$linkedUrlDoc.redirectURL", "$destinationURL"] },
+        effectiveDestination: { $ifNull: ["$linkedUrlDoc.destinationURL", "$destinationURL"] },
         effectiveExpiresAt: { $ifNull: ["$linkedUrlDoc.expiresAt", "$expiresAt"] },
         effectiveIsDisabled: { $ifNull: ["$linkedUrlDoc.isDisabled", "$isDisabled"] },
         linkedShortId: "$linkedUrlDoc.shortId",
@@ -140,7 +146,7 @@ const countQRsNewerThan = (userId: string, createdAt: Date) => {
   return QRCode.countDocuments({ createdBy: new mongoose.Types.ObjectId(userId), createdAt: { $gt: createdAt }, deletedAt: null });
 };
 
-const updateQRBasicInfo = (qrId: string, data: { title?: string; destinationURL?: string }) => {
+const updateQRBasicInfo = (qrId: string, data: { title?: string; destinationURL?: string; expiresAt?: Date }) => {
   return QRCode.findOneAndUpdate({ qrId }, data, { returnDocument: "after" });
 };
 
@@ -153,20 +159,44 @@ const updateQRDesignFields = (qrId: string, design: Partial<import("../../models
 };
 
 const getQRIdsByUserId = async (userId: string): Promise<mongoose.Types.ObjectId[]> => {
-  const qrs = await QRCode.find({ createdBy: userId }).select("_id").lean();
+  const qrs = await QRCode.find({ createdBy: userId, deletedAt: null }).select("_id").lean(); 
   return qrs.map((q) => q._id as mongoose.Types.ObjectId);
 };
 
-const countQRStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promise<{ active: number; expired: number }> => {
-  const now = new Date();
+const countQRStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promise<{ active: number; expired: number; disabled: number }> => {
   const baseMatch: Record<string, unknown> = ids ? { _id: { $in: ids } } : {};
 
-  const [active, expired] = await Promise.all([
-    QRCode.countDocuments({ ...baseMatch, isDisabled: false, $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }),
-    QRCode.countDocuments({ ...baseMatch, expiresAt: { $ne: null, $lte: now } }),
+  const results = await QRCode.aggregate([
+    { $match: baseMatch },
+    { $lookup: { from: "urls", localField: "linkedUrlId", foreignField: "_id", as: "linkedUrl" } },
+    { $addFields: { linkedUrlDoc: { $arrayElemAt: ["$linkedUrl", 0] } } },
+    {
+      $addFields: {
+        effectiveExpiresAt: { $ifNull: ["$linkedUrlDoc.expiresAt", "$expiresAt"] },
+        effectiveIsDisabled: { $ifNull: ["$linkedUrlDoc.isDisabled", "$isDisabled"] },
+      },
+    },
+    {
+      $addFields: {
+        status: {
+          $switch: {
+            branches: [
+              { case: { $and: [{ $ne: ["$effectiveExpiresAt", null] }, { $lte: ["$effectiveExpiresAt", "$$NOW"] }] }, then: "expired" },
+              { case: "$effectiveIsDisabled", then: "disabled" },
+            ],
+            default: "active",
+          },
+        },
+      },
+    },
+    { $group: { _id: "$status", count: { $sum: 1 } } },
   ]);
 
-  return { active, expired };
+  const counts = { active: 0, expired: 0, disabled: 0 };
+  results.forEach((r) => {
+    counts[r._id as "active" | "expired" | "disabled"] = r.count;
+  });
+  return counts;
 };
 
 //used by worker for hard delete single QR
@@ -188,6 +218,11 @@ const findQRByIdAdmin = (qrId: string) => {
   return QRCode.findOne({ qrId });
 };
 
+const findStatusesByQrIds = async (qrIds: string[]): Promise<Map<string, string>> => {
+  const docs = await QRCode.find({ qrId: { $in: qrIds } }).select("qrId status").lean();
+  return new Map(docs.map((q) => [q.qrId, q.status]));
+};
+
 export { 
   checkQrIdExists, 
   createQRCode, 
@@ -205,5 +240,6 @@ export {
   countQRStatusByIds,
   softDeleteQRById,
   findQRByIdAdmin,
-  deleteAllQRCodesByUserId
+  deleteAllQRCodesByUserId,
+  findStatusesByQrIds
   };

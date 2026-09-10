@@ -3,7 +3,7 @@ import { isValidPublicDomain } from "../../shared/utils/urlValidation.js";
 
 export const createUrlSchema = z
   .object({
-    url: z.preprocess(
+    destinationURL: z.preprocess(
       (value) => {
         if (typeof value !== "string") return value;
         const trimmed = value.trim();
@@ -78,7 +78,7 @@ export const createUrlSchema = z
 
   //edit url schema
   export const editUrlSchema = z.object({
-  url: z.preprocess(
+  destinationURL: z.preprocess(
     (value) => {
       if (typeof value !== "string") return value;
       const trimmed = value.trim();

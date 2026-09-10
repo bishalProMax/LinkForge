@@ -1,7 +1,7 @@
 export type AnalyticsSourceType = "url" | "qr";
 
 export interface TimeSeriesPoint {
-  bucket: string;
+  Date: string;
   count: number;
 }
 
@@ -24,6 +24,7 @@ export interface ScopedStats {
 export interface StatusSummary {
   active: number;
   expired: number;
+  disabled: number;
 }
 
 export interface AnalyticsQueryParams {

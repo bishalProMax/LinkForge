@@ -55,12 +55,12 @@
       </div>
       <a href="#" id="exportRawCsvBtn" class="pagination-btn nav"
         style="text-decoration:none; display:inline-flex; margin-bottom:16px;">
-        <i class="ri-download-2-line"></i> Export Raw Activity (CSV, includes IP)
+        <i class="ri-download-2-line"></i> Export Raw Activity
       </a>
       <% } else { %>
         <a href="#" id="exportRawCsvBtn" class="pagination-btn nav"
           style="text-decoration:none; display:inline-flex; margin-bottom:16px;">
-          <i class="ri-download-2-line"></i> Export My Activity (CSV)
+          <i class="ri-download-2-line"></i> Export My Activity
         </a>
         <% } %>
 
@@ -68,16 +68,17 @@
             <div class="search-input-wrap">
               <i class="ri-search-line search-icon"></i>
               <input type="text" id="analyticsSearchInput"
-                placeholder="Search by short code or QR ID for a specific item…" autocomplete="off" />
+                placeholder="<%= initialType === 'qr' ? 'Search by QR ID…' : 'Search by short ID…' %>"
+                autocomplete="off" />
               <button type="button" class="clear-search-btn is-hidden" id="analyticsClearSearchBtn"><i
                   class="ri-close-line"></i></button>
             </div>
-            <button type="submit" class="pagination-btn nav">Search</button>
           </form>
 
           <div class="analytics-stat-grid">
             <div class="analytics-stat-card">
-              <div class="analytics-stat-label"><i class="ri-cursor-line"></i> Total Activity</div>
+              <div class="analytics-stat-label"><i class="ri-cursor-line"></i> <span id="statTotalLabel">Total
+                  Activity</span></div>
               <div class="analytics-stat-value" id="statTotal">0</div>
             </div>
             <div class="analytics-stat-card">
@@ -87,6 +88,10 @@
             <div class="analytics-stat-card">
               <div class="analytics-stat-label"><i class="ri-time-line"></i> Expired</div>
               <div class="analytics-stat-value" id="statExpired">0</div>
+            </div>
+            <div class="analytics-stat-card">
+              <div class="analytics-stat-label"><i class="ri-forbid-line"></i> Disabled</div>
+              <div class="analytics-stat-value" id="statDisabled">0</div>
             </div>
             <div class="analytics-stat-card">
               <div class="analytics-stat-label"><i class="ri-calendar-line"></i> First Activity</div>

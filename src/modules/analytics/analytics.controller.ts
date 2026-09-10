@@ -25,7 +25,7 @@ const handleGetAnalyticsOverview = asyncHandler(async (req: Request, res: Respon
   const result = await getAnalyticsOverview(params, requester);
 
   if (!result) {
-    return res.status(404).json({ success: false, message: "Not found, or you don't have access to this item." });
+    return res.status(404).json({ success: false, message: "Analytics resource not found." });
   }
 
   return res.status(200).json({ success: true, ...result });
@@ -44,7 +44,7 @@ const handleExportAnalyticsCSV = asyncHandler(async (req: Request, res: Response
   const data = await getExportData(metric, params, requester);
 
   if (!data) {
-    return res.status(404).json({ success: false, message: "Not found, or you don't have access to this item." });
+    return res.status(404).json({ success: false, message: "Analytics resource not found." });
   }
 
   const filename = `analytics-${params.type}-${metric}-${new Date().toISOString().slice(0, 10)}.csv`;
@@ -82,7 +82,7 @@ const handleExportRawEventsCSV = asyncHandler(async (req: Request, res: Response
   const data = await getRawEventsExport(params, requester);
 
   if (!data) {
-    return res.status(404).json({ success: false, message: "Not found, or you don't have access to this item." });
+    return res.status(404).json({ success: false, message: "Analytics resource not found." });
   }
 
   const filename = `analytics-${params.type}-raw-${new Date().toISOString().slice(0, 10)}.csv`;

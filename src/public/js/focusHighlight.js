@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!target) return;
 
-  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  target.scrollIntoView({ behavior: "smooth", block: "nearest" });
   target.setAttribute("tabindex", "-1");
   target.focus({ preventScroll: true });
   target.classList.add("focus-glow");

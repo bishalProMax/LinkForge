@@ -122,7 +122,7 @@ const handleSearchUsers = asyncHandler(async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, users: [] });
   }
 
-  const users = await searchUsers(query, req.user!.role as "ADMIN" | "SUPER_ADMIN");
+  const users = await searchUsers(query);
   return res.status(200).json({ success: true, users });
 });
 

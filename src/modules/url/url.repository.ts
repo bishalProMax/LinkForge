@@ -35,7 +35,7 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
   };
 
   if (filters.search) {
-    matchStage.$or = [{ shortId: { $regex: filters.search, $options: "i" } }, { redirectURL: { $regex: filters.search, $options: "i" } }, { title: { $regex: filters.search, $options: "i" } }];
+    matchStage.$or = [{ shortId: { $regex: filters.search, $options: "i" } }, { destinationURL: { $regex: filters.search, $options: "i" } }, { title: { $regex: filters.search, $options: "i" } }];
   }
 
   if (filters.createdFrom || filters.createdTo) {
@@ -48,6 +48,12 @@ const getURLsByUserId = (userId: string, page: number, limit: number, filters: D
     matchStage.expiresAt = { $ne: null };
   } else if (filters.expiry === "never") {
     matchStage.expiresAt = null;
+  }
+
+  if (filters.expiringWithinDays !== undefined) {
+    const now = new Date();
+    const boundary = new Date(now.getTime() + filters.expiringWithinDays * 24 * 60 * 60 * 1000);
+    matchStage.expiresAt = { $ne: null, $gte: now, $lte: boundary };
   }
 
   const pipeline: mongoose.PipelineStage[] = [
@@ -109,7 +115,7 @@ const findURLById = (id: string) => {
   return URL.findById(id);
 };
 
-const createURL = (data: { shortId: string, redirectURL: string, title: string, createdBy: string, expiresAt?: Date | null, linkedQRId?: string }) => {
+const createURL = (data: { shortId: string, destinationURL: string, title: string, createdBy: string, expiresAt?: Date | null, linkedQRId?: string }) => {
   return URL.create(data);
 };
 
@@ -117,24 +123,25 @@ const countURLsNewerThan = (userId: string, createdAt: Date) => {
   return URL.countDocuments({ createdBy: userId, createdAt: { $gt: createdAt }, deletedAt: null });
 };
 
-const updateURLBasicInfo = (id: string, data: { shortId?: string; redirectURL?: string; title?: string; expiresAt?: Date }) => { 
+const updateURLBasicInfo = (id: string, data: { shortId?: string; destinationURL?: string; title?: string; expiresAt?: Date }) => { 
   return URL.findByIdAndUpdate(id, data, { returnDocument: "after" }); }; 
 
   const getURLIdsByUserId = async (userId: string): Promise<mongoose.Types.ObjectId[]> => {
-  const urls = await URL.find({ createdBy: userId }).select("_id").lean();
+  const urls = await URL.find({ createdBy: userId, deletedAt: null }).select("_id").lean();
   return urls.map((u) => u._id as mongoose.Types.ObjectId);
 };
 
-const countURLStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promise<{ active: number; expired: number }> => {
+const countURLStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promise<{ active: number; expired: number; disabled: number }> => {
   const now = new Date();
   const baseMatch: Record<string, unknown> = ids ? { _id: { $in: ids } } : {};
 
-  const [active, expired] = await Promise.all([
+  const [active, expired, disabled] = await Promise.all([
     URL.countDocuments({ ...baseMatch, isDisabled: false, $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }),
     URL.countDocuments({ ...baseMatch, expiresAt: { $ne: null, $lte: now } }),
+    URL.countDocuments({ ...baseMatch, isDisabled: true, $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }), 
   ]);
 
-  return { active, expired };
+  return { active, expired, disabled };
 };
 
 //used by worker for hard delete single URL

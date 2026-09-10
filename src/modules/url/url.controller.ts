@@ -10,7 +10,7 @@ const handleGenerateShortURL = asyncHandler(async (req: Request, res: Response) 
   const body = req.body;
 
   try {
-    const shortid = await generateShortURL({ originalURL: body.url, userId: req.user!.id, customAlias: body.customAlias, expiration: body.expiration, customExpiry: body.customExpiry, title: body.title });
+    const shortid = await generateShortURL({ destinationURL: body.destinationURL, userId: req.user!.id, customAlias: body.customAlias, expiration: body.expiration, customExpiry: body.customExpiry, title: body.title });
 
     if (body.createQr) {
       const url = await findURLDocByShortId(shortid);
@@ -70,7 +70,7 @@ const handleRedirectToURL = asyncHandler(async (req: Request, res: Response) => 
     });
   }
 
-  return res.redirect(result.redirectURL);
+  return res.redirect(result.destinationURL);
 });
 
 //get all URLs created by a user
