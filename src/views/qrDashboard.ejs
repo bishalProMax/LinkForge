@@ -68,9 +68,9 @@
             <select id="expiration" name="expiration">
               <option value="never" selected>Never</option>
               <option value="1d">1 Day</option>
+              <option value="3d">3 Days</option>
               <option value="7d">7 Days</option>
               <option value="30d">30 Days</option>
-              <option value="90d">90 Days</option>
               <option value="custom">Custom Date</option>
             </select>
           </div>
@@ -182,264 +182,266 @@
         <h2>My QR Codes</h2>
 
         <!-- Search / Filter toolbar -->
-        <% const hasActiveFilters=(filters.status && filters.status !=="all" ) || (filters.expiry && filters.expiry
-          !=="all" ) || (filters.linked && filters.linked !=="all" ) || (filters.sortBy && filters.sortBy !=="newest" );
-          %>
+        <% const todayStr=new Date().toISOString().split('T')[0]; %>
+          <% const hasActiveFilters=(filters.status && filters.status !=="all" ) || filters.createdFrom ||
+            filters.createdTo || (filters.linked && filters.linked !=="all" ) || (filters.expiry && filters.expiry
+            !=="all" ) || (filters.sortBy && filters.sortBy !=="newest" ); %>
 
-          <form class="url-toolbar" method="GET" action="/qr" id="qrToolbarForm">
-            <div class="search-input-wrap">
-              <i class="ri-search-line search-icon"></i>
-              <input type="text" name="search" id="qrSearchInput" placeholder="Search QR"
-                value="<%= filters.search || '' %>" autocomplete="off" />
-              <button type="button" class="clear-search-btn <%= filters.search ? '' : 'is-hidden' %>"
-                id="clearQrSearchBtn">
-                <i class="ri-close-line"></i>
+            <form class="url-toolbar" method="GET" action="/qr" id="qrToolbarForm">
+              <div class="search-input-wrap">
+                <i class="ri-search-line search-icon"></i>
+                <input type="text" name="search" id="qrSearchInput" placeholder="Search QR"
+                  value="<%= filters.search || '' %>" autocomplete="off" />
+                <button type="button" class="clear-search-btn <%= filters.search ? '' : 'is-hidden' %>"
+                  id="clearQrSearchBtn">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
+
+              <button type="button" class="filter-trigger-btn" id="qrFilterTriggerBtn">
+                <i class="ri-equalizer-3-line"></i>
+                <% if (hasActiveFilters) { %>
+                  <span class="filter-badge-dot"></span>
+                  <% } %>
+              </button>
+            </form>
+
+            <!-- BULK DELETE -->
+            <div id="bulkActionBar" class="bulk-action-bar" style="display:none;">
+              <label class="bulk-select-all-label">
+                <input type="checkbox" id="selectAllCheckbox" />
+                <span id="selectAllLabel">Select all</span>
+              </label>
+              <span id="bulkSelectedCount">0 selected</span>
+              <button type="button" id="bulkDeleteBtn" class="danger">
+                <i class="ri-delete-bin-line"></i> Delete Selected
               </button>
             </div>
 
-            <button type="button" class="filter-trigger-btn" id="qrFilterTriggerBtn">
-              <i class="ri-equalizer-3-line"></i>
-              <% if (hasActiveFilters) { %>
-                <span class="filter-badge-dot"></span>
-                <% } %>
-            </button>
-          </form>
+            <!-- QR GRID -->
+            <section class="table-section">
+              <% if (qrs && qrs.length> 0) { %>
 
-          <!-- BULK DELETE -->
-          <div id="bulkActionBar" class="bulk-action-bar" style="display:none;">
-            <label class="bulk-select-all-label">
-              <input type="checkbox" id="selectAllCheckbox" />
-              <span id="selectAllLabel">Select all</span>
-            </label>
-            <span id="bulkSelectedCount">0 selected</span>
-            <button type="button" id="bulkDeleteBtn" class="danger">
-              <i class="ri-delete-bin-line"></i> Delete Selected
-            </button>
-          </div>
+                <div class="qr-grid" data-focus-id="<%= focusId || '' %>">
+                  <% qrs.forEach((qr)=> { %>
+                    <div class="qr-card" data-qrid="<%= qr.qrId %>">
+                      <input type="checkbox" class="row-select-checkbox qr-card-checkbox"
+                        data-shortid="<%= qr.qrId %>" />
 
-          <!-- QR GRID -->
-          <section class="table-section">
-            <% if (qrs && qrs.length> 0) { %>
-
-              <div class="qr-grid" data-focus-id="<%= focusId || '' %>">
-                <% qrs.forEach((qr)=> { %>
-                  <div class="qr-card" data-qrid="<%= qr.qrId %>">
-                    <input type="checkbox" class="row-select-checkbox qr-card-checkbox" data-shortid="<%= qr.qrId %>" />
-
-                    <!-- thumbnail -->
-                    <div class="qr-thumb">
-                      <% if (qr.qrStatus==="READY" && qr.imageUrl) { %>
-                        <div class="qr-thumb-clickable" data-qrid="<%= qr.qrId %>">
-                          <img src="<%= qr.imageUrl %>" alt="<%= qr.title %> QR code" />
-                        </div>
-                        <% } else if (qr.qrStatus==="FAILED" ) { %>
-                          <span class="pending"><i class="ri-error-warning-line"></i><br />Failed</span>
-                          <% } else { %>
-                            <span class="pending"><i class="ri-loader-4-line"></i><br />Generating…</span>
-                            <% } %>
-                    </div>
-
-                    <!-- body -->
-                    <div class="qr-card-body">
-                      <div class="qr-badges">
-                        <span class="qr-badge"><i class="ri-qr-code-line"></i> QR Code</span>
-                        <% if (qr.linkedUrlId) { %>
-                          <span class="qr-badge linked"><i class="ri-link"></i> Linked</span>
-                          <% } %>
-                            <span class="qr-badge id" data-qrid-label><i class="ri-key-2-line"></i>
-                              <%= qr.qrId %>
-                            </span>
-                      </div>
-
-                      <div class="qr-title" title="<%= qr.title %>">
-                        <%= qr.title %>
-                      </div>
-
-
-                      <div class="qr-destination" title="<%= qr.destinationURL %>">
-                        <i class="ri-arrow-right-up-line"></i>
-                        <a href="<%= qr.destinationURL %>" target="_blank" class="redirect-link"
-                          title="<%= qr.destinationURL %>">
-                          <%= qr.destinationURL %>
-                        </a>
-                      </div>
-
-                      <% if (qr.linkedShortId) { %>
-                        <span class="qr-meta-pill">
-                          <i class="ri-link"></i>
-                          <a href="<%= baseUrl %>/url/<%= qr.linkedShortId %>" target="_blank" class="redirect-link">
-                            <%= baseUrl %>/url/<%= qr.linkedShortId %>
-                          </a>
-                        </span>
-                        <% } %>
-
-                          <div class="qr-meta-row">
-                            <span class="status-badge status-<%= qr.status %>">
-                              <%= qr.status.charAt(0).toUpperCase() + qr.status.slice(1) %>
-                            </span>
-
-
-                            <span class="qr-meta-pill scans">
-                              <i class="ri-scan-2-line"></i>
-                              <%= qr.totalScans || 0 %> scans
-                            </span>
-
-                            <span class="qr-meta-pill"
-                              title="<%= qr.expiresAt ? new Date(qr.expiresAt).toLocaleString('en-IN') : 'Never expires' %>">
-                              <i class="ri-time-line"></i>
-                              Expires: <%= qr.expiresAt ? new Date(qr.expiresAt).toLocaleDateString('en-IN', {
-                                day: 'numeric' , month: 'short' , year: 'numeric' }) : 'Never' %>
-                            </span>
-
-                            <span class="qr-meta-pill" title="<%= new Date(qr.createdAt).toLocaleString('en-IN') %>">
-                              <i class="ri-calendar-line"></i>
-                              Created: <%= new Date(qr.createdAt).toLocaleDateString('en-IN', { day: 'numeric' ,
-                                month: 'short' , year: 'numeric' }) %>
-                            </span>
+                      <!-- thumbnail -->
+                      <div class="qr-thumb">
+                        <% if (qr.qrStatus==="READY" && qr.imageUrl) { %>
+                          <div class="qr-thumb-clickable" data-qrid="<%= qr.qrId %>">
+                            <img src="<%= qr.imageUrl %>" alt="<%= qr.title %> QR code" />
                           </div>
+                          <% } else if (qr.qrStatus==="FAILED" ) { %>
+                            <span class="pending"><i class="ri-error-warning-line"></i><br />Failed</span>
+                            <% } else { %>
+                              <span class="pending"><i class="ri-loader-4-line"></i><br />Generating…</span>
+                              <% } %>
+                      </div>
 
-                          <!-- download + share -->
-                          <div class="qr-card-footer">
-                            <div class="qr-download-wrap">
-                              <button class="qr-icon-btn qr-download-trigger" type="button" title="Download">
-                                <i class="ri-download-2-line"></i>
-                              </button>
-                              <div class="qr-download-menu">
-                                <button class="qr-download-option" data-format="png"
-                                  data-qrid="<%= qr.qrId %>">PNG</button>
-                                <button class="qr-download-option" data-format="jpeg"
-                                  data-qrid="<%= qr.qrId %>">JPEG</button>
-                                <button class="qr-download-option" data-format="svg"
-                                  data-qrid="<%= qr.qrId %>">SVG</button>
-                                <button class="qr-download-option" data-format="pdf"
-                                  data-qrid="<%= qr.qrId %>">PDF</button>
-                              </div>
+                      <!-- body -->
+                      <div class="qr-card-body">
+                        <div class="qr-badges">
+                          <span class="qr-badge"><i class="ri-qr-code-line"></i> QR Code</span>
+                          <% if (qr.linkedUrlId) { %>
+                            <span class="qr-badge linked"><i class="ri-link"></i> Linked</span>
+                            <% } %>
+                              <span class="qr-badge id" data-qrid-label><i class="ri-key-2-line"></i>
+                                <%= qr.qrId %>
+                              </span>
+                        </div>
+
+                        <div class="qr-title" title="<%= qr.title %>">
+                          <%= qr.title %>
+                        </div>
+
+
+                        <div class="qr-destination" title="<%= qr.destinationURL %>">
+                          <i class="ri-arrow-right-up-line"></i>
+                          <a href="<%= qr.destinationURL %>" target="_blank" class="redirect-link"
+                            title="<%= qr.destinationURL %>">
+                            <%= qr.destinationURL %>
+                          </a>
+                        </div>
+
+                        <% if (qr.linkedShortId) { %>
+                          <span class="qr-meta-pill">
+                            <i class="ri-link"></i>
+                            <a href="<%= baseUrl %>/url/<%= qr.linkedShortId %>" target="_blank" class="redirect-link">
+                              <%= baseUrl %>/url/<%= qr.linkedShortId %>
+                            </a>
+                          </span>
+                          <% } %>
+
+                            <div class="qr-meta-row">
+                              <span class="status-badge status-<%= qr.status %>">
+                                <%= qr.status.charAt(0).toUpperCase() + qr.status.slice(1) %>
+                              </span>
+
+
+                              <span class="qr-meta-pill scans">
+                                <i class="ri-scan-2-line"></i>
+                                <%= qr.totalScans || 0 %> scans
+                              </span>
+
+                              <span class="qr-meta-pill"
+                                title="<%= qr.expiresAt ? new Date(qr.expiresAt).toLocaleString('en-IN') : 'Never expires' %>">
+                                <i class="ri-time-line"></i>
+                                Expires: <%= qr.expiresAt ? new Date(qr.expiresAt).toLocaleDateString('en-IN', {
+                                  day: 'numeric' , month: 'short' , year: 'numeric' }) : 'Never' %>
+                              </span>
+
+                              <span class="qr-meta-pill" title="<%= new Date(qr.createdAt).toLocaleString('en-IN') %>">
+                                <i class="ri-calendar-line"></i>
+                                Created: <%= new Date(qr.createdAt).toLocaleDateString('en-IN', { day: 'numeric' ,
+                                  month: 'short' , year: 'numeric' }) %>
+                              </span>
                             </div>
 
-                            <button class="qr-icon-btn qr-share-btn" type="button" title="Share"
-                              data-qrid="<%= qr.qrId %>">
-                              <i class="ri-share-line"></i>
-                            </button>
-                          </div>
-                    </div>
+                            <!-- download + share -->
+                            <div class="qr-card-footer">
+                              <div class="qr-download-wrap">
+                                <button class="qr-icon-btn qr-download-trigger" type="button" title="Download">
+                                  <i class="ri-download-2-line"></i>
+                                </button>
+                                <div class="qr-download-menu">
+                                  <button class="qr-download-option" data-format="png"
+                                    data-qrid="<%= qr.qrId %>">PNG</button>
+                                  <button class="qr-download-option" data-format="jpeg"
+                                    data-qrid="<%= qr.qrId %>">JPEG</button>
+                                  <button class="qr-download-option" data-format="svg"
+                                    data-qrid="<%= qr.qrId %>">SVG</button>
+                                  <button class="qr-download-option" data-format="pdf"
+                                    data-qrid="<%= qr.qrId %>">PDF</button>
+                                </div>
+                              </div>
 
-                    <!-- 3-dot action menu -->
-                    <div class="action-dropdown">
-                      <button class="action-btn" type="button">
-                        <i class="ri-more-2-fill"></i>
-                      </button>
+                              <button class="qr-icon-btn qr-share-btn" type="button" title="Share"
+                                data-qrid="<%= qr.qrId %>">
+                                <i class="ri-share-line"></i>
+                              </button>
+                            </div>
+                      </div>
 
-                      <div class="action-menu">
-
-                        <button class="qr-analytics-btn" data-qrid="<%= qr.qrId %>">
-                          <i class="ri-line-chart-line"></i>
-                          Analytics
+                      <!-- 3-dot action menu -->
+                      <div class="action-dropdown">
+                        <button class="action-btn" type="button">
+                          <i class="ri-more-2-fill"></i>
                         </button>
 
-                        <button class="edit-qr-btn" data-qrid="<%= qr.qrId %>">
-                          <i class="ri-edit-line"></i>
-                          Edit QR
-                        </button>
+                        <div class="action-menu">
 
-                        <% if (qr.linkedUrlId) { %>
-                          <button class="link-details-btn" data-shortid="<%= qr.linkedShortId %>">
-                            <i class="ri-external-link-line"></i>
-                            Show Link
+                          <button class="qr-analytics-btn" data-qrid="<%= qr.qrId %>">
+                            <i class="ri-line-chart-line"></i>
+                            Analytics
                           </button>
+
+                          <button class="edit-qr-btn" data-qrid="<%= qr.qrId %>">
+                            <i class="ri-edit-line"></i>
+                            Edit QR
+                          </button>
+
+                          <% if (qr.linkedUrlId) { %>
+                            <button class="link-details-btn" data-shortid="<%= qr.linkedShortId %>">
+                              <i class="ri-external-link-line"></i>
+                              Show Link
+                            </button>
+                            <% } %>
+
+                              <% if (!qr.linkedUrlId) { %>
+                                <button class="create-short-link-btn" data-qrid="<%= qr.qrId %>">
+                                  <i class="ri-links-line"></i>
+                                  Create Short Link
+                                </button>
+                                <% } %>
+
+                                  <hr />
+
+                                  <button class="qr-disable-btn disable-btn" data-qrid="<%= qr.qrId %>"
+                                    data-disabled="<%= qr.isDisabled %>" data-linked="<%= Boolean(qr.linkedUrlId) %>">
+                                    <i class="ri-forbid-line"></i>
+                                    <%= qr.isDisabled ? "Enable" : "Disable" %>
+                                  </button>
+
+                                  <hr />
+
+                                  <button class="qr-delete-btn danger" data-qrid="<%= qr.qrId %>"
+                                    data-linked="<%= Boolean(qr.linkedUrlId) %>">
+                                    <i class="ri-delete-bin-line"></i>
+                                    Delete
+                                  </button>
+                        </div>
+                      </div>
+
+                    </div>
+                    <% }) %>
+                </div>
+
+                <!-- count -->
+                <div class="table-header">
+                  <span>Showing <%= startIndex %>–<%= endIndex %> of <%= total %> QR codes</span>
+                </div>
+
+                <!-- PAGINATION -->
+                <% const buildPageUrl=(pageNum)=> {
+                  const params = new URLSearchParams();
+                  if (filters.search) params.set('search', filters.search);
+                  if (filters.status && filters.status !== 'all') params.set('status', filters.status);
+                  if (filters.expiry && filters.expiry !== 'all') params.set('expiry', filters.expiry);
+                  if (filters.linked && filters.linked !== 'all') params.set('linked', filters.linked);
+                  if (filters.sortBy && filters.sortBy !== 'newest') params.set('sortBy', filters.sortBy);
+                  params.set('page', pageNum);
+                  return `/qr?${params.toString()}`;
+                  }; %>
+
+                  <% if (totalPages> 1) { %>
+                    <div class="pagination">
+                      <% if (currentPage> 1) { %>
+                        <a href="<%= buildPageUrl(currentPage - 1) %>" class="pagination-btn nav">← Prev</a>
+                        <% } else { %>
+                          <span class="pagination-btn nav disabled">← Prev</span>
                           <% } %>
 
-                            <% if (!qr.linkedUrlId) { %>
-                              <button class="create-short-link-btn" data-qrid="<%= qr.qrId %>">
-                                <i class="ri-links-line"></i>
-                                Create Short Link
-                              </button>
+                            <% const pages=new Set(); pages.add(1); pages.add(totalPages); for (let i=Math.max(1,
+                              currentPage - 1); i <=Math.min(totalPages, currentPage + 1); i++) { pages.add(i); } const
+                              sorted=[...pages].sort((a, b)=> a - b);
+                              let prev = 0;
+                              for (const pg of sorted) {
+                              if (pg - prev > 1) { %>
+                              <span class="pagination-dots">···</span>
                               <% } %>
+                                <a href="<%= buildPageUrl(pg) %>"
+                                  class="pagination-btn <%= currentPage === pg ? 'active' : '' %>">
+                                  <%= pg %>
+                                </a>
+                                <% prev=pg; } %>
 
-                                <hr />
-
-                                <button class="qr-disable-btn disable-btn" data-qrid="<%= qr.qrId %>"
-                                  data-disabled="<%= qr.isDisabled %>" data-linked="<%= Boolean(qr.linkedUrlId) %>">
-                                  <i class="ri-forbid-line"></i>
-                                  <%= qr.isDisabled ? "Enable" : "Disable" %>
-                                </button>
-
-                                <hr />
-
-                                <button class="qr-delete-btn danger" data-qrid="<%= qr.qrId %>"
-                                  data-linked="<%= Boolean(qr.linkedUrlId) %>">
-                                  <i class="ri-delete-bin-line"></i>
-                                  Delete
-                                </button>
-                      </div>
+                                  <% if (currentPage < totalPages) { %>
+                                    <a href="<%= buildPageUrl(currentPage + 1) %>" class="pagination-btn nav">Next →</a>
+                                    <% } else { %>
+                                      <span class="pagination-btn nav disabled">Next →</span>
+                                      <% } %>
                     </div>
+                    <% } %>
 
-                  </div>
-                  <% }) %>
-              </div>
-
-              <!-- count -->
-              <div class="table-header">
-                <span>Showing <%= startIndex %>–<%= endIndex %> of <%= total %> QR codes</span>
-              </div>
-
-              <!-- PAGINATION -->
-              <% const buildPageUrl=(pageNum)=> {
-                const params = new URLSearchParams();
-                if (filters.search) params.set('search', filters.search);
-                if (filters.status && filters.status !== 'all') params.set('status', filters.status);
-                if (filters.expiry && filters.expiry !== 'all') params.set('expiry', filters.expiry);
-                if (filters.linked && filters.linked !== 'all') params.set('linked', filters.linked);
-                if (filters.sortBy && filters.sortBy !== 'newest') params.set('sortBy', filters.sortBy);
-                params.set('page', pageNum);
-                return `/qr?${params.toString()}`;
-                }; %>
-
-                <% if (totalPages> 1) { %>
-                  <div class="pagination">
-                    <% if (currentPage> 1) { %>
-                      <a href="<%= buildPageUrl(currentPage - 1) %>" class="pagination-btn nav">← Prev</a>
                       <% } else { %>
-                        <span class="pagination-btn nav disabled">← Prev</span>
+
+                        <div class="empty-state">
+                          <% if (hasActiveFilters) { %>
+                            <i class="ri-search-line"></i>
+                            <h3>No results found</h3>
+                            <p>No QR codes match the selected filters. Try adjusting or resetting them.</p>
+                            <% } else { %>
+                              <i class="ri-qr-code-line"></i>
+                              <h3>No QR codes yet</h3>
+                              <p>Create one from a link's action menu, or generate a standalone QR code.</p>
+                              <% } %>
+                        </div>
+
                         <% } %>
-
-                          <% const pages=new Set(); pages.add(1); pages.add(totalPages); for (let i=Math.max(1,
-                            currentPage - 1); i <=Math.min(totalPages, currentPage + 1); i++) { pages.add(i); } const
-                            sorted=[...pages].sort((a, b)=> a - b);
-                            let prev = 0;
-                            for (const pg of sorted) {
-                            if (pg - prev > 1) { %>
-                            <span class="pagination-dots">···</span>
-                            <% } %>
-                              <a href="<%= buildPageUrl(pg) %>"
-                                class="pagination-btn <%= currentPage === pg ? 'active' : '' %>">
-                                <%= pg %>
-                              </a>
-                              <% prev=pg; } %>
-
-                                <% if (currentPage < totalPages) { %>
-                                  <a href="<%= buildPageUrl(currentPage + 1) %>" class="pagination-btn nav">Next →</a>
-                                  <% } else { %>
-                                    <span class="pagination-btn nav disabled">Next →</span>
-                                    <% } %>
-                  </div>
-                  <% } %>
-
-                    <% } else { %>
-
-                      <div class="empty-state">
-                        <% if (hasActiveFilters) { %>
-                          <i class="ri-search-line"></i>
-                          <h3>No results found</h3>
-                          <p>No QR codes match the selected filters. Try adjusting or resetting them.</p>
-                          <% } else { %>
-                            <i class="ri-qr-code-line"></i>
-                            <h3>No QR codes yet</h3>
-                            <p>Create one from a link's action menu, or generate a standalone QR code.</p>
-                            <% } %>
-                      </div>
-
-                      <% } %>
-          </section>
+            </section>
   </div>
 
   <!-- FILTER MODAL -->
@@ -459,6 +461,17 @@
           <option value="disabled" <%=filters.status==="disabled" ? "selected" : "" %>>Disabled</option>
           <option value="expired" <%=filters.status==="expired" ? "selected" : "" %>>Expired</option>
         </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Created</label>
+        <div class="date-range-row">
+          <input type="date" name="createdFrom" value="<%= filters.createdFrom || '' %>" max="<%= todayStr %>"
+            form="qrToolbarForm" />
+          <span class="date-range-sep">to</span>
+          <input type="date" name="createdTo" value="<%= filters.createdTo || '' %>" max="<%= todayStr %>"
+            form="qrToolbarForm" />
+        </div>
       </div>
 
       <div class="filter-group">
@@ -623,7 +636,7 @@
     <div class="modal-content modal-content--bulk">
       <span class="close" data-close-modal>&times;</span>
       <h3>Bulk Create Links</h3>
-      <p>Upload a CSV (columns: url, customAlias, title, expiration) or paste one URL per line.</p>
+      <div id="bulkModalHint"></div>
 
       <div class="bulk-tabs">
         <button type="button" class="bulk-tab-btn active" data-mode="file">Upload CSV</button>

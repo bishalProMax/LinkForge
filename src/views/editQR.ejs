@@ -61,13 +61,12 @@
                     <div class="form-group">
                       <label for="expiration">Expiration</label>
                       <select id="expiration" name="expiration">
-                        <option value="keep" selected>Keep current (<%= qr.expiresAt ? new
-                            Date(qr.expiresAt).toLocaleDateString() : 'Never' %>)</option>
+                        <option value="keep" selected>Keep current (<%= qr.expiresAt ? new Date(qr.expiresAt).toLocaleDateString() : 'Never' %>)</option>
                         <option value="never">Never</option>
                         <option value="1d">1 Day</option>
+                        <option value="3d">3 Days</option>
                         <option value="7d">7 Days</option>
                         <option value="30d">30 Days</option>
-                        <option value="90d">90 Days</option>
                         <option value="custom">Custom Date</option>
                       </select>
                     </div>

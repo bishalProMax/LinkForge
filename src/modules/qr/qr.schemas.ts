@@ -49,7 +49,7 @@ export const createStandaloneQRSchema = z
       z.string().trim().max(100, "Title must be 100 characters or fewer.").optional()
     ),
 
-    expiration: z.enum(["never", "1d", "7d", "30d", "90d", "custom"]),
+    expiration: z.enum(["never", "1d", "3d", "7d", "30d", "custom"]),
 
     customExpiry: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
 
@@ -91,7 +91,7 @@ export const editQRSchema = z.object({
     })
     .optional()
   ),
-  expiration: z.enum(["keep", "never", "1d", "7d", "30d", "90d", "custom"]),
+  expiration: z.enum(["keep", "never", "1d", "3d", "7d", "30d", "custom"]),
 
   customExpiry: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
 

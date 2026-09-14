@@ -9,7 +9,7 @@ export interface CreateStandaloneQRProps {
   destinationURL: string;
   userId: string;
   title?: string;
-  expiration: "never" | "1d" | "7d" | "30d" | "90d" | "custom";
+  expiration: "never" | "1d" | "3d" | "7d" | "30d" | "custom";
   customExpiry?: Date;
   design?: QRDesignInput;
 }
@@ -26,6 +26,8 @@ export interface DashboardQRQueryParams {
   expiry?: "all" | "set" | "never";
   linked?: "all" | "linked" | "standalone";
   sortBy?: "newest" | "oldest" | "mostScanned" | "leastScanned";
+  createdFrom?: string;
+  createdTo?: string;
 }
 
 export interface ResolvedQRTarget {
@@ -40,7 +42,7 @@ export interface EditQRProps {
   userId: string;
   title?: string;
   destinationURL?: string;
-  expiration?: "keep" | "never" | "1d" | "7d" | "30d" | "90d" | "custom";
+  expiration?: "keep" | "never" | "1d" | "3d" | "7d" | "30d" | "custom";
   customExpiry?: Date;
 }
 

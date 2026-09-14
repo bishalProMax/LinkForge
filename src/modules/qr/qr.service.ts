@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import QRCode from "../../models/qrCode.model.js";
 import { buildQRSvg, rasterizeSvgToPng } from "../../shared/services/qrRenderer.service.js";
-import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields, softDeleteQRById, findQRByIdAdmin } from "./qr.repository.js";
+import { checkQrIdExists, createQRCode, findQRById, linkQRToUrl, updateURLLinkedQR, updateQRDisabledStatus, getQRsByUserId, countQRsNewerThan, updateQRBasicInfo, updateQRDesignFields, softDeleteQRById, findQRByIdAdmin, findStatusesByQrIds } from "./qr.repository.js";
 import { findURLByShortId, updateURLDisabledStatus, findURLById, createURL, updateURLBasicInfo, softDeleteURLById } from "../url/url.repository.js";
 import qrGenerationQueue from "../../infrastructure/queues/qrGeneration.queue.js";
 import qrScanEnrichmentQueue from "../../infrastructure/queues/qrScanEnrichment.queue.js";
@@ -54,21 +54,13 @@ const createStandaloneQR = async ({ destinationURL, userId, title, expiration, c
 const createLinkedQR = async ({ urlId, userId, design }: CreateLinkedQRProps): Promise<string> => {
   const url = await findURLById(urlId);
 
-  if (!url) {
-    throw new Error("Link not found.");
-  }
+  if (!url) throw new Error("Link not found.");
 
-  if (url.createdBy.toString() !== userId) {
-    throw new Error("Unauthorized to create a QR for this link.");
-  }
+  if (url.createdBy.toString() !== userId) throw new Error("Unauthorized to create a QR for this link.");
 
-  if (url.linkedQRId) {
-    throw new Error("This link already has a connected QR code.");
-  }
+  if (url.linkedQRId) throw new Error("This link already has a connected QR code.");
 
-  if (url.expiresAt && url.expiresAt <= new Date()) {
-    throw new Error("Cannot create a QR code for an expired link.");
-  }
+  if (url.expiresAt && url.expiresAt <= new Date()) throw new Error("Cannot create a QR code for an expired link.");
 
   const qrId = await generateUniqueQrId();
 
@@ -76,6 +68,8 @@ const createLinkedQR = async ({ urlId, userId, design }: CreateLinkedQRProps): P
     qrId,
     createdBy: userId,
     linkedUrlId: url._id.toString(),
+    destinationURL: url.destinationURL,
+    title: url.title,
     design: { ...DEFAULT_DESIGN, ...design },
     status: "PENDING",
   });
@@ -117,7 +111,7 @@ const linkExistingQRToNewUrl = async (qrId: string, userId: string): Promise<str
 
   const newUrl = await createURL({
     shortId,
-    redirectURL: qr.destinationURL,
+    destinationURL: qr.destinationURL,
     title: qr.title ?? getDefaultTitle(qr.destinationURL),
     createdBy: userId,
     expiresAt: qr.expiresAt,
@@ -204,7 +198,7 @@ const resolveQRRedirectTarget = async (qrId: string): Promise<ResolvedQRTarget |
 
     return {
       qrMongoId: qr._id.toString(),
-      destination: linkedUrl.redirectURL,
+      destination: linkedUrl.destinationURL,
       expiresAt: linkedUrl.expiresAt,
       isDisabled: linkedUrl.isDisabled,
     };
@@ -274,7 +268,7 @@ const getQREditData = async (qrId: string, userId: string) => {
     return {
       qrId: qr.qrId,
       title: linkedUrl?.title ?? "",
-      destinationURL: linkedUrl?.redirectURL ?? "",
+      destinationURL: linkedUrl?.destinationURL ?? "",
       expiresAt: linkedUrl?.expiresAt ?? null, 
       design: qr.design,
       isLinked: true,
@@ -303,19 +297,16 @@ const editQR = async ({ qrId, userId, title, destinationURL, expiration, customE
 
   const expiresAt = expiration !== undefined && expiration !== "keep" ? getExpiryDate(expiration as any, customExpiry) : undefined;
 
+  const updates: { title?: string; destinationURL?: string; expiresAt?: Date } = {};
+  if (resolvedTitle !== undefined) updates.title = resolvedTitle;
+  if (destinationURL !== undefined) updates.destinationURL = destinationURL;
+  if (expiresAt !== undefined) updates.expiresAt = expiresAt;
+
   if (qr.linkedUrlId) {
-    await updateURLBasicInfo(qr.linkedUrlId.toString(), {
-      ...(resolvedTitle !== undefined ? { title: resolvedTitle } : {}),
-      ...(destinationURL !== undefined ? { redirectURL: destinationURL } : {}),
-      ...(expiresAt !== undefined ? { expiresAt } : {}),
-    });
-  } else {
-    await updateQRBasicInfo(qrId, {
-      ...(resolvedTitle !== undefined ? { title: resolvedTitle } : {}),
-      ...(destinationURL !== undefined ? { destinationURL } : {}),
-      ...(expiresAt !== undefined ? { expiresAt } : {}),
-    });
+    await updateURLBasicInfo(qr.linkedUrlId.toString(), updates);
   }
+
+  await updateQRBasicInfo(qrId, updates);
 
   logger.info({ qrId, userId, linked: Boolean(qr.linkedUrlId) }, "QR details edited");
 };
@@ -362,6 +353,21 @@ const bulkDeleteQRs = async (qrIds: string[], userId: string): Promise<BulkDelet
   return { succeeded, failed };
 };
 
+const getStatusesByQrIds = (qrIds: string[]) => {
+  return findStatusesByQrIds(qrIds);
+};
+
+const getQRImageBuffer = async (qrId: string): Promise<{ buffer: Buffer; contentType: string } | null> => {
+  const qr = await findQRById(qrId);
+  if (!qr || qr.status !== "READY" || !qr.imageUrl) return null;
+
+  const response = await fetch(qr.imageUrl);
+  if (!response.ok) return null;
+
+  const arrayBuffer = await response.arrayBuffer();
+  return { buffer: Buffer.from(arrayBuffer), contentType: response.headers.get("content-type") ?? "image/png" };
+};
+
 export {
   createStandaloneQR,
   createLinkedQR,
@@ -381,5 +387,7 @@ export {
   updateQRDesign,
   previewQRSvg,
   QRByIdAdmin,
-  bulkDeleteQRs
+  bulkDeleteQRs,
+  getQRImageBuffer,
+  getStatusesByQrIds
 };

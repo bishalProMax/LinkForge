@@ -112,7 +112,7 @@
     <% if (role === "USER") { %>
       <section class="card card-danger">
         <h2>Delete Account</h2>
-        <p class="card-sub">Permanently delete your account and all associated data. This cannot be undone.</p>
+        <p class="card-sub">Your account will be scheduled for deletion with a 30-day grace period. Logging back in before then cancels it automatically.</p>
         <button type="button" id="openDeleteAccountBtn" class="delete-btn">Delete Account</button>
       </section>
     <% } %>
@@ -122,7 +122,7 @@
   <div id="deleteAccountModal" class="modal">
     <div class="modal-content modal-content--delete">
       <h3>Delete your account?</h3>
-      <p>This will permanently delete your account and all data associated with it. This action cannot be undone.</p>
+      <p>Your account and all associated data — links, QR codes, and analytics — will be permanently deleted after a 30-day grace period. Logging back in any time before then automatically cancels the deletion.</p>
       <p>Type <strong>CONFIRM DELETE</strong> below to proceed.</p>
 
       <div class="form-group">

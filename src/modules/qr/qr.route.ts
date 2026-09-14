@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {handleCreateStandaloneQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleDownloadQRAsset, handleShowEditQRPage, handleEditQR, handleUpdateQRDesign, handlePreviewQRDesign, handleBulkDeleteQR } from "./qr.controller.js";
+import {handleCreateStandaloneQR, handleLinkQRToNewUrl, handleGetQRStatus, handleRedirectQR, handleToggleDisableQR, handleDeleteQR, handleDownloadQRAsset, handleShowEditQRPage, handleEditQR, handleUpdateQRDesign, handlePreviewQRDesign, handleBulkDeleteQR, handleGetQRImage } from "./qr.controller.js";
 import { createStandaloneQRSchema, editQRSchema, updateDesignSchema, bulkDeleteQRSchema } from "./qr.schemas.js";
 import { validateRedirectDynamic, validateJSON } from "../../shared/middlewares/validation.middleware.js";
 import { authenticateUser } from "../../shared/middlewares/auth.middleware.js";
@@ -38,5 +38,8 @@ router.route("/preview").post(authenticateUser, handlePreviewQRDesign);
 
 //BULK DELETE
 router.route("/bulk-delete").post(authenticateUser, validateJSON(bulkDeleteQRSchema), handleBulkDeleteQR);
+
+//bulk QR uploaded  CSV result gets the QR url
+router.route("/:qrId/image").get(handleGetQRImage);
 
 export default router;

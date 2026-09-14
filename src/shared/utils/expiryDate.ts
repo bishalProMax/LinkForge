@@ -96,14 +96,14 @@ export const getExpiryDate = (expiration: GenerateShortURLProps["expiration"], c
     case "1d":
       return new Date(now + 24 * 60 * 60 * 1000);
 
+    case "3d":
+      return new Date(now + 3 * 24 * 60 * 60 * 1000);
+    
     case "7d":
       return new Date(now + 7 * 24 * 60 * 60 * 1000);
 
     case "30d":
       return new Date(now + 30 * 24 * 60 * 60 * 1000);
-
-    case "90d":
-      return new Date(now + 90 * 24 * 60 * 60 * 1000);
 
     case "custom":
       return customExpiry;

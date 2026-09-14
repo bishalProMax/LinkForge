@@ -3,7 +3,7 @@ export interface GenerateShortURLProps {
   userId: string;
   customAlias?: string;
   title?: string;
-  expiration: "never" | "1d" | "7d" | "30d" | "90d" | "custom";
+  expiration: "never" | "1d" | "3d" | "7d" | "30d" | "custom";
   customExpiry?: Date;
 };
 

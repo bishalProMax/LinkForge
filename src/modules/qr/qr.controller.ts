@@ -1,6 +1,6 @@
 import asyncHandler from "../../shared/utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { createStandaloneQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg, bulkDeleteQRs } from "./qr.service.js";
+import { createStandaloneQR, linkExistingQRToNewUrl, getUserQRs, toggleDisableQR, deleteQR, recordQRScan, resolveQRRedirectTarget, getQRStatus, resolveQRFocusPage, getQRDownloadAsset, getQREditData, editQR, updateQRDesign, previewQRSvg, bulkDeleteQRs, getQRImageBuffer } from "./qr.service.js";
 import type { DashboardQRQueryParams } from "./qr.types.js";
 
 // Create a standalone QR code
@@ -29,7 +29,7 @@ const handleLinkQRToNewUrl = asyncHandler(async (req: Request, res: Response) =>
   try {
     const shortId = await linkExistingQRToNewUrl(qrId, req.user!.id);
 
-    return res.status(201).json({ success: true, shortId, redirectUrl: `${process.env.BASE_URL}/url/${shortId}` });
+    return res.status(201).json({ success: true, shortId, destinationURL: `${process.env.BASE_URL}/url/${shortId}` });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Something went wrong. Please try again.";
     return res.status(400).json({ success: false, message });
@@ -107,6 +107,8 @@ const handleGetAllQRs = asyncHandler(async (req: Request, res: Response) => {
     : {
         search: typeof req.query.search === "string" ? req.query.search.trim() : undefined,
         status: typeof req.query.status === "string" ? (req.query.status as any) : "all",
+        createdFrom: typeof req.query.createdFrom === "string" ? req.query.createdFrom : undefined,
+        createdTo: typeof req.query.createdTo === "string" ? req.query.createdTo : undefined,
         expiry: typeof req.query.expiry === "string" ? (req.query.expiry as any) : "all",
         linked: typeof req.query.linked === "string" ? (req.query.linked as any) : "all",
         sortBy: typeof req.query.sortBy === "string" ? (req.query.sortBy as any) : "newest",
@@ -244,6 +246,15 @@ const handleBulkDeleteQR = asyncHandler(async (req: Request, res: Response) => {
   return res.status(200).json({ success: true, ...result });
 });
 
+const handleGetQRImage = asyncHandler(async (req: Request, res: Response) => {
+  const result = await getQRImageBuffer(req.params.qrId as string);
+  if (!result) return res.status(404).send("QR image not found");
+
+  res.setHeader("Content-Type", result.contentType);
+  res.setHeader("Cache-Control", "public, max-age=86400"); // image never changes after generation
+  return res.status(200).send(result.buffer);
+});
+
 export {
   handleCreateStandaloneQR,
   handleLinkQRToNewUrl,
@@ -257,5 +268,6 @@ export {
   handleEditQR, 
   handleUpdateQRDesign,
   handlePreviewQRDesign,
-  handleBulkDeleteQR
+  handleBulkDeleteQR,
+  handleGetQRImage
 };

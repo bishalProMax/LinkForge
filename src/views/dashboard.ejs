@@ -54,7 +54,7 @@
     <!-- Create URL -->
     <form class="url-form" action="/url/generate" method="POST">
       <label for="url">Destination URL</label>
-      <input id="url" name="url" type="text" placeholder="example.com or https://example.com" required />
+      <input id="url" name="destinationURL" type="text" placeholder="example.com or https://example.com" required />
 
       <label for="customAlias">Custom Alias (Optional)</label>
       <input id="customAlias" name="customAlias" type="text" minlength="3" maxlength="50"
@@ -75,9 +75,9 @@
         <select id="expiration" name="expiration">
           <option value="never" selected>Never</option>
           <option value="1d">1 Day</option>
+          <option value="3d">3 Days</option>
           <option value="7d">7 Days</option>
           <option value="30d">30 Days</option>
-          <option value="90d">90 Days</option>
           <option value="custom">Custom Date</option>
         </select>
       </div>
@@ -178,9 +178,9 @@
 
                           <!-- Destination -->
                           <td class="destination-cell">
-                            <a href="<%= url.redirectURL %>" target="_blank" class="redirect-link"
-                              title="<%= url.redirectURL %>">
-                              <%= url.redirectURL %>
+                            <a href="<%= url.destinationURL %>" target="_blank" class="redirect-link"
+                              title="<%= url.destinationURL %>">
+                              <%= url.destinationURL %>
                             </a>
                           </td>
 
@@ -261,7 +261,8 @@
                                       <hr />
 
                                       <button class="delete-btn danger" data-shortid="<%= url.shortId %>"
-                                        data-url="<%= url.redirectURL %>" data-linked="<%= Boolean(url.linkedQRId) %>">
+                                        data-url="<%= url.destinationURL %>"
+                                        data-linked="<%= Boolean(url.linkedQRId) %>">
                                         <i class="ri-delete-bin-line"></i>
                                         Delete
                                       </button>
@@ -537,7 +538,7 @@
     <div class="modal-content modal-content--bulk">
       <span class="close" data-close-modal>&times;</span>
       <h3>Bulk Create Links</h3>
-      <p>Upload a CSV (columns: url, customAlias, title, expiration) or paste one URL per line.</p>
+      <div id="bulkModalHint"></div>
 
       <div class="bulk-tabs">
         <button type="button" class="bulk-tab-btn active" data-mode="file">Upload CSV</button>
@@ -570,21 +571,23 @@
 
   <!-- AI ASSISTANT SIDEBAR -->
   <div id="aiSidebar" class="ai-sidebar">
-  <div class="ai-sidebar-header">
-    <h3><i class="ri-sparkling-2-fill"></i> AI Assistant</h3>
-    <button type="button" class="ai-sidebar-close" id="aiSidebarClose">&times;</button>
+    <div class="ai-sidebar-header">
+      <h3><i class="ri-sparkling-2-fill"></i> AI Assistant</h3>
+      <button type="button" class="ai-sidebar-close" id="aiSidebarClose">&times;</button>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-message assistant">Hi! I can summarize your analytics, create links or QR codes, and suggest
+        aliases, titles, or QR designs. What would you like to do?</div>
+    </div>
+    <div class="ai-typing" id="aiTypingIndicator" style="display:none;">Thinking…</div>
+    <div class="ai-input-row">
+      <button type="button" class="ai-attach-btn" id="aiAttachBtn" title="Attach a file"><i
+          class="ri-attachment-2"></i></button>
+      <input type="file" id="aiFileInput" accept=".csv,.pdf,.doc,.docx" style="display:none;" />
+      <textarea id="aiChatInput" rows="1" placeholder="Ask me anything about your links…"></textarea>
+      <button type="button" class="ai-send-btn" id="aiSendBtn"><i class="ri-send-plane-fill"></i></button>
+    </div>
   </div>
-  <div class="ai-messages" id="aiMessages">
-    <div class="ai-message assistant">Hi! I can summarize your analytics, create links or QR codes, and suggest aliases, titles, or QR designs. What would you like to do?</div>
-  </div>
-  <div class="ai-typing" id="aiTypingIndicator" style="display:none;">Thinking…</div>
-  <div class="ai-input-row">
-    <button type="button" class="ai-attach-btn" id="aiAttachBtn" title="Attach a file"><i class="ri-attachment-2"></i></button>
-    <input type="file" id="aiFileInput" accept=".csv,.pdf,.doc,.docx" style="display:none;" />
-    <textarea id="aiChatInput" rows="1" placeholder="Ask me anything about your links…"></textarea>
-    <button type="button" class="ai-send-btn" id="aiSendBtn"><i class="ri-send-plane-fill"></i></button>
-  </div>
-</div>
 
 </body>
 

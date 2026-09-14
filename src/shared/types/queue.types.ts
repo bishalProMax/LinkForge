@@ -97,12 +97,12 @@ export interface BulkLinkRowJob {
   bulkOperationId: string;
   userId: string;
   row: number;
-  input: { url: string; customAlias?: string; title?: string; expiration: "never" | "1d" | "7d" | "30d" | "90d" | "custom" };
+  input: { destinationURL: string; customAlias?: string; title?: string; expiration: "never" | "1d" | "3d" | "7d" | "30d" | "custom"; customExpiry?: string };
 }
 
 export interface BulkQRRowJob {
   bulkOperationId: string;
   userId: string;
   row: number;
-  input: { destinationURL: string; title?: string; expiration: "never" | "1d" | "7d" | "30d" | "90d" | "custom" };
+  input: { destinationURL: string; title?: string; expiration: "never" | "1d" | "3d" | "7d" | "30d" | "custom"; customExpiry?: string };
 }

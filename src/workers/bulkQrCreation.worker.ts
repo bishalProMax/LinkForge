@@ -5,13 +5,12 @@ import { createStandaloneQRSchema } from "../modules/qr/qr.schemas.js";
 import { appendBulkResult } from "../modules/bulk/bulk.repository.js";
 import type { BulkQRRowJob } from "../shared/types/queue.types.js";
 import logger from "../infrastructure/configs/logger.config.js";
+import { parseFlexibleDate } from "../shared/utils/parseFlexibleDate.js";
 
-const bulkQrCreationWorker = new Worker<BulkQRRowJob>(
-  "bulkQrCreationQueue",
-  async (job: Job<BulkQRRowJob>): Promise<void> => {
+const bulkQrCreationWorker = new Worker<BulkQRRowJob>( "bulkQrCreationQueue", async (job: Job<BulkQRRowJob>): Promise<void> => {
     const { bulkOperationId, userId, row, input } = job.data;
-
-    const parsed = createStandaloneQRSchema.safeParse({ destinationURL: input.destinationURL, title: input.title, expiration: input.expiration });
+    const customExpiryDate = input.customExpiry ? parseFlexibleDate(input.customExpiry) : undefined;
+    const parsed = createStandaloneQRSchema.safeParse({ destinationURL: input.destinationURL, title: input.title, expiration: input.expiration, customExpiry: customExpiryDate });
 
     if (!parsed.success) {
       await appendBulkResult(bulkOperationId, { row, status: "FAILED", input, error: parsed.error.issues[0]?.message ?? "Invalid input" });
