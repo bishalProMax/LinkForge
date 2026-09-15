@@ -39,7 +39,8 @@ export type SecurityEventType =
   | "PROFILE_USERNAME_CHANGED"
   | "PROFILE_PASSWORD_CHANGED"
   | "ACCOUNT_DELETION_REQUESTED"
-  | "ACCOUNT_DELETION_CANCELLED";
+  | "ACCOUNT_DELETION_CANCELLED"
+  | "SESSION_ROTATION_GRACE_USED";
 
 export interface SecurityEventPayload {
   event: SecurityEventType;

@@ -175,7 +175,7 @@ if (typeToggleContainer) {
     typeToggleButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.type === currentType));
   };
 
-  const refresh = () => {
+  const refresh = async () => {
     setActiveTypeButton();
     updateTypeLabels(currentType);
 
@@ -184,7 +184,7 @@ if (typeToggleContainer) {
 
     window.__analyticsCurrentParams = fullParams;
 
-    loadAnalytics(fullParams);
+    await loadAnalytics(fullParams);
     connectStream(fullParams);
 
     clearSearchBtn.classList.toggle("is-hidden", !currentId);
