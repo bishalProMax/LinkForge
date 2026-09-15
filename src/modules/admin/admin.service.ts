@@ -40,7 +40,7 @@ const banUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<Ba
     return { type: "NOT_FOUND" };
   }
 
-const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (actingUser.role === "SUPER_ADMIN" && target.role === "ADMIN");
+const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (actingUser.role === "SUPER_ADMIN" && (target.role === "USER" || target.role === "ADMIN"));
 
   if (!authorized) {
     return { type: "INSUFFICIENT_AUTHORITY" };
@@ -71,7 +71,7 @@ const unbanUser = async ({ targetUserId, actingUser }: BanActionProps): Promise<
     return { type: "NOT_FOUND" };
   }
 
-  const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (actingUser.role === "SUPER_ADMIN" && target.role === "ADMIN");
+  const authorized = (actingUser.role === "ADMIN" && target.role === "USER") || (actingUser.role === "SUPER_ADMIN" && (target.role === "USER" || target.role === "ADMIN"));
 
   if (!authorized) {
     return { type: "INSUFFICIENT_AUTHORITY" };
