@@ -70,6 +70,8 @@ const createLinkedQR = async ({ urlId, userId, design }: CreateLinkedQRProps): P
     linkedUrlId: url._id.toString(),
     destinationURL: url.destinationURL,
     title: url.title,
+    expiresAt: url.expiresAt,
+    isDisabled: url.isDisabled,
     design: { ...DEFAULT_DESIGN, ...design },
     status: "PENDING",
   });
@@ -155,6 +157,13 @@ const toggleQRDisabledByMongoId = async (qrMongoId: string, userId: string, next
   const qr = await QRCode.findById(qrMongoId);
   if (!qr || qr.createdBy.toString() !== userId) return;
   await updateQRDisabledStatus(qr.qrId, nextDisabled);
+};
+
+const updateQRExpiryByMongoId = async (qrMongoId: string, userId: string, expiresAt: Date | undefined): Promise<void> => {
+  if (expiresAt === undefined) return;
+  const qr = await QRCode.findById(qrMongoId);
+  if (!qr || qr.createdBy.toString() !== userId) return;
+  await updateQRBasicInfo(qr.qrId, { expiresAt });
 };
 
 // delete qr which is linked to URL, incoming from URL dashboard
@@ -381,6 +390,7 @@ export {
   resolveQRFocusPage,
   getQRDownloadAsset,
   toggleQRDisabledByMongoId,
+  updateQRExpiryByMongoId,
   deleteQRByLinkedUrl,
   getQREditData,
   editQR,

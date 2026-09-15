@@ -54,6 +54,7 @@ export interface CreateQRCodeData {
   title?: string;
   destinationURL?: string;
   expiresAt?: Date | null;
+  isDisabled?: boolean;
   design: {
     fgColor: string;
     bgColor: string;

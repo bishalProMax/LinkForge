@@ -9,7 +9,7 @@ const cancelDisableBtn = document.getElementById("cancelDisableBtn");
 
 let selectedShortId = "";
 
-document.querySelectorAll(".disable-btn").forEach((button) => {
+document.querySelectorAll(".disable-btn:not(.qr-disable-btn)").forEach((button) => {
   button.addEventListener("click", () => {
     const shortId = button.dataset.shortid;
     const isCurrentlyDisabled = button.dataset.disabled === "true";

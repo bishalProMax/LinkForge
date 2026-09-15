@@ -54,6 +54,10 @@ export const createStandaloneQRSchema = z
     customExpiry: z.preprocess((value) => (value === "" ? undefined : value), z.coerce.date().optional()),
 
     design: designSchema.optional(),
+
+    createShortLink: z.boolean()
+    .optional()
+    .default(false)
   })
   .superRefine((data, ctx) => {
     if (data.expiration === "custom") {

@@ -14,8 +14,13 @@ const handleCreateStandaloneQR = asyncHandler(async (req: Request, res: Response
       customExpiry: req.body.customExpiry,
       design: req.body.design,
     });
+    
+    let shortId: string | undefined;
+    if (req.body.createShortLink) {
+      shortId = await linkExistingQRToNewUrl(qrId, req.user!.id);
+    }
 
-    return res.status(201).json({ success: true, qrId });
+    return res.status(201).json({ success: true, qrId, shortId });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Something went wrong. Please try again.";
     return res.status(400).json({ success: false, message });

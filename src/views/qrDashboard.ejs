@@ -81,6 +81,11 @@
               min="<%= new Date().toISOString().slice(0,16) %>" />
           </div>
 
+          <div class="checkbox-inline-group">
+            <input type="checkbox" id="createShortLinkForQr" name="createShortLink" />
+            <label for="createShortLinkForQr">Also create a short link for this QR code</label>
+          </div>
+
           <button type="button" id="toggleDesignBtn" class="pagination-btn nav"
             style="align-self: center; margin-top: 8px;">
             <i class="ri-palette-line"></i> Customize Design (Optional)

@@ -86,6 +86,7 @@ if (form) {
     const title = document.getElementById("qrTitle").value.trim();
     const expiration = document.getElementById("expiration").value;
     const customExpiry = document.getElementById("customExpiry").value;
+    const createShortLink = document.getElementById("createShortLinkForQr")?.checked ?? false;
 
     if (!destinationURL) return;
 
@@ -101,6 +102,7 @@ if (form) {
           expiration,
           customExpiry: customExpiry || undefined,
           design: getDesign(),
+          createShortLink,
         }),
       });
 

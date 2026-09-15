@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { toggleDisableQR as toggleQRDisabledByMongoId, deleteQRByLinkedUrl } from "../qr/qr.service.js";
+import { toggleQRDisabledByMongoId, deleteQRByLinkedUrl, updateQRExpiryByMongoId } from "../qr/qr.service.js";
 import { checkShortIdExists, createShortURL, findURLByShortId, getURLsByUserId, updateURLDisabledStatus, countURLsNewerThan, updateURLBasicInfo, softDeleteURLById, findURLByShortIdAdmin } from "./url.repository.js";
 import visitEnrichmentQueue from "../../infrastructure/queues/visitEnrichment.queue.js";
 import { getExpiryDate } from "../../shared/utils/expiryDate.js";
@@ -158,6 +158,10 @@ const editLink = async (shortId: string, userId: string, data: { destinationURL:
     title: resolvedTitle,
     ...(data.expiration !== "keep" ? { expiresAt } : {}),  
   });
+
+  if (existing.linkedQRId && data.expiration !== "keep") {
+    await updateQRExpiryByMongoId(existing.linkedQRId.toString(), userId, expiresAt);
+  }
 
   logger.info({ oldShortId: shortId, newShortId: data.alias, userId }, "Link edited");
   return data.alias;

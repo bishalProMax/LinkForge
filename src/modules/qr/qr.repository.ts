@@ -164,39 +164,16 @@ const getQRIdsByUserId = async (userId: string): Promise<mongoose.Types.ObjectId
 };
 
 const countQRStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promise<{ active: number; expired: number; disabled: number }> => {
+  const now = new Date();
   const baseMatch: Record<string, unknown> = ids ? { _id: { $in: ids } } : {};
 
-  const results = await QRCode.aggregate([
-    { $match: baseMatch },
-    { $lookup: { from: "urls", localField: "linkedUrlId", foreignField: "_id", as: "linkedUrl" } },
-    { $addFields: { linkedUrlDoc: { $arrayElemAt: ["$linkedUrl", 0] } } },
-    {
-      $addFields: {
-        effectiveExpiresAt: { $ifNull: ["$linkedUrlDoc.expiresAt", "$expiresAt"] },
-        effectiveIsDisabled: { $ifNull: ["$linkedUrlDoc.isDisabled", "$isDisabled"] },
-      },
-    },
-    {
-      $addFields: {
-        status: {
-          $switch: {
-            branches: [
-              { case: { $and: [{ $ne: ["$effectiveExpiresAt", null] }, { $lte: ["$effectiveExpiresAt", "$$NOW"] }] }, then: "expired" },
-              { case: "$effectiveIsDisabled", then: "disabled" },
-            ],
-            default: "active",
-          },
-        },
-      },
-    },
-    { $group: { _id: "$status", count: { $sum: 1 } } },
+  const [active, expired, disabled] = await Promise.all([
+    QRCode.countDocuments({ ...baseMatch, isDisabled: false, $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }),
+    QRCode.countDocuments({ ...baseMatch, expiresAt: { $ne: null, $lte: now } }),
+    QRCode.countDocuments({ ...baseMatch, isDisabled: true, $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }] }),
   ]);
 
-  const counts = { active: 0, expired: 0, disabled: 0 };
-  results.forEach((r) => {
-    counts[r._id as "active" | "expired" | "disabled"] = r.count;
-  });
-  return counts;
+  return { active, expired, disabled };
 };
 
 //used by worker for hard delete single QR

@@ -126,9 +126,11 @@ const countURLsNewerThan = (userId: string, createdAt: Date) => {
 const updateURLBasicInfo = (id: string, data: { shortId?: string; destinationURL?: string; title?: string; expiresAt?: Date }) => { 
   return URL.findByIdAndUpdate(id, data, { returnDocument: "after" }); }; 
 
-  const getURLIdsByUserId = async (userId: string): Promise<mongoose.Types.ObjectId[]> => {
-  const urls = await URL.find({ createdBy: userId, deletedAt: null }).select("_id").lean();
-  return urls.map((u) => u._id as mongoose.Types.ObjectId);
+  const getURLIdsByUserId = async (userId: string, includeDeleted = false): Promise<mongoose.Types.ObjectId[]> => {
+    const filter: Record<string, unknown> = { createdBy: userId };
+    if (!includeDeleted) filter.deletedAt = null;
+    const urls = await URL.find(filter).select("_id").lean();
+    return urls.map((u) => u._id as mongoose.Types.ObjectId);
 };
 
 const countURLStatusByIds = async (ids: mongoose.Types.ObjectId[] | null): Promise<{ active: number; expired: number; disabled: number }> => {
