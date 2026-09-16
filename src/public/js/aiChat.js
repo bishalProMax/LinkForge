@@ -14,15 +14,57 @@ if (aiBtn) {
 
   let history = [];
 
+  input.addEventListener("input", () => {
+  if (!input.value.trim()) {
+    input.style.height = "50px";
+    input.style.overflowY = "hidden";
+    return;
+  }
+  input.style.height = "auto";
+  const height = Math.min(input.scrollHeight, 120);
+  input.style.height = `${height}px`;
+  input.style.overflowY = input.scrollHeight > 120 ? "auto" : "hidden";
+});
+
   aiBtn.addEventListener("click", () => sidebar.classList.add("open"));
   closeBtn.addEventListener("click", () => sidebar.classList.remove("open"));
 
   function appendMessage(role, content) {
-    const el = document.createElement("div");
-    el.className = `ai-message ${role}`;
-    el.textContent = content;
-    messagesEl.appendChild(el);
+    const wrapper = document.createElement("div");
+    wrapper.className = `ai-message ${role}`;
+    wrapper.textContent = content;
+    messagesEl.appendChild(wrapper);
+
+    if (role === "assistant") {
+      const dlBtn = document.createElement("button");
+      dlBtn.type = "button";
+      dlBtn.className = "ai-pdf-export-btn";
+      dlBtn.innerHTML = '<i class="ri-file-pdf-2-line"></i> Download as PDF';
+      dlBtn.addEventListener("click", () => exportAsPdf(content));
+      messagesEl.appendChild(dlBtn);
+    }
+
     messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  async function exportAsPdf(text) {
+    try {
+      const res = await fetch("/ai/export/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, title: "LinkForge AI Summary" }),
+      });
+      if (!res.ok) throw new Error("Export failed.");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "analytics-summary.pdf";
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      showToast("Unable to export as PDF right now.");
+    }
   }
 
   async function sendMessage() {

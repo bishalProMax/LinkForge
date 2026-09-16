@@ -1,9 +1,9 @@
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatGoogle } from "@langchain/google";
 
-const chatModel = new ChatGoogleGenerativeAI({
+const llm = new ChatGoogle({
   apiKey: process.env.GOOGLE_API_KEY,
-  model: "gemini-3.7-flash",
-  temperature: 0.3,
+  model: "gemini-3.5-flash",
+  maxRetries: 2
 });
 
-export default chatModel;
+export default llm;
