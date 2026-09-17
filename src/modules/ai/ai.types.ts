@@ -5,5 +5,7 @@ export interface ChatMessageInput {
 
 export interface ToolContext {
   userId: string;
+  email: string;
+  ip: string;
   role: "USER" | "ADMIN" | "SUPER_ADMIN";
 }

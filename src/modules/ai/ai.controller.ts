@@ -12,7 +12,7 @@ const handleAIChatMessage = asyncHandler(async (req: Request, res: Response) => 
   }
 
   try {
-    const reply = await sendChatMessage(message.trim(), Array.isArray(history) ? history : [], { userId: req.user!.id, role: req.user!.role });
+    const reply = await sendChatMessage(message.trim(), Array.isArray(history) ? history : [], { userId: req.user!.id, email: req.user!.email, ip: req.ip ?? "", role: req.user!.role });
     return res.status(200).json({ success: true, reply });
   } catch (error) {
     return res.status(503).json({ success: false, message: error instanceof Error ? error.message : "Assistant unavailable." });

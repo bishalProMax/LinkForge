@@ -1,8 +1,13 @@
 import { z } from "zod";
 import { DynamicStructuredTool } from "@langchain/core/tools";
+import { createUrlSchema } from "../url/url.schemas.js";
+import { createStandaloneQRSchema } from "../qr/qr.schemas.js";
 import { getAnalyticsOverview } from "../analytics/analytics.service.js";
-import { getUserURLs } from "../url/url.service.js";
+import { getUserURLs, generateShortURL } from "../url/url.service.js";
+import { createStandaloneQR } from "../qr/qr.service.js";
+import { validateToolInput } from "../../shared/utils/aiGuardrail.js";
 import { getExpiryDisplay } from "../../shared/utils/expiryDate.js";
+import { logSecurityEvent } from "../../shared/services/securityLogger.service.js";
 import type { ToolContext } from "./ai.types.js";
 
 // it only narrates what getAnalyticsOverview 
@@ -95,7 +100,71 @@ const buildListLinksTool = (ctx: ToolContext) =>
     },
   });
 
+  // Most commonly chosen combination in the existing QR editor's option set — a simple static
+// default for now; swap for a real popularity query later if usage data justifies it.
+const DESIGN_RECOMMENDATION = { fgColor: "#000000", bgColor: "#ffffff", dotStyle: "rounded" as const, frameShape: "round" as const };
+
+const buildCreateLinkTool = (ctx: ToolContext) =>
+  new DynamicStructuredTool({
+    name: "create_short_link",
+    description: "Creates a new short link for the user. Extract as many fields as the user mentioned (URL, custom alias, title, expiration) from their message. To create multiple links, call this tool once per link.",
+    schema: z.object({
+      destinationURL: z.string().describe("The destination URL to shorten"),
+      customAlias: z.string().optional().describe("A custom alias/slug, if the user specified one"),
+      title: z.string().optional().describe("A title for the link, if the user specified one"),
+      expiration: z.enum(["never", "1d", "3d", "7d", "30d"]).optional().describe("When the link should expire, if mentioned. Defaults to never."),
+    }),
+    func: async (input) => {
+      const validated = validateToolInput(createUrlSchema, { destinationURL: input.destinationURL, customAlias: input.customAlias, title: input.title, expiration: input.expiration ?? "never" });
+      if (!validated.success) return JSON.stringify({ error: validated.error });
+
+      try {
+        const shortId = await generateShortURL({ destinationURL: validated.data.destinationURL, userId: ctx.userId, customAlias: validated.data.customAlias, title: validated.data.title, expiration: validated.data.expiration, customExpiry: validated.data.customExpiry });
+        logSecurityEvent({ event: "AI_ACTION_EXECUTED", userId: ctx.userId, email: ctx.email, ip: ctx.ip,role: ctx.role, metadata: { action: "create_short_link", shortId } }, "info");
+        return JSON.stringify({ success: true, shortId, fullUrl: `${process.env.BASE_URL}/url/${shortId}` });
+      } catch (error) {
+        return JSON.stringify({ error: error instanceof Error ? error.message : "Something went wrong." });
+      }
+    },
+  });
+
+const buildCreateQRTool = (ctx: ToolContext) =>
+  new DynamicStructuredTool({
+    name: "create_qr_code",
+    description: "Creates a new standalone QR code for the user. If the user doesn't specify a design (colors, dot pattern, frame shape), use sensible, commonly-chosen defaults and mention what you picked.",
+    schema: z.object({
+      destinationURL: z.string().describe("The destination URL the QR code should point to"),
+      title: z.string().optional(),
+      expiration: z.enum(["never", "1d", "3d", "7d", "30d"]).optional(),
+      fgColor: z.string().optional().describe("Foreground hex color, e.g. #000000, if the user requested one"),
+      bgColor: z.string().optional().describe("Background hex color, if the user requested one"),
+      dotStyle: z.enum(["square", "rounded", "dots"]).optional(),
+      frameShape: z.enum(["sharp", "round"]).optional(),
+    }),
+    func: async (input) => {
+      const design = {
+        fgColor: input.fgColor ?? DESIGN_RECOMMENDATION.fgColor,
+        bgColor: input.bgColor ?? DESIGN_RECOMMENDATION.bgColor,
+        dotStyle: input.dotStyle ?? DESIGN_RECOMMENDATION.dotStyle,
+        frameShape: input.frameShape ?? DESIGN_RECOMMENDATION.frameShape,
+      };
+
+      const validated = validateToolInput(createStandaloneQRSchema, { destinationURL: input.destinationURL, title: input.title, expiration: input.expiration ?? "never", design });
+      if (!validated.success) return JSON.stringify({ error: validated.error });
+
+      try {
+        const qrId = await createStandaloneQR({ destinationURL: validated.data.destinationURL, userId: ctx.userId, title: validated.data.title, expiration: validated.data.expiration, customExpiry: validated.data.customExpiry, design: validated.data.design });
+        logSecurityEvent({ event: "AI_ACTION_EXECUTED", userId: ctx.userId, email: ctx.email, ip: ctx.ip, role: ctx.role, metadata: { action: "create_qr_code", qrId } }, "info");
+        return JSON.stringify({ success: true, qrId, designUsed: design });
+      } catch (error) {
+        return JSON.stringify({ error: error instanceof Error ? error.message : "Something went wrong." });
+      }
+    },
+  });
+
 export { 
   buildAnalyticsSummaryTool, 
-  buildListLinksTool 
-  };
+  buildListLinksTool,
+  buildCreateLinkTool,
+  buildCreateQRTool 
+  };   

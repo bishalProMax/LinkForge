@@ -2,7 +2,7 @@ import { HumanMessage as HM, AIMessage, SystemMessage, ToolMessage } from "@lang
 import type { DynamicStructuredTool } from "@langchain/core/tools";
 import llm from "../../infrastructure/configs/langchain.config.js";
 import { checkShortIdExists } from "../url/url.repository.js";
-import { buildAnalyticsSummaryTool, buildListLinksTool } from "./ai.tools.js";
+import { buildAnalyticsSummaryTool, buildListLinksTool,buildCreateLinkTool, buildCreateQRTool } from "./ai.tools.js";
 import { fetchPageTitle } from "../../shared/services/pageTitleFetcher.js";
 import SYSTEM_PROMPT from "../../shared/utils/systemPrompt.js";
 import logger from "../../infrastructure/configs/logger.config.js";
@@ -16,7 +16,7 @@ const buildMessageHistory = (history: ChatMessageInput[] = []) => {
 const MAX_TOOL_ITERATIONS = 4;
 
 const sendChatMessage = async (message: string, history: ChatMessageInput[], ctx: ToolContext): Promise<string> => {
-  const tools = [buildAnalyticsSummaryTool(ctx), buildListLinksTool(ctx)];
+  const tools = [buildAnalyticsSummaryTool(ctx), buildListLinksTool(ctx), buildCreateLinkTool(ctx), buildCreateQRTool(ctx)];
   const modelWithTools = llm.bindTools(tools);
   const toolMap = new Map<string, DynamicStructuredTool<any>>( tools.map((t) => [t.name as string, t as DynamicStructuredTool<any>]) );
 
