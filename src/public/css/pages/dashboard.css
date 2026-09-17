@@ -303,7 +303,7 @@ button.generated-close-btn:hover {
   height: 44px;
   border-radius: 10px; 
   border: none;
-  background: #fff; 
+  background: transparent;
   color: #000; 
   display: inline-flex;
   align-items: center;
@@ -491,3 +491,94 @@ button.generated-close-btn:hover {
   cursor: pointer;
   margin-top: -8px;
 }
+
+.ai-generate-btn {
+  position: relative;
+
+  height: 56px;
+  padding: 0 16px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: transparent;
+  color: #4f46e5;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+
+  z-index: 0;
+  overflow: hidden;
+
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ai-generate-btn::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+
+  border-radius: 12px;
+
+  background: conic-gradient(
+    from 0deg,
+    #5b6dff,
+    #8b5cf6,
+    #06b6d4,
+    #f59e0b,
+    #ec4899,
+    #5b6dff
+  );
+
+  animation: aiSpin 3s linear infinite;
+
+  z-index: -2;
+}
+
+.ai-generate-btn::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+
+  border-radius: 7px;
+
+  background: #fff;
+
+  z-index: -1;
+}
+
+.ai-generate-btn:hover {
+  background: transparent;
+  color: #4f46e5;
+}
+
+.ai-generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input-generate-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-generate-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.input-generate-row .ai-generate-btn {
+  min-width: auto;
+  height: 56px;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+

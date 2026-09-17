@@ -55,14 +55,28 @@
     <form class="url-form" action="/url/generate" method="POST">
       <label for="url">Destination URL</label>
       <input id="url" name="destinationURL" type="text" placeholder="example.com or https://example.com" required />
-
+      
       <label for="customAlias">Custom Alias (Optional)</label>
-      <input id="customAlias" name="customAlias" type="text" minlength="3" maxlength="50"
-        placeholder="e.g. portfolio" />
-      <small> Leave blank to auto-generate. </small>
+      <div class="input-generate-row">
+        <input id="customAlias" name="customAlias" type="text" minlength="3" maxlength="50"
+          placeholder="e.g. portfolio" />
 
-      <label for="title">Title (Optional)</label>
-      <input id="title" type="text" name="title" maxlength="100" placeholder="e.g. Portfolio Site" />
+        <button type="button" title="Generate Custom Alias" class="ai-generate-btn" data-source="url" data-target="customAlias" data-mode="alias">
+          <i class="ri-sparkling-2-fill"></i> Generate
+        </button>
+      </div>
+
+      <small>Leave blank to auto-generate.</small>
+
+      <label for="qrTitle">Title (Optional)</label>
+      <div class="input-generate-row">
+        <input id="title" type="text" name="title" maxlength="100" placeholder="e.g. Portfolio Site" />
+
+        <button type="button" title="Generate Title" class="ai-generate-btn" data-source="url" data-target="title" data-mode="title">
+          <i class="ri-sparkling-2-fill"></i> Generate
+        </button>
+      </div>
+
 
       <div class="checkbox-inline-group">
         <input type="checkbox" id="createQr" name="createQr" />

@@ -61,7 +61,14 @@
             placeholder="example.com or https://example.com" required />
 
           <label for="qrTitle">Title (Optional)</label>
-          <input id="qrTitle" name="title" type="text" maxlength="100" placeholder="e.g. Portfolio Site" />
+          <div class="input-generate-row">
+            <input id="qrTitle" name="title" type="text" maxlength="100" placeholder="e.g. Portfolio Site" />
+
+            <button type="button" title="Generate Title" class="ai-generate-btn" data-source="qrDestinationUrl" data-target="qrTitle"
+              data-mode="title">
+              <i class="ri-sparkling-2-fill"></i> Generate
+            </button>
+          </div>
 
           <div class="form-group">
             <label for="expiration">Expiration</label>
@@ -554,7 +561,7 @@
   <!-- DISABLE MODAL -->
   <div id="qrDisableModal" class="modal">
     <div class="modal-content modal-content--delete">
-      <h3 "id=" qrDisableTitle">Disable QR Code?</h3>
+      <h3 id="qrDisableTitle">Disable QR Code?</h3>
       <p id="qrDisableMessage"></p>
       <div class="delete-actions">
         <button id="qrCancelDisableBtn" data-close-modal type="button">Cancel</button>

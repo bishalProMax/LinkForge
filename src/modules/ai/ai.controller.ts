@@ -1,8 +1,9 @@
 import type { Request, Response } from "express";
 import asyncHandler from "../../shared/utils/asyncHandler.js";
-import { sendChatMessage } from "./ai.service.js";
+import { sendChatMessage, generateAliasSuggestions, generateTitleSuggestions } from "./ai.service.js";
 import { buildPdfFromText } from "../../shared/utils/textPdf.js";
 
+// handles the /ai/chat endpoint, sending a user message to the AI model and returning the AI's reply
 const handleAIChatMessage = asyncHandler(async (req: Request, res: Response) => {
   const { message, history } = req.body;
 
@@ -18,6 +19,7 @@ const handleAIChatMessage = asyncHandler(async (req: Request, res: Response) => 
   }
 });
 
+// handles generating a PDF from the provided summary text and returning it as a downloadable file
 const handleExportAISummaryPDF = asyncHandler(async (req: Request, res: Response) => {
   const { text, title } = req.body;
 
@@ -32,7 +34,27 @@ const handleExportAISummaryPDF = asyncHandler(async (req: Request, res: Response
   return res.status(200).send(pdfBuffer);
 });
 
+// handles generating alias suggestions for a given destination URL
+const handleGenerateAlias = asyncHandler(async (req: Request, res: Response) => {
+  const { url } = req.body;
+  if (typeof url !== "string" || !url) return res.status(400).json({ success: false, message: "A destination URL is required." });
+
+  const suggestions = await generateAliasSuggestions(url);
+  return res.status(200).json({ success: true, suggestions });
+});
+
+// handles generating title suggestions for a given destination URL
+const handleGenerateTitle = asyncHandler(async (req: Request, res: Response) => {
+  const { url } = req.body;
+  if (typeof url !== "string" || !url) return res.status(400).json({ success: false, message: "A destination URL is required." });
+
+  const suggestions = await generateTitleSuggestions(url);
+  return res.status(200).json({ success: true, suggestions });
+});
+
 export { 
   handleAIChatMessage, 
-  handleExportAISummaryPDF 
+  handleExportAISummaryPDF,
+  handleGenerateAlias,
+  handleGenerateTitle 
 };

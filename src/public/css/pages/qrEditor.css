@@ -298,6 +298,26 @@ body {
   text-decoration: none; 
 }
 
+.input-generate-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-generate-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.input-generate-row .ai-generate-btn {
+  width: auto;
+  min-width: auto;
+  height: 56px;
+  margin-top: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 /* MOBILE RESPONSIVENESS */
 @media (max-width: 900px) {
   .qr-editor-grid { grid-template-columns: 1fr; }
